@@ -3,7 +3,17 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.8.34525.116
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gdn.Console", "Gdn.Console\Gdn.Console.csproj", "{0A89BED4-E04A-4B85-A816-3F37A3D6AA42}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gdn.Console", "Gdn.Console\Gdn.Console.csproj", "{0A89BED4-E04A-4B85-A816-3F37A3D6AA42}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{4B6E43B0-68E0-4D3B-A40A-D74E8373106C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Persistence", "Persistence", "{3017E557-3B5A-4519-996C-04EA45486348}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Presentation", "Presentation", "{E5CE911E-49D2-4590-9F45-8B800740722C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{F82B99B5-531A-4EAF-8BFB-59D62B362D5F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gdn.Domain", "Gdn.Domain\Gdn.Domain.csproj", "{7D454E9E-EE85-4419-BFA3-44151273C6B7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,9 +25,17 @@ Global
 		{0A89BED4-E04A-4B85-A816-3F37A3D6AA42}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0A89BED4-E04A-4B85-A816-3F37A3D6AA42}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0A89BED4-E04A-4B85-A816-3F37A3D6AA42}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7D454E9E-EE85-4419-BFA3-44151273C6B7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7D454E9E-EE85-4419-BFA3-44151273C6B7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7D454E9E-EE85-4419-BFA3-44151273C6B7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7D454E9E-EE85-4419-BFA3-44151273C6B7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{0A89BED4-E04A-4B85-A816-3F37A3D6AA42} = {E5CE911E-49D2-4590-9F45-8B800740722C}
+		{7D454E9E-EE85-4419-BFA3-44151273C6B7} = {4B6E43B0-68E0-4D3B-A40A-D74E8373106C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {86607509-7FCE-45AB-BAB8-6B8BDCAF6B0B}
