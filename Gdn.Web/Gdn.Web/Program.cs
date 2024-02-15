@@ -1,5 +1,8 @@
-using Gdn.Web.Client.Pages;
+using Gdn.Application;
+using Gdn.Persistence;
 using Gdn.Web.Components;
+using Microsoft.EntityFrameworkCore;
+using System.Diagnostics;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,6 +10,22 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
+
+builder.Services
+    .AddApplication();
+
+builder.Services.AddPersistence(options =>
+{
+    string? connectionString = builder.Configuration.GetConnectionString("SqlServerDefault");
+    options.UseSqlServer(connectionString);
+
+    if (builder.Environment.IsDevelopment())
+    {
+        options
+            .LogTo(message => Debug.WriteLine(message), LogLevel.Information)
+            .EnableSensitiveDataLogging();
+    }
+});
 
 var app = builder.Build();
 
