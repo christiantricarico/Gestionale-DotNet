@@ -1,41 +1,36 @@
 ﻿namespace Gdn.Application;
 
-public class Result
+public class Result<TData>
 {
-    public bool IsSuccess { get; set; }
-    public string? Message { get; set; }
+    public bool IsSuccess { get; }
+    public TData? Data { get; }
+    public Error? Error { get; }
 
-    public static Result Success()
+    private Result(TData data)
     {
-        return new Result()
-        {
-            IsSuccess = true,
-            Message = string.Empty
-        };
+        IsSuccess = true;
+        Data = data;
     }
 
-    public static Result<TData> Success<TData>(TData data) where TData : class
+    private Result(Error error)
     {
-        return new Result<TData>()
-        {
-            IsSuccess = true,
-            Message = string.Empty,
-            Data = data
-        };
+        IsSuccess = false;
+        Error = error;
     }
 
-    public static Result Error(string errorMessage)
+    public static implicit operator Result<TData>(Error error) => new(error);
+    public static implicit operator Result<TData>(TData data) => new(data);
+
+    public static Result<TData> Success(TData data) => new(data);
+    public static Result<TData> Failure(Error error) => new(error);
+
+    public TReturn Match<TReturn>(Func<TData?, TReturn> OnSuccess, Func<Error?, TReturn> OnFailure)
     {
-        return new Result()
-        {
-            IsSuccess = false,
-            Message = errorMessage
-        };
+        return IsSuccess ? OnSuccess(Data) : OnFailure(Error);
     }
 }
 
-public class Result<TData> : Result
-    where TData : class
+public sealed record Error(string Code, string Description)
 {
-    public TData? Data { get; set; }
+    public static readonly Error None = new(string.Empty, string.Empty);
 }
