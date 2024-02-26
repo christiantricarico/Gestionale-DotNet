@@ -19,9 +19,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gdn.Application", "Gdn.Appl
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gdn.Persistence", "Gdn.Persistence\Gdn.Persistence.csproj", "{E8B1D26B-F909-4815-B36A-0615FFD9B10A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gdn.Web", "Gdn.Web\Gdn.Web\Gdn.Web.csproj", "{0A255C07-71AF-4E3F-9C8B-28090E71B8E7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gdn.Web", "Gdn.Web\Gdn.Web\Gdn.Web.csproj", "{0A255C07-71AF-4E3F-9C8B-28090E71B8E7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gdn.Web.Client", "Gdn.Web\Gdn.Web.Client\Gdn.Web.Client.csproj", "{76BBC624-E4DF-4518-9086-B731FCD0902E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gdn.Web.Client", "Gdn.Web\Gdn.Web.Client\Gdn.Web.Client.csproj", "{76BBC624-E4DF-4518-9086-B731FCD0902E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gdn.Presentation.Shared", "Gdn.Presentation.Shared\Gdn.Presentation.Shared.csproj", "{686EA417-A961-4E03-BB46-39DB011E4022}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -53,6 +55,10 @@ Global
 		{76BBC624-E4DF-4518-9086-B731FCD0902E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{76BBC624-E4DF-4518-9086-B731FCD0902E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{76BBC624-E4DF-4518-9086-B731FCD0902E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{686EA417-A961-4E03-BB46-39DB011E4022}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{686EA417-A961-4E03-BB46-39DB011E4022}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{686EA417-A961-4E03-BB46-39DB011E4022}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{686EA417-A961-4E03-BB46-39DB011E4022}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -67,6 +73,7 @@ Global
 		{E8B1D26B-F909-4815-B36A-0615FFD9B10A} = {79530925-09FE-42D3-9B8D-403AEE1978BA}
 		{0A255C07-71AF-4E3F-9C8B-28090E71B8E7} = {E5CE911E-49D2-4590-9F45-8B800740722C}
 		{76BBC624-E4DF-4518-9086-B731FCD0902E} = {E5CE911E-49D2-4590-9F45-8B800740722C}
+		{686EA417-A961-4E03-BB46-39DB011E4022} = {E5CE911E-49D2-4590-9F45-8B800740722C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {86607509-7FCE-45AB-BAB8-6B8BDCAF6B0B}

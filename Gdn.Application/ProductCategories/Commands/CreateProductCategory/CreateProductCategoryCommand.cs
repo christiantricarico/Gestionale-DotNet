@@ -1,4 +1,4 @@
-﻿using Gdn.Application.ProductCategories.Commands.Dtos;
+﻿using Gdn.Application.ProductCategories.Dtos;
 using Gdn.Domain.Models;
 using MediatR;
 

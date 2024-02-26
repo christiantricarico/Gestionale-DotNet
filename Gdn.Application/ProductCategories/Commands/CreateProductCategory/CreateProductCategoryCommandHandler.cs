@@ -29,6 +29,6 @@ internal sealed class CreateProductCategoryCommandHandler : IRequestHandler<Crea
         await _productCategoryRepository.AddAsync(entity);
         await _unitOfWork.SaveChangesAsync();
 
-        return Result.Success(entity);
+        return entity;
     }
 }

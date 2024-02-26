@@ -1,4 +1,10 @@
-﻿using Gdn.Application.ProductCategories.Queries.GetProductCategoryById;
+﻿using AutoMapper;
+using Gdn.Application.ProductCategories.Commands.CreateProductCategory;
+using Gdn.Application.ProductCategories.Commands.DeleteProductCategory;
+using Gdn.Application.ProductCategories.Commands.UpdateProductCategory;
+using Gdn.Application.ProductCategories.Dtos;
+using Gdn.Application.ProductCategories.Queries.GetProductCategoryById;
+using Gdn.Presentation.Shared.Models;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,10 +14,12 @@ namespace Gdn.Web.Controllers;
 public class ProductCategoryController : ControllerBase
 {
     private readonly ISender _sender;
+    private readonly IMapper _mapper;
 
-    public ProductCategoryController(ISender sender)
+    public ProductCategoryController(ISender sender, IMapper mapper)
     {
         _sender = sender;
+        _mapper = mapper;
     }
 
     [HttpGet]
@@ -19,6 +27,41 @@ public class ProductCategoryController : ControllerBase
     {
         var query = new GetProductCategoryByIdQuery(id);
         var result = await _sender.Send(query);
+
+        return result.Match(
+            onSuccess: () => Results.Ok(result.Data),
+            onFailure: () => Results.BadRequest(result.Error));
+    }
+
+    [HttpPost]
+    public async Task<IResult> CreateProductCategory(ProductCategoryInputModel model)
+    {
+        var input = _mapper.Map<ProductCategoryInput>(model);
+        var command = new CreateProductCategoryCommand(input);
+        var result = await _sender.Send(command);
+
+        return result.Match(
+            onSuccess: () => Results.Ok(result.Data),
+            onFailure: () => Results.BadRequest(result.Error));
+    }
+
+    [HttpPut]
+    public async Task<IResult> UpdateProductCategory(ProductCategoryInputModel model)
+    {
+        var input = _mapper.Map<ProductCategoryInput>(model);
+        var command = new UpdateProductCategoryCommand(input);
+        var result = await _sender.Send(command);
+
+        return result.Match(
+            onSuccess: () => Results.Ok(result.Data),
+            onFailure: () => Results.BadRequest(result.Error));
+    }
+
+    [HttpDelete]
+    public async Task<IResult> DeleteProductCategory(int id)
+    {
+        var command = new DeleteProductCatetoryCommand(id);
+        var result = await _sender.Send(command);
 
         return result.Match(
             onSuccess: () => Results.Ok(result.Data),

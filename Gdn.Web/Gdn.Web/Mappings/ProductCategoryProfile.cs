@@ -1,13 +1,13 @@
 ﻿using AutoMapper;
 using Gdn.Application.ProductCategories.Dtos;
-using Gdn.Domain.Models;
+using Gdn.Presentation.Shared.Models;
 
-namespace Gdn.Application.Mappings;
+namespace Gdn.Web.Mappings;
 
 public class ProductCategoryProfile : Profile
 {
     public ProductCategoryProfile()
     {
-        CreateMap<ProductCategoryInput, ProductCategory>();
+        CreateMap<ProductCategoryInputModel, ProductCategoryInput>();
     }
 }
