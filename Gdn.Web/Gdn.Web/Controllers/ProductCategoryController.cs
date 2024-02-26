@@ -20,13 +20,8 @@ public class ProductCategoryController : ControllerBase
         var query = new GetProductCategoryByIdQuery(id);
         var result = await _sender.Send(query);
 
-        //return result.Match(
-        //    OnSuccess: data => Results.Ok(data),
-        //    OnFailure: error => Results.BadRequest(error));
-
-        if (result.IsSuccess)
-            return Results.Ok(result.Data);
-
-        return Results.BadRequest(result.Error);
+        return result.Match(
+            onSuccess: () => Results.Ok(result.Data),
+            onFailure: () => Results.BadRequest(result.Error));
     }
 }

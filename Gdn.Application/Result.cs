@@ -24,9 +24,9 @@ public class Result<TData>
     public static Result<TData> Success(TData data) => new(data);
     public static Result<TData> Failure(Error error) => new(error);
 
-    public TReturn Match<TReturn>(Func<TData?, TReturn> OnSuccess, Func<Error?, TReturn> OnFailure)
+    public TReturn Match<TReturn>(Func<TReturn> onSuccess, Func<TReturn> onFailure)
     {
-        return IsSuccess ? OnSuccess(Data) : OnFailure(Error);
+        return IsSuccess ? onSuccess() : onFailure();
     }
 }
 
