@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace Gdn.Domain.Models.Bases;
+﻿namespace Gdn.Domain.Models.Bases;
 
 public interface ITrackedEntity
 {
@@ -11,18 +9,13 @@ public interface ITrackedEntity
     byte[] RowVersion { get; set; }
 }
 
-public class TrackedEntity<T> : BaseEntity<T>, ITrackedEntity
+public class TrackedEntity<T> : BaseEntity<T>, ITrackedEntity, ISoftDeletableEntity
     where T : struct
 {
     public DateTime CreatedAt { get; set; }
-
-    [MaxLength(255)]
     public string? CreatedBy { get; set; }
-
     public DateTime UpdatedAt { get; set; }
-
-    [MaxLength(255)]
     public string? UpdatedBy { get; set; }
-
     public byte[] RowVersion { get; set; } = default!;
+    public bool IsDeleted { get; set; }
 }

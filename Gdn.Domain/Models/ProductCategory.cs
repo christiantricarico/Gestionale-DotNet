@@ -2,7 +2,7 @@
 
 namespace Gdn.Domain.Models;
 
-public partial class ProductCategory : TrackedSoftDeletableEntity<int>
+public partial class ProductCategory : TrackedEntity<int>
 {
     public string Code { get; set; } = default!;
     public string? Name { get; set; }
