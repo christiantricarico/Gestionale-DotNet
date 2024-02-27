@@ -23,7 +23,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gdn.Web", "Gdn.Web\Gdn.Web\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gdn.Web.Client", "Gdn.Web\Gdn.Web.Client\Gdn.Web.Client.csproj", "{76BBC624-E4DF-4518-9086-B731FCD0902E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gdn.Presentation.Shared", "Gdn.Presentation.Shared\Gdn.Presentation.Shared.csproj", "{686EA417-A961-4E03-BB46-39DB011E4022}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gdn.Presentation.Shared", "Gdn.Presentation.Shared\Gdn.Presentation.Shared.csproj", "{686EA417-A961-4E03-BB46-39DB011E4022}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

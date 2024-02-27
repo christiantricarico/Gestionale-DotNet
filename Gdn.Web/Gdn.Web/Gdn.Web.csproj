@@ -11,6 +11,10 @@
     <ProjectReference Include="..\..\Gdn.Presentation.Shared\Gdn.Presentation.Shared.csproj" />
     <ProjectReference Include="..\Gdn.Web.Client\Gdn.Web.Client.csproj" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.2">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
 </Project>

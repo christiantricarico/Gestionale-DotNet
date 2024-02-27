@@ -1,0 +1,3 @@
+# For more info on HTTP files go to https://aka.ms/vs/httpfile
+
+GET https://localhost:7035/api/productcategory/1

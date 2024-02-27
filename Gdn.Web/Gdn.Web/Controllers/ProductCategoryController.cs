@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Gdn.Web.Controllers;
 
 [ApiController]
+[Route("api/[controller]")]
 public class ProductCategoryController : ControllerBase
 {
     private readonly ISender _sender;
@@ -22,7 +23,7 @@ public class ProductCategoryController : ControllerBase
         _mapper = mapper;
     }
 
-    [HttpGet]
+    [HttpGet("{id}")]
     public async Task<IResult> GetProductCategory(int id)
     {
         var query = new GetProductCategoryByIdQuery(id);
