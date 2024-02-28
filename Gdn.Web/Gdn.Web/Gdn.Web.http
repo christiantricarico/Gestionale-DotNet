@@ -1,3 +1,14 @@
 # For more info on HTTP files go to https://aka.ms/vs/httpfile
 
 GET https://localhost:7035/api/productcategory/1
+
+###
+
+POST https://localhost:7035/api/productcategory/create
+Content-Type: application/json
+
+{
+    "code": "PC01",
+    "name": "Product category name 1",
+    "description": "Product category description 1"
+}

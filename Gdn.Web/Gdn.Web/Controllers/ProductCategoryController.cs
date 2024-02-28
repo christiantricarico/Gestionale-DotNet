@@ -34,7 +34,7 @@ public class ProductCategoryController : ControllerBase
             onFailure: () => Results.BadRequest(result.Error));
     }
 
-    [HttpPost]
+    [HttpPost("create")]
     public async Task<IResult> CreateProductCategory(ProductCategoryInputModel model)
     {
         var input = _mapper.Map<ProductCategoryInput>(model);
@@ -42,7 +42,7 @@ public class ProductCategoryController : ControllerBase
         var result = await _sender.Send(command);
 
         return result.Match(
-            onSuccess: () => Results.Ok(result.Data),
+            onSuccess: () => Results.Created("", result.Data),
             onFailure: () => Results.BadRequest(result.Error));
     }
 

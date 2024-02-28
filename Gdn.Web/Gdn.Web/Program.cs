@@ -14,7 +14,8 @@ builder.Services.AddRazorComponents()
 builder.Services.AddControllers();
 
 builder.Services
-    .AddApplication();
+    .AddApplication()
+    .AddAutoMapper(typeof(Program).Assembly);
 
 builder.Services.AddPersistence(options =>
 {
