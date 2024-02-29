@@ -1,4 +1,6 @@
 ﻿using Gdn.Domain.Data;
+using Gdn.Domain.Models.Bases;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -19,11 +21,6 @@ public class UnitOfWork : IUnitOfWork
         _serviceProvider = serviceProvider;
     }
 
-    private void ChangeTracker_StateChanged(object? sender, EntityStateChangedEventArgs e)
-    {
-        throw new NotImplementedException();
-    }
-
     public TRepository GetRepository<TRepository>()
         where TRepository : class
     {
@@ -38,22 +35,17 @@ public class UnitOfWork : IUnitOfWork
 
     private void UpdateTrackingData(object? sender, EntityEntryEventArgs e)
     {
-        //var httpContextAccessor = _serviceProvider.GetService<IHttpContextAccessor>();
-        //var principal = httpContextAccessor?.HttpContext?.User;
-
-        //if (e.Entry.Entity is TrackedEntity<int> trackedEntity)
-        //{
-        //    switch (e.Entry.State)
-        //    {
-        //        case EntityState.Modified:
-        //            trackedEntity.UpdatedAt = DateTime.UtcNow;
-        //            trackedEntity.UpdatedBy = principal?.Identity?.Name;
-        //            break;
-        //        case EntityState.Added:
-        //            trackedEntity.CreatedAt = DateTime.UtcNow;
-        //            trackedEntity.CreatedBy = principal?.Identity?.Name;
-        //            break;
-        //    }
-        //}
+        if (e.Entry.Entity is ITrackedEntity trackedEntity)
+        {
+            switch (e.Entry.State)
+            {
+                case EntityState.Modified:
+                    trackedEntity.UpdatedAt = DateTime.UtcNow;
+                    break;
+                case EntityState.Added:
+                    trackedEntity.CreatedAt = DateTime.UtcNow;
+                    break;
+            }
+        }
     }
 }

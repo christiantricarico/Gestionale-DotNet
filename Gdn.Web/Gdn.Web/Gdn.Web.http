@@ -12,3 +12,19 @@ Content-Type: application/json
     "name": "Product category name 1",
     "description": "Product category description 1"
 }
+
+###
+
+PUT https://localhost:7035/api/productcategory/update
+Content-Type: application/json
+
+{
+    "id": 1,
+    "code": "PC01",
+    "name": "Product category name 1 - updated",
+    "description": "Product category description 1 - updated"
+}
+
+###
+
+DELETE https://localhost:7035/api/productcategory/1

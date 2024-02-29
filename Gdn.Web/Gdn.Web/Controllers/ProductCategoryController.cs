@@ -46,7 +46,7 @@ public class ProductCategoryController : ControllerBase
             onFailure: () => Results.BadRequest(result.Error));
     }
 
-    [HttpPut]
+    [HttpPut("update")]
     public async Task<IResult> UpdateProductCategory(ProductCategoryInputModel model)
     {
         var input = _mapper.Map<ProductCategoryInput>(model);
@@ -58,14 +58,14 @@ public class ProductCategoryController : ControllerBase
             onFailure: () => Results.BadRequest(result.Error));
     }
 
-    [HttpDelete]
+    [HttpDelete("{id}")]
     public async Task<IResult> DeleteProductCategory(int id)
     {
         var command = new DeleteProductCatetoryCommand(id);
         var result = await _sender.Send(command);
 
         return result.Match(
-            onSuccess: () => Results.Ok(result.Data),
+            onSuccess: () => Results.NoContent(),
             onFailure: () => Results.BadRequest(result.Error));
     }
 }

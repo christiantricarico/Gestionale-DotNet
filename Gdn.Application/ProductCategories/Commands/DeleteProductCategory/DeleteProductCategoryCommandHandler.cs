@@ -22,7 +22,7 @@ internal sealed class DeleteProductCategoryCommandHandler : IRequestHandler<Dele
     {
         var entity = await _productCategoryRepository.GetAsync(request.ProductCategoryId);
         if (entity is null)
-            return ProductCategoryErrors.NotFound();
+            return ProductCategoryErrors.NotFound(request.ProductCategoryId);
 
         entity.IsDeleted = true;
 
