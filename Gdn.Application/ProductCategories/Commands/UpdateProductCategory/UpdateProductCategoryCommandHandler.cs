@@ -23,9 +23,12 @@ internal sealed class UpdateProductCategoryCommandHandler : IRequestHandler<Upda
     {
         var input = request.Input;
 
-        var entity = await _productCategoryRepository.GetAsync(request.Input.Id);
+        if (!input.Id.HasValue)
+            return ProductCategoryErrors.InvalidInput(nameof(input.Id));
+
+        var entity = await _productCategoryRepository.GetAsync(input.Id.Value);
         if (entity is null)
-            return ProductCategoryErrors.NotFound;
+            return ProductCategoryErrors.NotFound();
 
         _mapper.Map(input, entity);
 

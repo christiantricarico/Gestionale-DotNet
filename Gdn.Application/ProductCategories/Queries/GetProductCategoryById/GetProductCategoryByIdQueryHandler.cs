@@ -20,7 +20,7 @@ internal sealed class GetProductCategoryByIdQueryHandler : IRequestHandler<GetPr
     {
         var data = await _productCategoryRepository.GetAsync(request.Id);
         if (data is null)
-            return ProductCategoryErrors.NotFound;
+            return ProductCategoryErrors.NotFound();
 
         return data;
     }
