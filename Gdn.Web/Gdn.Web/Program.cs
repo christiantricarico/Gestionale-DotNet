@@ -1,8 +1,4 @@
-using Gdn.Application;
-using Gdn.Persistence;
 using Gdn.Web.Components;
-using Microsoft.EntityFrameworkCore;
-using System.Diagnostics;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,25 +6,6 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
-
-builder.Services.AddControllers();
-
-builder.Services
-    .AddApplication()
-    .AddAutoMapper(typeof(Program).Assembly);
-
-builder.Services.AddPersistence(options =>
-{
-    string? connectionString = builder.Configuration.GetConnectionString("SqlServerDefault");
-    options.UseSqlServer(connectionString);
-
-    if (builder.Environment.IsDevelopment())
-    {
-        options
-            .LogTo(message => Debug.WriteLine(message), LogLevel.Information)
-            .EnableSensitiveDataLogging();
-    }
-});
 
 var app = builder.Build();
 
@@ -53,7 +30,5 @@ app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
     .AddInteractiveWebAssemblyRenderMode()
     .AddAdditionalAssemblies(typeof(Gdn.Web.Client._Imports).Assembly);
-
-app.MapControllers();
 
 app.Run();

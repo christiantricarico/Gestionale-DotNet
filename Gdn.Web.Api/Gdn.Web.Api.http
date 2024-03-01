@@ -1,10 +1,17 @@
 # For more info on HTTP files go to https://aka.ms/vs/httpfile
 
-GET https://localhost:7035/api/productcategory/1
+@Gdn.Web.Api_HostAddress = http://localhost:5089/api
+
+GET {{Gdn.Web.Api_HostAddress}}/weatherforecast/
+Accept: application/json
 
 ###
 
-POST https://localhost:7035/api/productcategory/create
+GET {{Gdn.Web.Api_HostAddress}}/productcategory/1
+
+###
+
+POST {{Gdn.Web.Api_HostAddress}}/productcategory/create
 Content-Type: application/json
 
 {
@@ -15,7 +22,7 @@ Content-Type: application/json
 
 ###
 
-PUT https://localhost:7035/api/productcategory/update
+PUT {{Gdn.Web.Api_HostAddress}}/productcategory/update
 Content-Type: application/json
 
 {
@@ -27,4 +34,4 @@ Content-Type: application/json
 
 ###
 
-DELETE https://localhost:7035/api/productcategory/1
+DELETE {{Gdn.Web.Api_HostAddress}}/productcategory/1

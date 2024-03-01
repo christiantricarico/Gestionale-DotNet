@@ -2,7 +2,7 @@
 using Gdn.Application.ProductCategories.Dtos;
 using Gdn.Presentation.Shared.Models;
 
-namespace Gdn.Web.Mappings;
+namespace Gdn.Web.Api.Mappings;
 
 public class ProductCategoryProfile : Profile
 {

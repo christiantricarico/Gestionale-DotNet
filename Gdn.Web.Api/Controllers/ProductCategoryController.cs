@@ -8,7 +8,7 @@ using Gdn.Presentation.Shared.Models;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Gdn.Web.Controllers;
+namespace Gdn.Web.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]

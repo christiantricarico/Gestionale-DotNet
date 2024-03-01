@@ -4,17 +4,19 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <UserSecretsId>49bdff43-f469-48e5-8665-a596421e2aac</UserSecretsId>
+    <UserSecretsId>4bcf6ed4-9a89-47cc-a6ef-a5eb5210b8ad</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Gdn.Presentation.Shared\Gdn.Presentation.Shared.csproj" />
-    <ProjectReference Include="..\Gdn.Web.Client\Gdn.Web.Client.csproj" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.2">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Gdn.Persistence\Gdn.Persistence.csproj" />
+    <ProjectReference Include="..\Gdn.Presentation.Shared\Gdn.Presentation.Shared.csproj" />
   </ItemGroup>
 
 </Project>
