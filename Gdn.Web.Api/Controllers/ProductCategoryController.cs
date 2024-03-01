@@ -3,6 +3,7 @@ using Gdn.Application.ProductCategories.Commands.CreateProductCategory;
 using Gdn.Application.ProductCategories.Commands.DeleteProductCategory;
 using Gdn.Application.ProductCategories.Commands.UpdateProductCategory;
 using Gdn.Application.ProductCategories.Dtos;
+using Gdn.Application.ProductCategories.Queries.GetProductCategories;
 using Gdn.Application.ProductCategories.Queries.GetProductCategoryById;
 using Gdn.Presentation.Shared.Models;
 using MediatR;
@@ -21,6 +22,17 @@ public class ProductCategoryController : ControllerBase
     {
         _sender = sender;
         _mapper = mapper;
+    }
+
+    [HttpGet]
+    public async Task<IResult> GetAll()
+    {
+        var query = new GetProductCategoriesQuery();
+        var result = await _sender.Send(query);
+
+        return result.Match(
+            onSuccess: () => Results.Ok(result.Data),
+            onFailure: () => Results.BadRequest(result.Error));
     }
 
     [HttpGet("{id}")]
