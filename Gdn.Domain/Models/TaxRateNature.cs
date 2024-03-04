@@ -2,11 +2,8 @@
 
 namespace Gdn.Domain.Models;
 
-public partial class TaxRateNature : TrackedEntity<int>
+public partial class TaxRateNature : SoftDeletableEntity<int>
 {
-    public string Code { get; set; } = null!;
-
-    public string? Description { get; set; }
-
-    public virtual ICollection<TaxRate> TaxRates { get; set; } = new List<TaxRate>();
+    public string Code { get; set; } = default!;
+    public string Name { get; set; } = default!;
 }

@@ -2,8 +2,8 @@
 
 namespace Gdn.Domain.Models;
 
-public partial class TaxRate : TrackedEntity<int>
+public class TaxRate : RegistryEntity<int>
 {
-    public string Code { get; set; } = default!;
-    public string? Description { get; set; }
+    public int? TaxRateNatureId { get; set; }
+    public TaxRateNature? TaxRateNature { get; set; }
 }
