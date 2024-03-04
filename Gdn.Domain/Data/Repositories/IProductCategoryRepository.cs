@@ -2,6 +2,4 @@
 
 namespace Gdn.Domain.Data.Repositories;
 
-public interface IProductCategoryRepository : IRepository<ProductCategory, int>
-{
-}
+public interface IProductCategoryRepository : IRepository<ProductCategory, int>;
