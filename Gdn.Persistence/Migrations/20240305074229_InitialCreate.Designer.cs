@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Gdn.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20240304080636_InitialCreate")]
+    [Migration("20240305074229_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -92,6 +92,10 @@ namespace Gdn.Persistence.Migrations
                     b.Property<string>("Name")
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
+
+                    b.Property<decimal>("Rate")
+                        .HasPrecision(18, 6)
+                        .HasColumnType("decimal(18,6)");
 
                     b.Property<int?>("TaxRateNatureId")
                         .HasColumnType("int");

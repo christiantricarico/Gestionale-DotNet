@@ -1,6 +1,6 @@
-﻿namespace Gdn.Application.TaxRates.Dtos;
+﻿namespace Gdn.Presentation.Shared.Models;
 
-public sealed class TaxRateInput
+public class TaxRateInputModel
 {
     public int? Id { get; set; }
     public string Code { get; set; } = default!;

@@ -34,3 +34,40 @@ Content-Type: application/json
 ###
 
 DELETE {{Gdn.Web.Api_HostAddress}}/productcategory/1
+
+###
+
+GET {{Gdn.Web.Api_HostAddress}}/taxrate
+
+###
+
+GET {{Gdn.Web.Api_HostAddress}}/taxrate/1
+
+###
+
+POST {{Gdn.Web.Api_HostAddress}}/taxrate/create
+Content-Type: application/json
+
+{
+    "code": "TR01",
+    "name": "Tax rate name 1",
+    "description": "Tax rate description 1",
+    "rate": 10
+}
+
+###
+
+PUT {{Gdn.Web.Api_HostAddress}}/taxrate/update
+Content-Type: application/json
+
+{
+    "id": 1,
+    "code": "TR01",
+    "name": "Tax rate name 1 - updated",
+    "description": "Tax rate description 1 - updated",
+    "rate": 22
+}
+
+###
+
+DELETE {{Gdn.Web.Api_HostAddress}}/taxrate/1

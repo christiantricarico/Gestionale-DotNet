@@ -90,6 +90,10 @@ namespace Gdn.Persistence.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
+                    b.Property<decimal>("Rate")
+                        .HasPrecision(18, 6)
+                        .HasColumnType("decimal(18,6)");
+
                     b.Property<int?>("TaxRateNatureId")
                         .HasColumnType("int");
 

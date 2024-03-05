@@ -15,4 +15,11 @@ public class AppDbContext : DbContext
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
     }
+
+    protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+    {
+        //Default precision for decimal properties.
+        configurationBuilder.Properties<decimal>()
+            .HavePrecision(18, 6);
+    }
 }

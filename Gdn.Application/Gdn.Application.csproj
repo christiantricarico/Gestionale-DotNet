@@ -16,8 +16,4 @@
     <ProjectReference Include="..\Gdn.Domain\Gdn.Domain.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="TaxRates\Queries\" />
-  </ItemGroup>
-
 </Project>
