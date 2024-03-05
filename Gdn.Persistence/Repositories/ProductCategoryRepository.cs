@@ -3,7 +3,7 @@ using Gdn.Domain.Models;
 
 namespace Gdn.Persistence.Repositories;
 
-public class ProductCategoryRepository : Repository<ProductCategory, int>, IProductCategoryRepository
+internal sealed class ProductCategoryRepository : Repository<ProductCategory, int>, IProductCategoryRepository
 {
     public ProductCategoryRepository(AppDbContext dbContext) : base(dbContext)
     {
