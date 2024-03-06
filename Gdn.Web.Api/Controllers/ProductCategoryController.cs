@@ -54,7 +54,11 @@ public class ProductCategoryController : ControllerBase
 		var result = await _sender.Send(command);
 
 		return result.Match(
-			onSuccess: () => Results.Created("", result.Data),
+			onSuccess: () =>
+			{
+				var location = Url.Action(nameof(Get), new { id = result.Data?.Id });
+				return Results.Created(location, result.Data);
+			},
 			onFailure: () => Results.BadRequest(result.Error));
 	}
 
