@@ -13,7 +13,7 @@ namespace Gdn.Web.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class TaxRateController : ControllerBase
+public class TaxRateController : CrudController
 {
 	private readonly ISender _sender;
 	private readonly IMapper _mapper;
@@ -54,11 +54,7 @@ public class TaxRateController : ControllerBase
 		var result = await _sender.Send(command);
 
 		return result.Match(
-			onSuccess: () =>
-			{
-				var location = Url.Action(nameof(Get), new { id = result.Data?.Id });
-				return Results.Created(location, result.Data);
-			},
+			onSuccess: () => Results.Created(GetEntityLocation(result.Data?.Id ?? 0), result.Data),
 			onFailure: () => Results.BadRequest(result.Error));
 	}
 
