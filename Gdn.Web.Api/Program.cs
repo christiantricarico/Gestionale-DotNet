@@ -26,9 +26,22 @@ builder.Services.AddPersistence(options =>
     }
 });
 
+string allowedOrigins = "gdn-client-apps";
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: allowedOrigins,
+                      builder =>
+                      {
+                          builder.WithOrigins("https://localhost:7199")
+                            .AllowAnyHeader().AllowAnyMethod();
+                      });
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
+
+app.UseCors(allowedOrigins);
 
 app.UseHttpsRedirection();
 

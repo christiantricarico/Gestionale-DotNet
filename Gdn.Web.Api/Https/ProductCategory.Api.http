@@ -6,7 +6,7 @@ GET {{BaseUrl}}
 
 ###
 
-GET {{BaseUrl}}/1
+GET {{BaseUrl}}/9
 
 ###
 
@@ -16,7 +16,8 @@ Content-Type: application/json
 {
     "code": "PC01",
     "name": "Product category name 1",
-    "description": "Product category description 1"
+    "description": "Product category description 1",
+    "parentCategoryId": 1
 }
 
 ###

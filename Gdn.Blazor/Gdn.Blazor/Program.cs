@@ -8,7 +8,13 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
+
 builder.Services.AddFluentUIComponents();
+
+//builder.Services.AddHttpClient("WebAPI", client =>
+//    client.BaseAddress = new Uri("https://localhost:7282/api/"));
+
+builder.Services.AddHttpClient();
 
 var app = builder.Build();
 

@@ -25,9 +25,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Frontend", "Frontend", "{AD
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gdn.Web.Api", "Gdn.Web.Api\Gdn.Web.Api.csproj", "{73784AE9-F393-490D-9D54-C0069EFCDEFE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gdn.Blazor", "Gdn.Blazor\Gdn.Blazor\Gdn.Blazor.csproj", "{714E7A4C-3A47-43B9-B6FF-0C5F05D07271}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gdn.Blazor", "Gdn.Blazor\Gdn.Blazor\Gdn.Blazor.csproj", "{714E7A4C-3A47-43B9-B6FF-0C5F05D07271}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gdn.Blazor.Client", "Gdn.Blazor\Gdn.Blazor.Client\Gdn.Blazor.Client.csproj", "{19A0EF4F-9AF6-4643-92AE-F09916D6CD3D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gdn.Blazor.Client", "Gdn.Blazor\Gdn.Blazor.Client\Gdn.Blazor.Client.csproj", "{19A0EF4F-9AF6-4643-92AE-F09916D6CD3D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
