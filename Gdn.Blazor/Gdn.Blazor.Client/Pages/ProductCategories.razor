@@ -14,33 +14,38 @@
 }
 else
 {
-    <FluentTreeView OnExpandedChange="@HandleOnExpandedChange" CurrentSelectedChanged="@HandleCurrentSelectedChange">
-        @{
-            foreach (var item in productCategories)
+    <FluentGrid>
+        <FluentGridItem xs="12" md="6" Style="min-width: 300px;">
+            <FluentTreeView OnExpandedChange="@HandleOnExpandedChange" CurrentSelectedChanged="@HandleCurrentSelectedChange">
+                @{
+                    foreach (var item in productCategories)
+                    {
+                        <FluentTreeItem Data="@item" Text="@item.Description">
+                        </FluentTreeItem>
+                    }
+                }
+            </FluentTreeView>
+        </FluentGridItem>
+        <FluentGridItem xs="12" md="6">
+            @if (formModel is not null)
             {
-                <FluentTreeItem Data="@item" Text="@item.Description">
-                </FluentTreeItem>
+                <EditForm Model="@formModel" OnValidSubmit="@HandleValidSubmit">
+                    <FluentStack Orientation="Orientation.Vertical">
+                        <div>
+                            <FluentTextField Label="Codice" Name="code" @bind-Value="formModel.Code" />
+                        </div>
+                        <div>
+                            <FluentTextField Label="Nome" Name="name" @bind-Value="formModel.Name" />
+                        </div>
+                        <div>
+                            <FluentTextArea Label="Descrizione" Name="description" @bind-Value="formModel.Description" />
+                        </div>
+                        <FluentButton Type="ButtonType.Submit" Appearance="Appearance.Accent">Salva</FluentButton>
+                    </FluentStack>
+                </EditForm>
             }
-        }
-    </FluentTreeView>
-
-    @if(formModel is not null)
-    {
-        <EditForm Model="@formModel" OnValidSubmit="@HandleValidSubmit">
-            <FluentStack Orientation="Orientation.Vertical">
-                <div>
-                    <FluentTextField Label="Codice" Name="code" @bind-Value="formModel.Code" />
-                </div>
-                <div>
-                    <FluentTextField Label="Nome" Name="name" @bind-Value="formModel.Name" />
-                </div>
-                <div>
-                    <FluentTextArea Label="Descrizione" Name="description" @bind-Value="formModel.Description" />
-                </div>
-                <FluentButton Type="ButtonType.Submit" Appearance="Appearance.Accent">Salva</FluentButton>
-            </FluentStack>
-        </EditForm>
-    }
+        </FluentGridItem>
+    </FluentGrid>
 }
 
 @code {
