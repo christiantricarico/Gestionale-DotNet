@@ -7,10 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Remove="Pages\ProductCategories.razor" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.5" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.5" PrivateAssets="all" />
     <PackageReference Include="Radzen.Blazor" Version="4.32.0" />
@@ -18,18 +14,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Gdn.Presentation.Shared\Gdn.Presentation.Shared.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <UpToDateCheckInput Remove="Pages\ProductCategories.razor" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <_ContentIncludedByDefault Remove="Pages\ProductCategories.razor" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="Pages\ProductCategories.razor" />
   </ItemGroup>
 
 </Project>
