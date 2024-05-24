@@ -1,0 +1,15 @@
+﻿@page "/productcategories"
+@rendermode InteractiveServer
+
+@inject HttpClient Http
+
+<h3>ProductCategories</h3>
+
+@code {
+    IEnumerable<ProductCategoryViewModel>? productCategories;
+
+    protected override async Task OnInitializedAsync()
+    {
+        productCategories = await Http.GetFromJsonAsync<IEnumerable<ProductCategoryViewModel>>("productCategory");
+    }
+}
