@@ -12,11 +12,13 @@ builder.Services.AddRazorComponents()
 //    config.BaseAddress = new Uri("https://localhost:7282/api");
 //});
 
-builder.Services.AddScoped(sp =>
-    new HttpClient
-    {
-        BaseAddress = new Uri(builder.Configuration["FrontendUrl"] ?? "https://localhost:7282/api")
-    });
+//builder.Services.AddScoped(sp =>
+//    new HttpClient
+//    {
+//        BaseAddress = new Uri(builder.Configuration["FrontendUrl"] ?? "https://localhost:7282/api")
+//    });
+
+builder.Services.AddHttpClient();
 
 builder.Services.AddFluentUIComponents();
 
