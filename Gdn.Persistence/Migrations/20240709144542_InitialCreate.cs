@@ -78,6 +78,37 @@ namespace Gdn.Persistence.Migrations
                         principalColumn: "Id");
                 });
 
+            migrationBuilder.CreateTable(
+                name: "Products",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Code = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Stock = table.Column<decimal>(type: "decimal(18,6)", precision: 18, scale: 6, nullable: false),
+                    ProductCategoryId = table.Column<int>(type: "int", nullable: true),
+                    TaxRateId = table.Column<int>(type: "int", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Products", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Products_ProductCategories_ProductCategoryId",
+                        column: x => x.ProductCategoryId,
+                        principalTable: "ProductCategories",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Products_TaxRates_TaxRateId",
+                        column: x => x.TaxRateId,
+                        principalTable: "TaxRates",
+                        principalColumn: "Id");
+                });
+
             migrationBuilder.InsertData(
                 table: "TaxRateNatures",
                 columns: new[] { "Id", "Code", "IsDeleted", "Name" },
@@ -115,6 +146,16 @@ namespace Gdn.Persistence.Migrations
                 column: "ParentCategoryId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Products_ProductCategoryId",
+                table: "Products",
+                column: "ProductCategoryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Products_TaxRateId",
+                table: "Products",
+                column: "TaxRateId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_TaxRates_TaxRateNatureId",
                 table: "TaxRates",
                 column: "TaxRateNatureId");
@@ -123,6 +164,9 @@ namespace Gdn.Persistence.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "Products");
+
             migrationBuilder.DropTable(
                 name: "ProductCategories");
 

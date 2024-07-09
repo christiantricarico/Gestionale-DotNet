@@ -1,0 +1,36 @@
+# For more info on HTTP files go to https://aka.ms/vs/httpfile
+
+@BaseUrl = http://localhost:5089/api/product
+
+GET {{BaseUrl}}
+
+###
+
+GET {{BaseUrl}}/1
+
+###
+
+POST {{BaseUrl}}/create
+Content-Type: application/json
+
+{
+    "code": "P02",
+    "name": "Product name 2",
+    "description": "Product description 2"
+}
+
+###
+
+PUT {{BaseUrl}}/update
+Content-Type: application/json
+
+{
+    "id": 1,
+    "code": "P01",
+    "name": "Product name 1 - updated",
+    "description": "Product description 1 - updated"
+}
+
+###
+
+DELETE {{BaseUrl}}/1
