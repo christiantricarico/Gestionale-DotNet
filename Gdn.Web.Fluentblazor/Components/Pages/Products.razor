@@ -1,0 +1,29 @@
+﻿@page "/products"
+@rendermode InteractiveServer
+
+@inject HttpClient Http
+@inject NavigationManager Navigation
+
+<h3>Products / Services</h3>
+
+@if (products != null)
+{
+    <FluentDataGrid Items="@products.AsQueryable()">
+        <PropertyColumn Property="@(p => p.Code)" Sortable="true" />
+        <PropertyColumn Property="@(p => p.Name)" Sortable="true" />
+        <PropertyColumn Property="@(p => p.Description)" Sortable="true" />
+        <PropertyColumn Property="@(p => p.CategoryName)" Sortable="true" />
+        <PropertyColumn Property="@(p => p.TaxRateName)" Sortable="true" />
+    </FluentDataGrid>
+}
+
+@code {
+
+    IEnumerable<ProductViewModel>? products;
+
+    protected override async Task OnInitializedAsync()
+    {
+        string uri = "https://localhost:7282/api/product";
+        products = await Http.GetFromJsonAsync<IEnumerable<ProductViewModel>>(uri);
+    }
+}
