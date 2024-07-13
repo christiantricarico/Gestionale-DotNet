@@ -3,15 +3,16 @@
 @inject HttpClient Http
 @inject NavigationManager Navigation
 
-<h3>Products / Services</h3>
+<h3>Prodotti / Servizi</h3>
 
 @if (products != null)
 {
+    <FluentButton OnClick="@CreateButtonClick">Nuovo prodotto/servizio</FluentButton>
     <FluentDataGrid Items="@products.AsQueryable()">
         <PropertyColumn Property="@(p => p.Code)" Sortable="true" />
         <PropertyColumn Property="@(p => p.Name)" Sortable="true" />
         <PropertyColumn Property="@(p => p.Description)" Sortable="true" />
-        <PropertyColumn Property="@(p => p.CategoryName)" Sortable="true" />
+        <PropertyColumn Property="@(p => p.ProductCategoryName)" Sortable="true" />
         <PropertyColumn Property="@(p => p.TaxRateName)" Sortable="true" />
     </FluentDataGrid>
 }
@@ -24,5 +25,10 @@
     {
         string uri = "https://localhost:7282/api/product";
         products = await Http.GetFromJsonAsync<IEnumerable<ProductViewModel>>(uri);
+    }
+
+    private void CreateButtonClick()
+    {
+        Navigation.NavigateTo("edit-product");
     }
 }

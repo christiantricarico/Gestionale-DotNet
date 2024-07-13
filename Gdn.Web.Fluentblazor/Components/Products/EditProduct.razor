@@ -1,0 +1,79 @@
+﻿@page "/edit-product"
+
+@inject HttpClient Http
+@inject NavigationManager Navigation
+
+<PageTitle>Crea prodotto/servizio</PageTitle>
+
+<h1>Crea prodotto/servizio</h1>
+
+<p>
+    This form uses the Fluent UI input components. It uses a <code>DataAnnotationsValidator</code>, a <code>FluentValidationSummary</code>
+    and <code>FluentValidationMessage</code>s.
+</p>
+
+@if (productCategories is not null)
+{
+    <EditForm Model="@Model" OnValidSubmit="@HandleValidSubmit" FormName="edit-product-form">
+        <DataAnnotationsValidator />
+        <FluentValidationSummary />
+
+        <FluentStack Orientation="Orientation.Vertical">
+            <div>
+                <FluentTextField Name="Code" @bind-Value="Model.Code" Label="Code" Required />
+                <FluentValidationMessage For="@(() => Model.Code)" />
+            </div>
+            <div>
+                <FluentTextField Name="Name" @bind-Value="Model.Name" Label="Name" />
+                <FluentValidationMessage For="@(() => Model.Name)" />
+            </div>
+            <div>
+                <FluentTextArea Name="Description" Rows=5 Cols=60 @bind-Value="Model.Description" Label="Description (optional)" />
+            </div>
+            <div>
+                <FluentCombobox Items=@productCategoryOptions
+                                TOption="Option<int>"
+                                OptionText="@(i => i.Text)"
+                                OptionValue="@(i => i.Value.ToString())" 
+                                @bind-SelectedOption="@selectedProductCategoryOption" 
+                                @bind-Value="@productCategoryValue" />
+            </div>
+            <FluentButton Type="ButtonType.Submit" Appearance="Appearance.Accent">Submit</FluentButton>
+        </FluentStack>
+    </EditForm>
+}
+
+@code {
+
+    [SupplyParameterFromForm]
+    private ProductInputModel Model { get; set; } = new();
+
+    IEnumerable<ProductCategoryViewModel>? productCategories;
+    List<Option<int>>? productCategoryOptions;
+    Option<int>? selectedProductCategoryOption;
+    string? productCategoryValue;
+
+    protected override async Task OnInitializedAsync()
+    {
+        string uri = "https://localhost:7282/api/productcategory";
+        productCategories = await Http.GetFromJsonAsync<IEnumerable<ProductCategoryViewModel>>(uri)
+            ?? Enumerable.Empty<ProductCategoryViewModel>();
+
+        productCategoryOptions = productCategories.Select(c => new Option<int>()
+            {
+                Text = c.Name,
+                Value = c.Id
+            }).ToList();
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        Console.WriteLine("HandleValidSubmit called");
+
+        Model.ProductCategoryId = selectedProductCategoryOption?.Value;
+
+        string uri = "https://localhost:7282/api/product/create";
+        await Http.PostAsJsonAsync<ProductInputModel>(uri, Model);
+        Navigation.NavigateTo("products");
+    }
+}

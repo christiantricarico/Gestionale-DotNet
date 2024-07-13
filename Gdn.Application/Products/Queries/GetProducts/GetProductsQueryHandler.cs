@@ -18,7 +18,12 @@ internal sealed class GetProductsQueryHandler : IRequestHandler<GetProductsQuery
 
     public async Task<Result<IEnumerable<Product>>> Handle(GetProductsQuery request, CancellationToken cancellationToken)
     {
-        var data = await _productRepository.GetAllAsync();
+        List<string> includes = new();
+
+        if (request.IncludeProductCategory)
+            includes.Add("ProductCategory");
+
+        var data = await _productRepository.GetAllAsync(includes);
         return data.ToList();
     }
 }

@@ -6,8 +6,8 @@ public class ProductViewModel
     public string Code { get; set; } = default!;
     public string? Name { get; set; }
     public string? Description { get; set; }
-    public int? CategoryId { get; set; }
-    public string? CategoryName { get; set; }
+    public int? ProductCategoryId { get; set; }
+    public string? ProductCategoryName { get; set; }
     public int? TaxRateId { get; set; }
     public string? TaxRateName { get; set; }
 }

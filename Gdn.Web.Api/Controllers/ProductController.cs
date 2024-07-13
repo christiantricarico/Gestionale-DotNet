@@ -31,7 +31,7 @@ public class ProductController : CrudController
     [HttpGet]
     public async Task<IResult> GetAll()
     {
-        var query = new GetProductsQuery();
+        var query = new GetProductsQuery(IncludeProductCategory: true);
         var result = await _sender.Send(query);
 
         return result.Match(
