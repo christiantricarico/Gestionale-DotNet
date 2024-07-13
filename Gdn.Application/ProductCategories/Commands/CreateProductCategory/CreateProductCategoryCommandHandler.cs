@@ -26,6 +26,13 @@ internal sealed class CreateProductCategoryCommandHandler : IRequestHandler<Crea
 
         var entity = _mapper.Map<ProductCategory>(input);
 
+        //set category level
+        if (input.ParentCategoryId.HasValue)
+        {
+            var parentCategory = await _productCategoryRepository.GetAsync(input.ParentCategoryId.Value);
+            entity.Level = parentCategory!.Level + 1;
+        }
+
         await _productCategoryRepository.AddAsync(entity);
         await _unitOfWork.SaveChangesAsync();
 

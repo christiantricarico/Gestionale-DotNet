@@ -1,5 +1,8 @@
 ﻿@page "/edit-productcategory"
 
+@inject HttpClient Http
+@inject NavigationManager Navigation
+
 <PageTitle>Crea categoria prodotto</PageTitle>
 
 <h1>Crea categoria prodotto</h1>
@@ -9,69 +12,68 @@
     and <code>FluentValidationMessage</code>s.
 </p>
 
-<EditForm Model="@Model" OnValidSubmit="@HandleValidSubmit" FormName="edit-productcategory-form">
-    <DataAnnotationsValidator />
-    <FluentValidationSummary />
+@if (parentCategories is not null)
+{
+    <EditForm Model="@Model" OnValidSubmit="@HandleValidSubmit" FormName="edit-productcategory-form">
+        <DataAnnotationsValidator />
+        <FluentValidationSummary />
 
-    <FluentStack Orientation="Orientation.Vertical">
-        <div>
-            <FluentTextField Name="Code" @bind-Value="Model.Code" Label="Code" Required />
-            <FluentValidationMessage For="@(() => Model.Code)" />
-        </div>
-        <div>
-            <FluentTextField Name="Name" @bind-Value="Model.Name" Label="Name" Required />
-            <FluentValidationMessage For="@(() => Model.Name)" />
-        </div>
-        <div>
-            <FluentTextArea Name="Description" Rows=5 Cols=60 @bind-Value="Model.Description" Label="Description (optional)" />
-        </div>
-        @* <div>
-            <FluentAutocomplete TOption="Country"
-                                AutoComplete="off"
-                                Label="Select a country"
-                                Width="250px"
-                                Placeholder="Select countries"
-                                OnOptionsSearch="@OnSearchAsync"
-                                MaximumSelectedOptions="3"
-                                OptionText="@(item => item.Name)"
-                                @bind-SelectedOptions="@SelectedItems" />
-        </div> *@
-        @* <div>
-            <FluentSelect name="class" Id="classification" @bind-Value="starship.Classification" TOption="string" Required Label="Primary Classification">
-                <FluentOption Value="">Select classification ...</FluentOption>
-                <FluentOption Value="Exploration">Exploration</FluentOption>
-                <FluentOption Value="Diplomacy">Diplomacy</FluentOption>
-                <FluentOption Value="Defense">Defense</FluentOption>
-            </FluentSelect>
-            <FluentValidationMessage For="@(() => starship.Classification)" />
-        </div> *@
-        <FluentButton Type="ButtonType.Submit" Appearance="Appearance.Accent">Submit</FluentButton>
-    </FluentStack>
-</EditForm>
+        <FluentStack Orientation="Orientation.Vertical">
+            <div>
+                <FluentTextField Name="Code" @bind-Value="Model.Code" Label="Code" Required />
+                <FluentValidationMessage For="@(() => Model.Code)" />
+            </div>
+            <div>
+                <FluentTextField Name="Name" @bind-Value="Model.Name" Label="Name" Required />
+                <FluentValidationMessage For="@(() => Model.Name)" />
+            </div>
+            <div>
+                <FluentTextArea Name="Description" Rows=5 Cols=60 @bind-Value="Model.Description" Label="Description (optional)" />
+            </div>
+            <div>
+                <FluentCombobox Items=@parentCategoryOptions
+                                TOption="Option<int>"
+                                OptionText="@(i => i.Text)"
+                                OptionValue="@(i => i.Value.ToString())" 
+                                @bind-SelectedOption="@selectedParentCategoryOption" 
+                                @bind-Value="@parentCategoryValue" />
+            </div>
+            <FluentButton Type="ButtonType.Submit" Appearance="Appearance.Accent">Submit</FluentButton>
+        </FluentStack>
+    </EditForm>
+}
 
 @code {
-    
-    // protected override void OnInitialized()
-    // {
-    //     starship.ProductionDate = DateTime.Now;
-    // }
-
-    //IEnumerable<Country> SelectedItems = Array.Empty<Country>();
-
-    // private async Task OnSearchAsync(OptionsSearchEventArgs<Country> e)
-    // {
-    //     var allCountries = await Data.GetCountriesAsync();
-    //     e.Items = allCountries.Where(i => i.Name.StartsWith(e.Text, StringComparison.OrdinalIgnoreCase))
-    //                           .OrderBy(i => i.Name);
-    // }
 
     [SupplyParameterFromForm]
     private ProductCategoryInputModel Model { get; set; } = new();
 
-    private void HandleValidSubmit()
+    IEnumerable<ProductCategoryViewModel>? parentCategories;
+    List<Option<int>>? parentCategoryOptions;
+    Option<int>? selectedParentCategoryOption;
+    string? parentCategoryValue;
+
+    protected override async Task OnInitializedAsync()
+    {
+        string uri = "https://localhost:7282/api/productcategory";
+        parentCategories = await Http.GetFromJsonAsync<IEnumerable<ProductCategoryViewModel>>(uri)
+            ?? Enumerable.Empty<ProductCategoryViewModel>();
+
+        parentCategoryOptions = parentCategories.Select(c => new Option<int>()
+            {
+                Text = c.Name,
+                Value = c.Id
+            }).ToList();
+    }
+
+    private async Task HandleValidSubmit()
     {
         Console.WriteLine("HandleValidSubmit called");
 
-        // Process the valid form
+        Model.ParentCategoryId = selectedParentCategoryOption?.Value;
+
+        string uri = "https://localhost:7282/api/productcategory/create";
+        await Http.PostAsJsonAsync<ProductCategoryInputModel>(uri, Model);
+        Navigation.NavigateTo("productcategories");
     }
 }
