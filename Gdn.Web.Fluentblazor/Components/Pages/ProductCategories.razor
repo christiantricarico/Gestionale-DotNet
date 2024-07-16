@@ -1,6 +1,7 @@
 ﻿@page "/productcategories"
+@using System.Text.Json
 
-@inject HttpClient Http
+@inject IHttpClientFactory HttpClientFactory
 @inject NavigationManager Navigation
 
 <h3>Categorie prodotto</h3>
@@ -18,12 +19,15 @@
 }
 
 @code {
+
+    private HttpClient HttpClient => HttpClientFactory.CreateApiClient();
+    
     IEnumerable<ProductCategoryViewModel>? productCategories;
 
     protected override async Task OnInitializedAsync()
     {
-        string uri = "https://localhost:7282/api/productcategory";
-        productCategories = await Http.GetFromJsonAsync<IEnumerable<ProductCategoryViewModel>>(uri);
+        var requestUri = $"productcategory";
+        productCategories = await HttpClient.GetFromJsonAsync<IEnumerable<ProductCategoryViewModel>>(requestUri);
     }
 
     private void CreateButtonClick()

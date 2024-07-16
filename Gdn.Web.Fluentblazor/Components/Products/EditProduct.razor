@@ -1,6 +1,6 @@
 ﻿@page "/edit-product"
 
-@inject HttpClient Http
+@inject IHttpClientFactory HttpClientFactory
 @inject NavigationManager Navigation
 
 <PageTitle>Crea prodotto/servizio</PageTitle>
@@ -45,6 +45,8 @@
 
 @code {
 
+    private HttpClient HttpClient => HttpClientFactory.CreateApiClient();
+
     [SupplyParameterFromForm]
     private ProductInputModel Model { get; set; } = new();
 
@@ -55,8 +57,8 @@
 
     protected override async Task OnInitializedAsync()
     {
-        string uri = "https://localhost:7282/api/productcategory";
-        productCategories = await Http.GetFromJsonAsync<IEnumerable<ProductCategoryViewModel>>(uri)
+        string uri = "productcategory";
+        productCategories = await HttpClient.GetFromJsonAsync<IEnumerable<ProductCategoryViewModel>>(uri)
             ?? Enumerable.Empty<ProductCategoryViewModel>();
 
         productCategoryOptions = productCategories.Select(c => new Option<int>()
@@ -72,8 +74,8 @@
 
         Model.ProductCategoryId = selectedProductCategoryOption?.Value;
 
-        string uri = "https://localhost:7282/api/product/create";
-        await Http.PostAsJsonAsync<ProductInputModel>(uri, Model);
+        string uri = "product/create";
+        await HttpClient.PostAsJsonAsync<ProductInputModel>(uri, Model);
         Navigation.NavigateTo("products");
     }
 }
