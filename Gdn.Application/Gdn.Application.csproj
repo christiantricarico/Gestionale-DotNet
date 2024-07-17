@@ -16,4 +16,9 @@
     <ProjectReference Include="..\Gdn.Domain\Gdn.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Invoices\Commands\" />
+    <Folder Include="Invoices\Dtos\" />
+  </ItemGroup>
+
 </Project>
