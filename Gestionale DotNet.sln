@@ -27,6 +27,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gdn.Web.Api", "Gdn.Web.Api\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gdn.Web.Fluentblazor", "Gdn.Web.Fluentblazor\Gdn.Web.Fluentblazor.csproj", "{6E8650DE-DDEE-4009-B079-41EA77DBAE89}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{0020C031-90C3-41E5-B517-D2D6CED40D68}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gdn.Application.UnitTests", "Gdn.Application.UnitTests\Gdn.Application.UnitTests.csproj", "{0972B11B-511A-43AB-8F77-914AEB238E51}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -57,6 +61,10 @@ Global
 		{6E8650DE-DDEE-4009-B079-41EA77DBAE89}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6E8650DE-DDEE-4009-B079-41EA77DBAE89}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6E8650DE-DDEE-4009-B079-41EA77DBAE89}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0972B11B-511A-43AB-8F77-914AEB238E51}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0972B11B-511A-43AB-8F77-914AEB238E51}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0972B11B-511A-43AB-8F77-914AEB238E51}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0972B11B-511A-43AB-8F77-914AEB238E51}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -73,6 +81,8 @@ Global
 		{ADB80CAD-2484-4BDA-8388-1992EC086A60} = {E5CE911E-49D2-4590-9F45-8B800740722C}
 		{73784AE9-F393-490D-9D54-C0069EFCDEFE} = {09926AB6-7EB9-47C4-9FD6-8D29175F31F3}
 		{6E8650DE-DDEE-4009-B079-41EA77DBAE89} = {ADB80CAD-2484-4BDA-8388-1992EC086A60}
+		{0020C031-90C3-41E5-B517-D2D6CED40D68} = {1151F4A4-3B97-4B31-9CAB-B9EA571EC553}
+		{0972B11B-511A-43AB-8F77-914AEB238E51} = {0020C031-90C3-41E5-B517-D2D6CED40D68}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {86607509-7FCE-45AB-BAB8-6B8BDCAF6B0B}

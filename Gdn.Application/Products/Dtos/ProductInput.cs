@@ -2,6 +2,8 @@
 
 public sealed class ProductInput
 {
+    // init-only properties in order to avoid value changes in command-handlers
+
     public int? Id { get; init; }
     public required string Code { get; init; }
     public string? Name { get; init; }
