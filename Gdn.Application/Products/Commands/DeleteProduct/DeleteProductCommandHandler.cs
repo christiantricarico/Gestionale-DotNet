@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using Gdn.Domain.Data;
+﻿using Gdn.Domain.Data;
 using Gdn.Domain.Data.Repositories;
 using MediatR;
 
@@ -9,14 +8,11 @@ internal sealed class DeleteProductCommandHandler : IRequestHandler<DeleteProduc
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IProductRepository _productRepository;
-    private readonly IMapper _mapper;
 
-    public DeleteProductCommandHandler(IUnitOfWork unitOfWork,
-                                       IMapper mapper)
+    public DeleteProductCommandHandler(IUnitOfWork unitOfWork)
     {
         _unitOfWork = unitOfWork;
         _productRepository = _unitOfWork.GetRepository<IProductRepository>();
-        _mapper = mapper;
     }
 
     public async Task<Result<bool>> Handle(DeleteProductCommand request, CancellationToken cancellationToken)
