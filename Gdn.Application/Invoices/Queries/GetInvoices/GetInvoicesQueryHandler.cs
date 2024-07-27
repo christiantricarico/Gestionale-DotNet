@@ -5,7 +5,7 @@ using MediatR;
 
 namespace Gdn.Application.Invoices.Queries.GetInvoices;
 
-internal sealed class GetInvoicesQueryHandler : IRequestHandler<GetInvoicesQuery, IEnumerable<Invoice>>
+internal sealed class GetInvoicesQueryHandler : IRequestHandler<GetInvoicesQuery, Result<IEnumerable<Invoice>>>
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IInvoiceRepository _invoiceRepository;
@@ -16,7 +16,7 @@ internal sealed class GetInvoicesQueryHandler : IRequestHandler<GetInvoicesQuery
         _invoiceRepository = _unitOfWork.GetRepository<IInvoiceRepository>();
     }
 
-    public async Task<IEnumerable<Invoice>> Handle(GetInvoicesQuery request, CancellationToken cancellationToken)
+    public async Task<Result<IEnumerable<Invoice>>> Handle(GetInvoicesQuery request, CancellationToken cancellationToken)
     {
         var data = await _invoiceRepository.GetAllAsync();
         return data.ToList();

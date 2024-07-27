@@ -67,7 +67,7 @@ namespace Gdn.Persistence.Migrations
 
                     b.HasIndex("TaxRateId");
 
-                    b.ToTable("Products");
+                    b.ToTable("Products", (string)null);
                 });
 
             modelBuilder.Entity("Gdn.Domain.Models.ProductCategory", b =>
@@ -109,7 +109,7 @@ namespace Gdn.Persistence.Migrations
 
                     b.HasIndex("ParentCategoryId");
 
-                    b.ToTable("ProductCategories");
+                    b.ToTable("ProductCategories", (string)null);
                 });
 
             modelBuilder.Entity("Gdn.Domain.Models.TaxRate", b =>
@@ -152,7 +152,7 @@ namespace Gdn.Persistence.Migrations
 
                     b.HasIndex("TaxRateNatureId");
 
-                    b.ToTable("TaxRates");
+                    b.ToTable("TaxRates", (string)null);
                 });
 
             modelBuilder.Entity("Gdn.Domain.Models.TaxRateNature", b =>
@@ -178,7 +178,7 @@ namespace Gdn.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("TaxRateNatures");
+                    b.ToTable("TaxRateNatures", (string)null);
 
                     b.HasData(
                         new

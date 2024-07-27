@@ -3,4 +3,4 @@ using MediatR;
 
 namespace Gdn.Application.Invoices.Queries.GetInvoices;
 
-public sealed record GetInvoicesQuery : IRequest<IEnumerable<Invoice>>;
+public sealed record GetInvoicesQuery : IRequest<Result<IEnumerable<Invoice>>>;

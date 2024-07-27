@@ -11,6 +11,8 @@ public class AppDbContext : DbContext
     public DbSet<TaxRate> TaxRates { get; set; }
     public DbSet<TaxRateNature> TaxRateNatures { get; set; }
     public DbSet<Product> Products { get; set; }
+    public DbSet<Invoice> Invoices { get; set; }
+    public DbSet<InvoiceRow> InvoiceRows { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
