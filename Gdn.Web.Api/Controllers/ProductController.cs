@@ -13,8 +13,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Gdn.Web.Api.Controllers;
 
-[ApiController]
-[Route("api/[controller]")]
 [EnableCors("gdn-client-apps")]
 public class ProductController : CrudController
 {
