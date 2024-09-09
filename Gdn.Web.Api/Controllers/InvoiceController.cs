@@ -8,12 +8,10 @@ using Gdn.Application.Invoices.Queries.GetInvoices;
 using Gdn.Presentation.Shared.Models;
 using Gdn.Presentation.Shared.Models.Invoices;
 using MediatR;
-using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Gdn.Web.Api.Controllers;
 
-[EnableCors("gdn-client-apps")]
 public class InvoiceController : CrudController
 {
     private readonly ISender _sender;

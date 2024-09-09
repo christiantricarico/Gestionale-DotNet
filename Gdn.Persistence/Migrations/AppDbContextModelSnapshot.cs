@@ -17,10 +17,167 @@ namespace Gdn.Persistence.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.5")
+                .HasAnnotation("ProductVersion", "8.0.8")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("Gdn.Domain.Models.Customer", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Customer");
+                });
+
+            modelBuilder.Entity("Gdn.Domain.Models.Invoice", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("CustomerId")
+                        .HasColumnType("int");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Number")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CustomerId");
+
+                    b.ToTable("Invoices");
+                });
+
+            modelBuilder.Entity("Gdn.Domain.Models.InvoiceRow", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("InvoiceId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("MeasurementUnitId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("Quantity")
+                        .HasPrecision(18, 6)
+                        .HasColumnType("decimal(18,6)");
+
+                    b.Property<string>("RowType")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("nvarchar(3)");
+
+                    b.Property<int?>("TaxRateId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("UnitPrice")
+                        .HasPrecision(18, 6)
+                        .HasColumnType("decimal(18,6)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("InvoiceId");
+
+                    b.HasIndex("MeasurementUnitId");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("TaxRateId");
+
+                    b.ToTable("InvoiceRows");
+                });
+
+            modelBuilder.Entity("Gdn.Domain.Models.MeasurementUnit", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("MeasurementUnit");
+                });
 
             modelBuilder.Entity("Gdn.Domain.Models.Product", b =>
                 {
@@ -67,7 +224,7 @@ namespace Gdn.Persistence.Migrations
 
                     b.HasIndex("TaxRateId");
 
-                    b.ToTable("Products", (string)null);
+                    b.ToTable("Products");
                 });
 
             modelBuilder.Entity("Gdn.Domain.Models.ProductCategory", b =>
@@ -109,7 +266,7 @@ namespace Gdn.Persistence.Migrations
 
                     b.HasIndex("ParentCategoryId");
 
-                    b.ToTable("ProductCategories", (string)null);
+                    b.ToTable("ProductCategories");
                 });
 
             modelBuilder.Entity("Gdn.Domain.Models.TaxRate", b =>
@@ -152,7 +309,7 @@ namespace Gdn.Persistence.Migrations
 
                     b.HasIndex("TaxRateNatureId");
 
-                    b.ToTable("TaxRates", (string)null);
+                    b.ToTable("TaxRates");
                 });
 
             modelBuilder.Entity("Gdn.Domain.Models.TaxRateNature", b =>
@@ -178,7 +335,7 @@ namespace Gdn.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("TaxRateNatures", (string)null);
+                    b.ToTable("TaxRateNatures");
 
                     b.HasData(
                         new
@@ -349,6 +506,46 @@ namespace Gdn.Persistence.Migrations
                             IsDeleted = false,
                             Name = "N7 : IVA assolta in altro stato UE"
                         });
+                });
+
+            modelBuilder.Entity("Gdn.Domain.Models.Invoice", b =>
+                {
+                    b.HasOne("Gdn.Domain.Models.Customer", "Customer")
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Customer");
+                });
+
+            modelBuilder.Entity("Gdn.Domain.Models.InvoiceRow", b =>
+                {
+                    b.HasOne("Gdn.Domain.Models.Invoice", "Invoice")
+                        .WithMany()
+                        .HasForeignKey("InvoiceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Gdn.Domain.Models.MeasurementUnit", "MeasurementUnit")
+                        .WithMany()
+                        .HasForeignKey("MeasurementUnitId");
+
+                    b.HasOne("Gdn.Domain.Models.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId");
+
+                    b.HasOne("Gdn.Domain.Models.TaxRate", "TaxRate")
+                        .WithMany()
+                        .HasForeignKey("TaxRateId");
+
+                    b.Navigation("Invoice");
+
+                    b.Navigation("MeasurementUnit");
+
+                    b.Navigation("Product");
+
+                    b.Navigation("TaxRate");
                 });
 
             modelBuilder.Entity("Gdn.Domain.Models.Product", b =>

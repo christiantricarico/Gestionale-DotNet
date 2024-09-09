@@ -14,6 +14,42 @@ namespace Gdn.Persistence.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
+                name: "Customer",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    Code = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Customer", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "MeasurementUnit",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    Code = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_MeasurementUnit", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "ProductCategories",
                 columns: table => new
                 {
@@ -51,6 +87,30 @@ namespace Gdn.Persistence.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_TaxRateNatures", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Invoices",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Number = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Date = table.Column<DateOnly>(type: "date", nullable: false),
+                    CustomerId = table.Column<int>(type: "int", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Invoices", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Invoices_Customer_CustomerId",
+                        column: x => x.CustomerId,
+                        principalTable: "Customer",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -109,6 +169,50 @@ namespace Gdn.Persistence.Migrations
                         principalColumn: "Id");
                 });
 
+            migrationBuilder.CreateTable(
+                name: "InvoiceRows",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    RowType = table.Column<string>(type: "nvarchar(3)", maxLength: 3, nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Quantity = table.Column<decimal>(type: "decimal(18,6)", precision: 18, scale: 6, nullable: true),
+                    UnitPrice = table.Column<decimal>(type: "decimal(18,6)", precision: 18, scale: 6, nullable: true),
+                    InvoiceId = table.Column<int>(type: "int", nullable: false),
+                    MeasurementUnitId = table.Column<int>(type: "int", nullable: true),
+                    TaxRateId = table.Column<int>(type: "int", nullable: true),
+                    ProductId = table.Column<int>(type: "int", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_InvoiceRows", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_InvoiceRows_Invoices_InvoiceId",
+                        column: x => x.InvoiceId,
+                        principalTable: "Invoices",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_InvoiceRows_MeasurementUnit_MeasurementUnitId",
+                        column: x => x.MeasurementUnitId,
+                        principalTable: "MeasurementUnit",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_InvoiceRows_Products_ProductId",
+                        column: x => x.ProductId,
+                        principalTable: "Products",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_InvoiceRows_TaxRates_TaxRateId",
+                        column: x => x.TaxRateId,
+                        principalTable: "TaxRates",
+                        principalColumn: "Id");
+                });
+
             migrationBuilder.InsertData(
                 table: "TaxRateNatures",
                 columns: new[] { "Id", "Code", "IsDeleted", "Name" },
@@ -141,6 +245,31 @@ namespace Gdn.Persistence.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_InvoiceRows_InvoiceId",
+                table: "InvoiceRows",
+                column: "InvoiceId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_InvoiceRows_MeasurementUnitId",
+                table: "InvoiceRows",
+                column: "MeasurementUnitId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_InvoiceRows_ProductId",
+                table: "InvoiceRows",
+                column: "ProductId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_InvoiceRows_TaxRateId",
+                table: "InvoiceRows",
+                column: "TaxRateId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Invoices_CustomerId",
+                table: "Invoices",
+                column: "CustomerId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_ProductCategories_ParentCategoryId",
                 table: "ProductCategories",
                 column: "ParentCategoryId");
@@ -165,7 +294,19 @@ namespace Gdn.Persistence.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
+                name: "InvoiceRows");
+
+            migrationBuilder.DropTable(
+                name: "Invoices");
+
+            migrationBuilder.DropTable(
+                name: "MeasurementUnit");
+
+            migrationBuilder.DropTable(
                 name: "Products");
+
+            migrationBuilder.DropTable(
+                name: "Customer");
 
             migrationBuilder.DropTable(
                 name: "ProductCategories");

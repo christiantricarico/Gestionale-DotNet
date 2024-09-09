@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Cors;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Gdn.Web.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[EnableCors("gdn-client-apps")]
 public class CrudController : ControllerBase
 {
     protected string? GetEntityLocation<TId>(TId entityId) where TId : struct
