@@ -1,0 +1,6 @@
+@Gdn.Web.Api.Vs_HostAddress = http://localhost:5001
+
+GET {{Gdn.Web.Api.Vs_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
