@@ -1,6 +1,39 @@
-@Gdn.Web.Api.Vs_HostAddress = http://localhost:5001
+@Gdn.Web.Api.Vs_HostAddress = https://localhost:7256
 
 GET {{Gdn.Web.Api.Vs_HostAddress}}/weatherforecast/
 Accept: application/json
+
+###
+
+GET {{Gdn.Web.Api.Vs_HostAddress}}/taxrates/
+
+###
+
+GET {{Gdn.Web.Api.Vs_HostAddress}}/taxrates/1
+
+###
+
+POST {{Gdn.Web.Api.Vs_HostAddress}}/taxrates/
+Content-Type: application/json
+
+{
+    "code": "TR02",
+    "name": "Tax rate name 2",
+    "description": "Tax rate description 2",
+    "rate": 10
+}
+
+###
+
+PUT {{Gdn.Web.Api.Vs_HostAddress}}/taxrates/
+Content-Type: application/json
+
+{
+    "id": 1,
+    "code": "TR01",
+    "name": "Tax rate name 1 - updated",
+    "description": "Tax rate description 1 - updated",
+    "rate": 22
+}
 
 ###
