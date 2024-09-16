@@ -12,7 +12,7 @@ public static class GetTaxRates
     {
         public void MapEndpoint(IEndpointRouteBuilder app)
         {
-            app.MapGet("taxrates", Handler).WithTags(Tags.TaxRates);
+            app.MapGet("api/taxrates", Handler).WithTags(Tags.TaxRates);
         }
     }
 

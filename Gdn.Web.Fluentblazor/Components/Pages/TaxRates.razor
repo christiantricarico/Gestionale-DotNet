@@ -18,13 +18,13 @@
 
 @code {
 
-    private HttpClient HttpClient => HttpClientFactory.CreateApiClient();
+    private HttpClient HttpClient => HttpClientFactory.CreateApiClientVs();
 
     IEnumerable<TaxRateViewModel>? taxRates;
 
     protected override async Task OnInitializedAsync()
     {
-        string uri = "taxrate";
+        string uri = "taxrates";
         taxRates = await HttpClient.GetFromJsonAsync<IEnumerable<TaxRateViewModel>>(uri);
     }
 

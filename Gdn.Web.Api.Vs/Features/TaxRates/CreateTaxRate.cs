@@ -14,7 +14,7 @@ public static class CreateTaxRate
     {
         public void MapEndpoint(IEndpointRouteBuilder app)
         {
-            app.MapPost("taxrates", Handler).WithTags(Tags.TaxRates);
+            app.MapPost("api/taxrates", Handler).WithTags(Tags.TaxRates);
         }
     }
 
@@ -23,6 +23,7 @@ public static class CreateTaxRate
         public Validator()
         {
             RuleFor(e => e.Code).NotEmpty().MaximumLength(10);
+            RuleFor(e => e.Name).MaximumLength(255);
         }
     }
 

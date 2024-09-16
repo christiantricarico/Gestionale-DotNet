@@ -43,7 +43,7 @@
 
 @code {
 
-    private HttpClient HttpClient => HttpClientFactory.CreateApiClient();
+    private HttpClient HttpClient => HttpClientFactory.CreateApiClientVs();
 
     [SupplyParameterFromForm]
     private TaxRateInputModel Model { get; set; } = new();
@@ -55,7 +55,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        string uri = "taxratenature";
+        string uri = "taxratenatures";
         taxRateNatures = await HttpClient.GetFromJsonAsync<IEnumerable<TaxRateNatureViewModel>>(uri)
             ?? Enumerable.Empty<TaxRateNatureViewModel>();
 
@@ -72,7 +72,7 @@
 
         Model.TaxRateNatureId = selectedTaxRateNatureOption?.Value;
 
-        string uri = "taxrate/create";
+        string uri = "taxrates";
         await HttpClient.PostAsJsonAsync<TaxRateInputModel>(uri, Model);
         Navigation.NavigateTo("taxrates");
     }

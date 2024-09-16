@@ -1,4 +1,4 @@
-@Gdn.Web.Api.Vs_HostAddress = https://localhost:7256
+@Gdn.Web.Api.Vs_HostAddress = https://localhost:7256/api
 
 GET {{Gdn.Web.Api.Vs_HostAddress}}/weatherforecast/
 Accept: application/json
