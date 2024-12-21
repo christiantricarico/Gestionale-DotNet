@@ -23,6 +23,5 @@ public static class GetTaxRates
             .ToListAsync();
 
         return TypedResults.Ok(taxRates);
-        //return Results.Ok(taxRates);
     }
 }

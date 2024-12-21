@@ -1,7 +1,7 @@
 ﻿@page "/taxrates"
 
 @inject IHttpClientFactory HttpClientFactory
-@inject NavigationManager Navigation
+@inject IDialogService DialogService
 
 <h3>Aliquote Iva</h3>
 
@@ -28,8 +28,22 @@
         taxRates = await HttpClient.GetFromJsonAsync<IEnumerable<TaxRateViewModel>>(uri);
     }
 
-    private void CreateButtonClick()
+    private async Task CreateButtonClick()
     {
-        Navigation.NavigateTo("edit-taxrate");
+        TaxRateInputModel model = new();
+        DialogParameters parameters = new()
+            {
+                Title = $"Creazione Aliquota Iva",
+                PreventDismissOnOverlayClick = true,
+                PreventScroll = true
+            };
+
+        var dialog = await DialogService.ShowDialogAsync<EditTaxRateDialog>(model, parameters);
+
+        var result = await dialog.Result;
+        if (!result.Cancelled && result.Data != null)
+        {
+            model = (TaxRateInputModel)result.Data;
+        }
     }
 }
