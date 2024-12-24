@@ -31,6 +31,7 @@
     private async Task CreateButtonClick()
     {
         TaxRateInputModel model = new();
+        DialogContent content = new();
         DialogParameters parameters = new()
             {
                 Title = $"Creazione Aliquota Iva",
@@ -38,7 +39,7 @@
                 PreventScroll = true
             };
 
-        var dialog = await DialogService.ShowDialogAsync<EditTaxRateDialog>(model, parameters);
+        var dialog = await DialogService.ShowDialogAsync<EditTaxRateDialog>(content, parameters);
 
         var result = await dialog.Result;
         if (!result.Cancelled && result.Data != null)

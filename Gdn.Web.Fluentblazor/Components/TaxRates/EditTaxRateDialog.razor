@@ -1,4 +1,5 @@
-﻿@implements IDialogContentComponent<TaxRateInputModel>
+﻿@using System.Globalization
+@implements IDialogContentComponent<DialogContent>
 
 @inject IHttpClientFactory HttpClientFactory
 
@@ -16,43 +17,53 @@
         <DataAnnotationsValidator />
         <FluentValidationSummary />
 
-        <FluentTextField Name="Code" @bind-Value="Content.Code" Label="Code" Required />
-        <FluentTextField Name="Name" @bind-Value="Content.Name" Label="Name" />
-        <FluentTextArea Name="Description" Rows=5 Cols=60 @bind-Value="Content.Description" Label="Description (optional)" />
-        <FluentNumberField Name="Rate" @bind-Value="Content.Rate" />
-        <FluentCombobox Items=@taxRateNatureOptions
-                        TOption="Option<int>"
-                        OptionText="@(i => i.Text)"
-                        OptionValue="@(i => i.Value.ToString())"
-                        @bind-SelectedOption="@selectedTaxRateNatureOption"
-                        @bind-Value="@taxRateNatureValue" />
+        <FluentGrid Spacing="1">
+            <FluentGridItem xs="12">
+                <FluentTextField Name="@nameof(TaxRateInputModel.Code)" @bind-Value="Model.Code" Label="Codice" Autofocus="true" />
+            </FluentGridItem>
+            <FluentGridItem xs="12">
+                <FluentTextField Name="@nameof(TaxRateInputModel.Name)" @bind-Value="Model.Name" Label="Nome" Style="width: 100%" />
+            </FluentGridItem>
+            <FluentGridItem xs="12">
+                <FluentTextArea Name="@nameof(TaxRateInputModel.Description)" Rows="3" Cols="60" @bind-Value="Model.Description" Label="Descrizione" Style="width: 100%" />
+            </FluentGridItem>
+            <FluentGridItem xs="4">
+                <FluentNumberField Name="@nameof(TaxRateInputModel.Rate)" @bind-Value="Model.Rate" Label="Aliquota (%)" />
+                <FluentLabel>@(Model.Rate.ToString("n2"))</FluentLabel>
+            </FluentGridItem>
+            <FluentGridItem xs="8">
+                <FluentCombobox Items=@taxRateNatureOptions
+                                TOption="Option<int>"
+                                OptionText="@(i => i.Text)"
+                                OptionValue="@(i => i.Value.ToString())"
+                                Label="Natura Iva" Style="width: 100%" Height="200px"
+                                Autocomplete="ComboboxAutocomplete.Both"
+                                @bind-SelectedOption="@selectedTaxRateNatureOption"
+                                @bind-Value="@taxRateNatureValue" />
+            </FluentGridItem>
+        </FluentGrid>
 
     </EditForm>
 </FluentDialogBody>
 
 <FluentDialogFooter>
     <FluentButton Appearance="Appearance.Accent"
-                  Disabled="@(!_editContext.Validate())"
                   OnClick="@SaveAsync">
         Salva
-    </FluentButton>
-    <FluentButton Appearance="Appearance.Neutral"
-                  OnClick="@CancelAsync">
-        Annulla
     </FluentButton>
 </FluentDialogFooter>
 
 @code {
 
-    private EditContext _editContext = default!;
-
     [CascadingParameter]
     public FluentDialog Dialog { get; set; } = default!;
 
     [Parameter]
-    public TaxRateInputModel Content { get; set; } = default!;
+    public DialogContent Content { get; set; } = default!;
 
     private HttpClient HttpClient => HttpClientFactory.CreateApiClientVs();
+    public TaxRateInputModel Model { get; set; } = default!;
+    private EditContext _editContext = default!;
 
     IEnumerable<TaxRateNatureViewModel>? taxRateNatures;
     List<Option<int>>? taxRateNatureOptions;
@@ -61,34 +72,31 @@
 
     protected override async Task OnInitializedAsync()
     {
-        _editContext = new EditContext(Content);
+        Model = new TaxRateInputModel() { Rate = 5.20m };
 
-        // string uri = "taxratenatures";
-        // taxRateNatures = await HttpClient.GetFromJsonAsync<IEnumerable<TaxRateNatureViewModel>>(uri)
-        //     ?? Enumerable.Empty<TaxRateNatureViewModel>();
+        _editContext = new EditContext(Model);
 
-        // taxRateNatureOptions = taxRateNatures.Select(c => new Option<int>()
-        //     {
-        //         Text = c.Name,
-        //         Value = c.Id
-        //     }).ToList();
+        string uri = "taxratenatures";
+        taxRateNatures = await HttpClient.GetFromJsonAsync<IEnumerable<TaxRateNatureViewModel>>(uri)
+            ?? Enumerable.Empty<TaxRateNatureViewModel>();
+
+        taxRateNatureOptions = taxRateNatures.Select(c => new Option<int>()
+            {
+                Text = c.Name,
+                Value = c.Id
+            }).ToList();
     }
 
     private async Task SaveAsync()
     {
         if (_editContext.Validate())
         {
-            Content.TaxRateNatureId = selectedTaxRateNatureOption?.Value;
+            Model.TaxRateNatureId = selectedTaxRateNatureOption?.Value;
 
             string uri = "taxrates";
-            await HttpClient.PostAsJsonAsync<TaxRateInputModel>(uri, Content);
+            await HttpClient.PostAsJsonAsync<TaxRateInputModel>(uri, Model);
 
-            await Dialog.CloseAsync(Content);
+            await Dialog.CloseAsync(Model);
         }
-    }
-
-    private async Task CancelAsync()
-    {
-        await Dialog.CancelAsync();
     }
 }
