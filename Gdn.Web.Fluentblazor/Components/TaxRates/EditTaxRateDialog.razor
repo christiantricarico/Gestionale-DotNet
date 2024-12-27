@@ -28,8 +28,7 @@
                 <FluentTextArea Name="@nameof(TaxRateInputModel.Description)" Rows="3" Cols="60" @bind-Value="Model.Description" Label="Descrizione" Style="width: 100%" />
             </FluentGridItem>
             <FluentGridItem xs="4">
-                <FluentNumberField Name="@nameof(TaxRateInputModel.Rate)" @bind-Value="Model.Rate" Label="Aliquota (%)" />
-                <FluentLabel>@(Model.Rate.ToString("n2"))</FluentLabel>
+                <FluentTextField Name="Rate" @bind-Value="RateStr" Label="Aliquota (%)" />
             </FluentGridItem>
             <FluentGridItem xs="8">
                 <FluentCombobox Items=@taxRateNatureOptions
@@ -63,6 +62,13 @@
 
     private HttpClient HttpClient => HttpClientFactory.CreateApiClientVs();
     public TaxRateInputModel Model { get; set; } = default!;
+    
+    private string RateStr
+    {
+        get => Model.Rate.ToString("n2");
+        set => Model.Rate = UIUtils.ConvertTextToDecimal(value);
+    }
+
     private EditContext _editContext = default!;
 
     IEnumerable<TaxRateNatureViewModel>? taxRateNatures;
@@ -72,7 +78,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        Model = new TaxRateInputModel() { Rate = 5.20m };
+        Model = new TaxRateInputModel();
 
         _editContext = new EditContext(Model);
 

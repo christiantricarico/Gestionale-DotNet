@@ -14,8 +14,6 @@ public class TaxRateInputModel
     public string? Name { get; set; }
 
     public string? Description { get; set; }
-
-    [DisplayFormat(DataFormatString = "{0:N2}")]
     public decimal Rate { get; set; }
     public int? TaxRateNatureId { get; set; }
 }
