@@ -1,0 +1,71 @@
+﻿@using System.Diagnostics.CodeAnalysis
+@inherits FluentTextField
+
+@{
+    base.BuildRenderTree(__builder);
+}
+
+@code {
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        //InputMode = Microsoft.FluentUI.AspNetCore.Components.InputMode.Decimal;
+        //TextFieldType = Microsoft.FluentUI.AspNetCore.Components.TextFieldType.Number;
+        // ValueChanged = EventCallback.Factory.Create<string?>(this, (value) =>
+        // {
+        //     var decimalValue = UIUtils.ConvertTextToDecimal(value);
+        //     //Value = decimalValue.ToString("n2");
+        //     //CurrentValue = decimalValue.ToString("n2");
+        //     //CurrentValueAsString = decimalValue.ToString("n2");
+        //     SetValue(decimalValue.ToString("n2"));
+        //     SetCurrentValueAsync(decimalValue.ToString("n2"));
+        //     SetCurrentValueAsStringAsync(decimalValue.ToString("n2"));
+        // });
+        //ValueChanged = SetValue;
+
+
+    }
+
+    protected override bool TryParseValueFromString(string? value, out string? result, [NotNullWhen(false)] out string? validationErrorMessage)
+    {
+        var decimalValue = UIUtils.ConvertTextToDecimal(value);
+        result = decimalValue.ToString("n2");
+        validationErrorMessage = null;
+        return true;
+    }
+
+    protected override string FormatValueAsString(string value)
+    {
+        return base.FormatValueAsString(value);
+    }
+
+    // protected override string? FormatValueAsString<TValue?>(TValue? value) where TValue : class
+    // {
+    //     var decimalValue = UIUtils.ConvertTextToDecimal(value);
+    //     return decimalValue.ToString("n2");
+    // }
+
+
+
+    // /// <summary>
+    // /// Formats the value as a string. Derived classes can override this to determine the formatting used for <c>CurrentValueAsString</c>.
+    // /// </summary>
+    // /// <param name = "value">The value to format.</param>
+    // /// <returns>A string representation of the value.</returns>
+    // protected override string? FormatValueAsString(string? value)
+    // {
+    //     // Avoiding a cast to IFormattable to avoid boxing.
+    //     return value switch
+    //     {
+    //         null => null,
+    //         sbyte @sbyte => BindConverter.FormatValue(Convert.ToInt16(@sbyte), CultureInfo.InvariantCulture),
+    //         int @int => BindConverter.FormatValue(@int, CultureInfo.InvariantCulture),
+    //         long @long => BindConverter.FormatValue(@long, CultureInfo.InvariantCulture),
+    //         short @short => BindConverter.FormatValue(@short, CultureInfo.InvariantCulture),
+    //         float @float => BindConverter.FormatValue(@float, CultureInfo.InvariantCulture),
+    //         double @double => BindConverter.FormatValue(@double, CultureInfo.InvariantCulture),
+    //         decimal @decimal => BindConverter.FormatValue(@decimal, CultureInfo.InvariantCulture),
+    //         _ => throw new InvalidOperationException($"Unsupported type {value.GetType()}"),
+    //     };
+    // }
+}

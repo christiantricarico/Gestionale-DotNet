@@ -28,7 +28,10 @@
                 <FluentTextArea Name="@nameof(TaxRateInputModel.Description)" Rows="3" Cols="60" @bind-Value="Model.Description" Label="Descrizione" Style="width: 100%" />
             </FluentGridItem>
             <FluentGridItem xs="4">
-                <FluentTextField Name="Rate" @bind-Value="RateStr" Label="Aliquota (%)" />
+                <FluentTextField Name="@nameof(TaxRateInputModel.Rate)" @bind-Value="RateStr" Label="Aliquota (%)" />
+            </FluentGridItem>
+            <FluentGridItem xs="4">
+                <FluentDecimalField Name="Rate2" @bind-Value="RateStr2" Label="Rate (%)" />
             </FluentGridItem>
             <FluentGridItem xs="8">
                 <FluentCombobox Items=@taxRateNatureOptions
@@ -62,12 +65,14 @@
 
     private HttpClient HttpClient => HttpClientFactory.CreateApiClientVs();
     public TaxRateInputModel Model { get; set; } = default!;
-    
+
     private string RateStr
     {
         get => Model.Rate.ToString("n2");
         set => Model.Rate = UIUtils.ConvertTextToDecimal(value);
     }
+
+    private string RateStr2 { get; set; }
 
     private EditContext _editContext = default!;
 
