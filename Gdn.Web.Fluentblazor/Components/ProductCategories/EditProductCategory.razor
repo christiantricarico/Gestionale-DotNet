@@ -45,7 +45,7 @@
 
 @code {
 
-    private HttpClient HttpClient => HttpClientFactory.CreateApiClient();
+    private HttpClient HttpClient => HttpClientFactory.CreateApiClientVs();
 
     [SupplyParameterFromForm]
     private ProductCategoryInputModel Model { get; set; } = new();
@@ -57,7 +57,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        string uri = "productcategory";
+        string uri = "productcategories";
         parentCategories = await HttpClient.GetFromJsonAsync<IEnumerable<ProductCategoryViewModel>>(uri)
             ?? Enumerable.Empty<ProductCategoryViewModel>();
 
@@ -74,7 +74,7 @@
 
         Model.ParentCategoryId = selectedParentCategoryOption?.Value;
 
-        string uri = "productcategory/create";
+        string uri = "productcategories";
         await HttpClient.PostAsJsonAsync<ProductCategoryInputModel>(uri, Model);
         Navigation.NavigateTo("productcategories");
     }

@@ -1,0 +1,35 @@
+@BaseUrl = https://localhost:7256/api/productcategories
+
+GET {{BaseUrl}}
+
+###
+
+GET {{BaseUrl}}/9
+
+###
+
+POST {{BaseUrl}}
+Content-Type: application/json
+
+{
+    "code": "PC06",
+    "name": "Product category name 6",
+    "description": "Product category description 6",
+    "parentCategoryId": null
+}
+
+###
+
+PUT {{BaseUrl}}/update
+Content-Type: application/json
+
+{
+    "id": 1,
+    "code": "PC01",
+    "name": "Product category name 1 - updated",
+    "description": "Product category description 1 - updated"
+}
+
+###
+
+DELETE {{BaseUrl}}/1
