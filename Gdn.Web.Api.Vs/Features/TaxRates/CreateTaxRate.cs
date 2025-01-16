@@ -42,7 +42,7 @@ public static class CreateTaxRate
             TaxRateNatureId = request.TaxRateNatureId
         };
 
-        await context.TaxRates.AddAsync(taxRate);
+        context.TaxRates.Add(taxRate);
         await context.SaveChangesAsync();
 
         return Results.Ok(new Response(taxRate.Id, taxRate.Code, taxRate.Name, taxRate.Description, taxRate.Rate));
