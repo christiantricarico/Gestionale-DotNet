@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
-using Gdn.Persistence;
+using Gdn.Domain.Data;
+using Gdn.Domain.Data.Repositories;
 using Gdn.Web.Api.Vs.Endpoints;
 
 namespace Gdn.Web.Api.Vs.Features.TaxRates;
@@ -26,13 +27,15 @@ public static class UpdateTaxRate
         }
     }
 
-    public static async Task<IResult> Handler(Request request, AppDbContext context, IValidator<Request> validator)
+    public static async Task<IResult> Handler(Request request, IValidator<Request> validator, IUnitOfWork unitOfWork)
     {
         var validationResult = await validator.ValidateAsync(request);
         if (!validationResult.IsValid)
             return Results.BadRequest(validationResult.Errors);
 
-        var taxRate = await context.TaxRates.FindAsync(request.Id);
+        var taxRateRepository = unitOfWork.GetRepository<ITaxRateRepository>();
+
+        var taxRate = await taxRateRepository.GetAsync(request.Id);
         if (taxRate is null)
             return Results.NotFound(TaxRateErrors.NotFound(request.Id));
 
@@ -42,7 +45,7 @@ public static class UpdateTaxRate
         taxRate.Rate = request.Rate;
         taxRate.TaxRateNatureId = request.TaxRateNatureId;
 
-        await context.SaveChangesAsync();
+        await unitOfWork.SaveChangesAsync();
 
         return Results.Ok(new Response(taxRate.Id, taxRate.Code, taxRate.Name, taxRate.Description, taxRate.Rate, taxRate.TaxRateNatureId));
     }

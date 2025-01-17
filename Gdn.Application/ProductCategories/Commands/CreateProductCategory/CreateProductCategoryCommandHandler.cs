@@ -33,7 +33,7 @@ internal sealed class CreateProductCategoryCommandHandler : IRequestHandler<Crea
             entity.Level = parentCategory!.Level + 1;
         }
 
-        await _productCategoryRepository.AddAsync(entity);
+        _productCategoryRepository.Add(entity);
         await _unitOfWork.SaveChangesAsync();
 
         return entity;

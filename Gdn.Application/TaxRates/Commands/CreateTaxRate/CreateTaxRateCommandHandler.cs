@@ -28,7 +28,7 @@ internal sealed class CreateTaxRateCommandHandler : IRequestHandler<CreateTaxRat
 
         var entity = _mapper.Map<TaxRate>(input);
 
-        await _taxRateRepository.AddAsync(entity);
+        _taxRateRepository.Add(entity);
         await _unitOfWork.SaveChangesAsync();
 
         return entity;

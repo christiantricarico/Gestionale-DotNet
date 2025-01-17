@@ -15,9 +15,9 @@ internal abstract class Repository<TEntity, TId> : IRepository<TEntity, TId>
         _dbContext = dbContext;
     }
 
-    public async Task<TEntity> AddAsync(TEntity entity)
+    public TEntity Add(TEntity entity)
     {
-        var result = await _dbContext.Set<TEntity>().AddAsync(entity);
+        var result = _dbContext.Set<TEntity>().Add(entity);
         return result.Entity;
     }
 
@@ -89,9 +89,8 @@ internal abstract class Repository<TEntity, TId> : IRepository<TEntity, TId>
             _dbContext.Set<TEntity>().Remove(entity);
     }
 
-    public async Task UpdateAsync(TEntity entity)
+    public void Update(TEntity entity)
     {
         _dbContext.Set<TEntity>().Update(entity);
-        await Task.CompletedTask;
     }
 }

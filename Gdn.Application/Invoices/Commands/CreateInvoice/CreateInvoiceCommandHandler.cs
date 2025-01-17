@@ -26,7 +26,7 @@ internal sealed class CreateInvoiceCommandHandler : IRequestHandler<CreateInvoic
 
         var entity = _mapper.Map<Invoice>(input);
 
-        await _invoiceRepository.AddAsync(entity);
+        _invoiceRepository.Add(entity);
         await _unitOfWork.SaveChangesAsync();
 
         return entity;

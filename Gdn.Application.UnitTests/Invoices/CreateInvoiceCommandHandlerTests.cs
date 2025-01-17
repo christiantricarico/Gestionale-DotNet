@@ -37,13 +37,13 @@ public class CreateInvoiceCommandHandlerTests
         var invoice = new Invoice();
 
         _unitOfWorkMock.Setup(u => u.GetRepository<IInvoiceRepository>()).Returns(_invoiceRepositoryMock.Object);
-        _invoiceRepositoryMock.Setup(r => r.AddAsync(It.IsAny<Invoice>())).Returns(Task.FromResult(invoice));
+        _invoiceRepositoryMock.Setup(r => r.Add(It.IsAny<Invoice>())).Returns(Task.FromResult(invoice));
 
         // Act
         var result = await handler.Handle(command, CancellationToken.None);
 
         // Assert
-        _invoiceRepositoryMock.Verify(r => r.AddAsync(It.IsAny<Invoice>()), Times.Once);
+        _invoiceRepositoryMock.Verify(r => r.Add(It.IsAny<Invoice>()), Times.Once);
         _unitOfWorkMock.Verify(u => u.SaveChangesAsync(), Times.Once);
         Assert.IsNotNull(result);
         Assert.IsInstanceOfType(result, typeof(Result<Invoice>)); // Assuming Result<T> is the expected return type

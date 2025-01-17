@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
+using Gdn.Domain.Data;
+using Gdn.Domain.Data.Repositories;
 using Gdn.Domain.Models;
-using Gdn.Persistence;
 using Gdn.Web.Api.Vs.Endpoints;
 
 namespace Gdn.Web.Api.Vs.Features.TaxRates;
@@ -27,7 +28,7 @@ public static class CreateTaxRate
         }
     }
 
-    public static async Task<IResult> Handler(Request request, AppDbContext context, IValidator<Request> validator)
+    public static async Task<IResult> Handler(Request request, IValidator<Request> validator, IUnitOfWork unitOfWork)
     {
         var validationResult = await validator.ValidateAsync(request);
         if (!validationResult.IsValid)
@@ -42,8 +43,9 @@ public static class CreateTaxRate
             TaxRateNatureId = request.TaxRateNatureId
         };
 
-        context.TaxRates.Add(taxRate);
-        await context.SaveChangesAsync();
+        var taxRateRepository = unitOfWork.GetRepository<ITaxRateRepository>();
+        taxRateRepository.Add(taxRate);
+        await unitOfWork.SaveChangesAsync();
 
         return Results.Ok(new Response(taxRate.Id, taxRate.Code, taxRate.Name, taxRate.Description, taxRate.Rate));
     }

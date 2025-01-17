@@ -6,12 +6,12 @@ public interface IRepository<TEntity, TId>
     where TEntity : BaseEntity<TId>
     where TId : struct
 {
-    Task<TEntity> AddAsync(TEntity entity);
+    TEntity Add(TEntity entity);
     Task RemoveAsync(TId id);
     Task<TEntity?> GetAsync(TId id);
     Task<TEntity?> GetAsync(TId id, IEnumerable<string> includes);
     Task<IEnumerable<TEntity>> GetAllAsync();
     Task<IEnumerable<TEntity>> GetAllAsync(IEnumerable<string> includes);
     Task<IEnumerable<TEntity>> GetAllAsync(Func<TEntity, bool>? predicate = null, IEnumerable<string>? includes = null);
-    Task UpdateAsync(TEntity entity);
+    void Update(TEntity entity);
 }

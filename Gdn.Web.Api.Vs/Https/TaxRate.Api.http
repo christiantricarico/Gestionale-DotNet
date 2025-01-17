@@ -1,19 +1,14 @@
-@Gdn.Web.Api.Vs_HostAddress = https://localhost:7256/api
+@BaseUrl = https://localhost:7256/api/taxrates
 
-GET {{Gdn.Web.Api.Vs_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###
-
-GET {{Gdn.Web.Api.Vs_HostAddress}}/taxrates/
+GET {{BaseUrl}}
 
 ###
 
-GET {{Gdn.Web.Api.Vs_HostAddress}}/taxrates/1
+GET {{BaseUrl}}/1
 
 ###
 
-POST {{Gdn.Web.Api.Vs_HostAddress}}/taxrates/
+POST {{BaseUrl}}
 Content-Type: application/json
 
 {
@@ -25,7 +20,7 @@ Content-Type: application/json
 
 ###
 
-PUT {{Gdn.Web.Api.Vs_HostAddress}}/taxrates/
+PUT {{BaseUrl}}
 Content-Type: application/json
 
 {

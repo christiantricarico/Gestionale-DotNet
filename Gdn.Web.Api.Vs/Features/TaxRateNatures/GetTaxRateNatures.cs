@@ -1,6 +1,5 @@
-﻿using Gdn.Persistence;
+﻿using Gdn.Domain.Data.Repositories;
 using Gdn.Web.Api.Vs.Endpoints;
-using Microsoft.EntityFrameworkCore;
 
 namespace Gdn.Web.Api.Vs.Features.TaxRateNatures;
 
@@ -16,12 +15,11 @@ public static class GetTaxRateNatures
         }
     }
 
-    public static async Task<IResult> Handler(AppDbContext context)
+    public static async Task<IResult> Handler(ITaxRateNatureRepository taxRateNatureRepository)
     {
-        var taxRates = await context.TaxRateNatures
-            .Select(e => new Response(e.Id, e.Code, e.Name))
-            .ToListAsync();
+        var data = await taxRateNatureRepository.GetAllAsync();
+        var responseData = data.Select(e => new Response(e.Id, e.Code, e.Name));
 
-        return TypedResults.Ok(taxRates);
+        return TypedResults.Ok(responseData);
     }
 }

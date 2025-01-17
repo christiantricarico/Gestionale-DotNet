@@ -26,7 +26,7 @@ internal sealed class CreateProductCommandHandler : IRequestHandler<CreateProduc
 
         var entity = _mapper.Map<Product>(input);
 
-        await _productRepository.AddAsync(entity);
+        _productRepository.Add(entity);
         await _unitOfWork.SaveChangesAsync();
 
         return entity;
