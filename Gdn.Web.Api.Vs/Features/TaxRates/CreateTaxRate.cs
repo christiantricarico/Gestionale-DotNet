@@ -6,7 +6,7 @@ using Gdn.Web.Api.Vs.Endpoints;
 
 namespace Gdn.Web.Api.Vs.Features.TaxRates;
 
-public static class CreateTaxRate
+public class CreateTaxRate
 {
     public record Request(string Code, string? Name, string? Description, decimal Rate, int? TaxRateNatureId);
     public record Response(int Id, string Code, string? Name, string? Description, decimal Rate);
@@ -28,7 +28,7 @@ public static class CreateTaxRate
         }
     }
 
-    public static async Task<IResult> Handler(Request request, IValidator<Request> validator, IUnitOfWork unitOfWork)
+    private static async Task<IResult> Handler(Request request, IValidator<Request> validator, IUnitOfWork unitOfWork)
     {
         var validationResult = await validator.ValidateAsync(request);
         if (!validationResult.IsValid)

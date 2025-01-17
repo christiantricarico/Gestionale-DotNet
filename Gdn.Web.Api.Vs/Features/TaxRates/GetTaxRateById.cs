@@ -3,7 +3,7 @@ using Gdn.Web.Api.Vs.Endpoints;
 
 namespace Gdn.Web.Api.Vs.Features.TaxRates;
 
-public static class GetTaxRateById
+public class GetTaxRateById
 {
     public record Response(int Id, string Code, string? Name, string? Description, decimal Rate, int? TaxRateNatureId);
 
@@ -15,7 +15,7 @@ public static class GetTaxRateById
         }
     }
 
-    public static async Task<IResult> Handler(ITaxRateRepository taxRateRepository, int id)
+    private static async Task<IResult> Handler(ITaxRateRepository taxRateRepository, int id)
     {
         var data = await taxRateRepository.GetAsync(id);
 
