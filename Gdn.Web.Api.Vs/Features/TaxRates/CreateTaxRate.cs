@@ -32,7 +32,7 @@ public class CreateTaxRate
     {
         var validationResult = await validator.ValidateAsync(request);
         if (!validationResult.IsValid)
-            return Results.BadRequest(validationResult.Errors);
+            return ResultHelper.BadRequest(validationResult.Errors);
 
         var taxRate = new TaxRate
         {
@@ -47,6 +47,6 @@ public class CreateTaxRate
         taxRateRepository.Add(taxRate);
         await unitOfWork.SaveChangesAsync();
 
-        return Results.Ok(new Response(taxRate.Id, taxRate.Code, taxRate.Name, taxRate.Description, taxRate.Rate));
+        return ResultHelper.Created(new Response(taxRate.Id, taxRate.Code, taxRate.Name, taxRate.Description, taxRate.Rate));
     }
 }

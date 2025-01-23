@@ -20,6 +20,6 @@ public class GetTaxRates
         var data = await taxRateRepository.GetAllAsync();
         var responseData = data.Select(e => new Response(e.Id, e.Code, e.Name, e.Description, e.Rate, e.TaxRateNatureId));
 
-        return TypedResults.Ok(responseData);
+        return ResultHelper.Ok(responseData);
     }
 }

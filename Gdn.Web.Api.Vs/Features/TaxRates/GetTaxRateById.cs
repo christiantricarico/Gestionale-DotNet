@@ -20,7 +20,7 @@ public class GetTaxRateById
         var data = await taxRateRepository.GetAsync(id);
 
         return data is not null
-            ? TypedResults.Ok(new Response(data.Id, data.Code, data.Name, data.Description, data.Rate, data.TaxRateNatureId))
-            : TypedResults.NotFound();
+            ? ResultHelper.Ok(new Response(data.Id, data.Code, data.Name, data.Description, data.Rate, data.TaxRateNatureId))
+            : ResultHelper.NotFound();
     }
 }

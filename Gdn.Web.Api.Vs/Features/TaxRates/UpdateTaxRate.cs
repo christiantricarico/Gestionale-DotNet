@@ -31,13 +31,13 @@ public class UpdateTaxRate
     {
         var validationResult = await validator.ValidateAsync(request);
         if (!validationResult.IsValid)
-            return Results.BadRequest(validationResult.Errors);
+            return ResultHelper.BadRequest(validationResult.Errors);
 
         var taxRateRepository = unitOfWork.GetRepository<ITaxRateRepository>();
 
         var taxRate = await taxRateRepository.GetAsync(request.Id);
         if (taxRate is null)
-            return Results.NotFound(TaxRateErrors.NotFound(request.Id));
+            return ResultHelper.NotFound(TaxRateErrors.NotFound(request.Id));
 
         taxRate.Code = request.Code;
         taxRate.Name = request.Name;
@@ -47,6 +47,6 @@ public class UpdateTaxRate
 
         await unitOfWork.SaveChangesAsync();
 
-        return Results.Ok(new Response(taxRate.Id, taxRate.Code, taxRate.Name, taxRate.Description, taxRate.Rate, taxRate.TaxRateNatureId));
+        return ResultHelper.Ok(new Response(taxRate.Id, taxRate.Code, taxRate.Name, taxRate.Description, taxRate.Rate, taxRate.TaxRateNatureId));
     }
 }
