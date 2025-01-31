@@ -6,7 +6,7 @@ public class TaxRateInputModel
 {
     public int? Id { get; set; }
 
-    [Required]
+    [Required(ErrorMessage = "Codice richiesto.")]
     [StringLength(10)]
     public string Code { get; set; } = default!;
 

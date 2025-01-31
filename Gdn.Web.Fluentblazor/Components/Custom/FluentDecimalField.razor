@@ -1,4 +1,4 @@
-﻿<FluentTextField @bind-Value="StringValue" Name="@Name" Label="@Label" />
+﻿<FluentTextField @bind-Value="StringValue" Name="@Name" Label="@Label" Required="@Required" />
 
 @code {
 
@@ -9,6 +9,9 @@
     public string? Label { get; set; }
 
     [Parameter]
+    public bool Required { get; set; }
+
+    [Parameter]
     public decimal DecimalValue { get; set; }
 
     [Parameter]
@@ -17,6 +20,10 @@
     private string? StringValue
     {
         get => DecimalValue.ToString("n2");
-        set => DecimalValue = UIUtils.ConvertTextToDecimal(value);
+        set 
+        { 
+            DecimalValue = UIUtils.ConvertTextToDecimal(value);
+            DecimalValueChanged.InvokeAsync(DecimalValue);
+        }
     }
 }
