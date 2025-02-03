@@ -34,19 +34,22 @@ public class CreateTaxRate
         if (!validationResult.IsValid)
             return ResultHelper.BadRequest(validationResult.Errors);
 
-        var taxRate = new TaxRate
-        {
-            Code = request.Code,
-            Name = request.Name,
-            Description = request.Description,
-            Rate = request.Rate,
-            TaxRateNatureId = request.TaxRateNatureId
-        };
+        var taxRate = MapTaxRate(request);
 
         var taxRateRepository = unitOfWork.GetRepository<ITaxRateRepository>();
         taxRateRepository.Add(taxRate);
+
         await unitOfWork.SaveChangesAsync();
 
         return ResultHelper.Created(new Response(taxRate.Id, taxRate.Code, taxRate.Name, taxRate.Description, taxRate.Rate));
     }
+
+    private static TaxRate MapTaxRate(Request request) => new()
+    {
+        Code = request.Code,
+        Name = request.Name,
+        Description = request.Description,
+        Rate = request.Rate,
+        TaxRateNatureId = request.TaxRateNatureId
+    };
 }

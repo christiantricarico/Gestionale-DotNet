@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using Gdn.Domain.Data;
 using Gdn.Domain.Data.Repositories;
+using Gdn.Domain.Models;
 using Gdn.Web.Api.Vs.Endpoints;
 
 namespace Gdn.Web.Api.Vs.Features.TaxRates;
@@ -39,14 +40,22 @@ public class UpdateTaxRate
         if (taxRate is null)
             return ResultHelper.NotFound(TaxRateErrors.NotFound(request.Id));
 
+        MapTaxRate(taxRate, request);
+
+        await unitOfWork.SaveChangesAsync();
+
+        return ResultHelper.Ok(MapResponse(taxRate));
+    }
+
+    private static void MapTaxRate(TaxRate taxRate, Request request)
+    {
         taxRate.Code = request.Code;
         taxRate.Name = request.Name;
         taxRate.Description = request.Description;
         taxRate.Rate = request.Rate;
         taxRate.TaxRateNatureId = request.TaxRateNatureId;
-
-        await unitOfWork.SaveChangesAsync();
-
-        return ResultHelper.Ok(new Response(taxRate.Id, taxRate.Code, taxRate.Name, taxRate.Description, taxRate.Rate, taxRate.TaxRateNatureId));
     }
+
+    private static Response MapResponse(TaxRate taxRate) =>
+        new(taxRate.Id, taxRate.Code, taxRate.Name, taxRate.Description, taxRate.Rate, taxRate.TaxRateNatureId);
 }

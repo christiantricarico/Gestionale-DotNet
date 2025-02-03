@@ -4,7 +4,7 @@ GET {{BaseUrl}}
 
 ###
 
-GET {{BaseUrl}}/1
+GET {{BaseUrl}}/15
 
 ###
 
@@ -15,7 +15,21 @@ Content-Type: application/json
     "code": "TR02",
     "name": "Tax rate name 2",
     "description": "Tax rate description 2",
-    "rate": 10
+    "rate": 10,
+    "taxRateNatureId": null
+}
+
+###
+
+POST {{BaseUrl}}
+Content-Type: application/json
+
+{
+    "code": "TR02",
+    "name": "Tax rate name 2",
+    "description": "Tax rate description 2",
+    "rate": 0,
+    "taxRateNatureId": 1
 }
 
 ###
