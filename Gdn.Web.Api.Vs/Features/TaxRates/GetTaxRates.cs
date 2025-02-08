@@ -6,7 +6,8 @@ namespace Gdn.Web.Api.Vs.Features.TaxRates;
 
 public class GetTaxRates
 {
-    public record Response(int Id, string Code, string? Name, string? Description, decimal Rate, int? TaxRateNatureId);
+    public record Response(int Id, string Code, string? Name, string? Description, decimal Rate,
+        int? TaxRateNatureId, string? TaxRateNatureName);
 
     public sealed class Endpoint : IEndpoint
     {
@@ -18,7 +19,8 @@ public class GetTaxRates
 
     private static async Task<IResult> Handler(ITaxRateRepository taxRateRepository)
     {
-        var data = await taxRateRepository.GetAllAsync();
+        var includes = new string[] { "TaxRateNature" };
+        var data = await taxRateRepository.GetAllAsync(includes);
         var responseData = data.Select(e => MapResponse(e));
 
         return ResultHelper.Ok(responseData);
@@ -26,6 +28,7 @@ public class GetTaxRates
 
     private static Response MapResponse(TaxRate entity)
     {
-        return new(entity.Id, entity.Code, entity.Name, entity.Description, entity.Rate, entity.TaxRateNatureId);
+        return new(entity.Id, entity.Code, entity.Name, entity.Description, entity.Rate / 100,
+            entity.TaxRateNatureId, entity.TaxRateNature?.Name);
     }
 }
