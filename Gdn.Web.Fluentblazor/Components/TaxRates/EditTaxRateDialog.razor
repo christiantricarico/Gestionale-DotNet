@@ -28,7 +28,8 @@
                     <FluentTextArea Name="@nameof(TaxRateInputModel.Description)" Rows="3" Cols="60" @bind-Value="Model.Description" Label="Descrizione" Style="width: 100%" />
                 </FluentGridItem>
                 <FluentGridItem xs="4">
-                    <FluentDecimalField Name="@nameof(TaxRateInputModel.Rate)" Label="Aliquota (%)" @bind-DecimalValue="Model.Rate" Required="true" />
+                    <FluentDecimalField Name="@nameof(TaxRateInputModel.Rate)" Label="Aliquota (%)" Required="true"
+                                        @bind-DecimalValue="Model.Rate" />
                 </FluentGridItem>
                 <FluentGridItem xs="8">
                     <FluentCombobox Items=@_taxRateNatureOptions
@@ -39,7 +40,6 @@
                                     Label="Natura Iva" Style="width: 100%" Height="200px"
                                     Autocomplete="ComboboxAutocomplete.Both"
                                     @bind-SelectedOption="@_selectedTaxRateNatureOption"
-                                    @bind-Value="@_taxRateNatureValue"
                                     Disabled="Model.Rate != 0" />
                 </FluentGridItem>
             </FluentGrid>
@@ -120,12 +120,22 @@
         }
     }
 
+    private void RateChanged(decimal rate)
+    {
+        Model!.Rate = rate;
+
+        if (rate != 0 && _selectedTaxRateNatureOption is not null)
+        {
+            _selectedTaxRateNatureOption.Selected = false;
+        }
+    }
+
     private void HandleValidationRequested(object? sender, ValidationRequestedEventArgs args)
     {
         _messageStore?.Clear();
 
         // Custom validation logic
-        if (Model.Rate == 0 && _selectedTaxRateNatureOption is null)
+        if (Model!.Rate == 0 && _selectedTaxRateNatureOption is null)
         {
             var fieldIdentifier = new FieldIdentifier(Model, nameof(Model.TaxRateNatureId));
             _messageStore?.Add(fieldIdentifier, "Se Aliquota è 0 devi indicare una Natura Iva.");
