@@ -15,7 +15,7 @@
         <PropertyColumn Property="@(p => p.Rate)" Sortable="true" Format="p0" Align="Align.End" />
         <PropertyColumn Property="@(p => p.TaxRateNatureName)" Sortable="true" />
         <TemplateColumn Title="Azioni" Align="@Align.End">
-            <FluentButton aria-label="Modifica" IconEnd="@(new Icons.Regular.Size16.Edit())" OnClick="@(() => Console.WriteLine("Edit clicked"))" />
+            <FluentButton aria-label="Modifica" IconEnd="@(new Icons.Regular.Size16.Edit())" OnClick="@(() => EditButtonClick(context))" />
             <FluentButton aria-label="Elimina" IconEnd="@(new Icons.Regular.Size16.Delete())" OnClick="@(() => Console.WriteLine("Delete clicked"))" />
         </TemplateColumn>
     </FluentDataGrid>
@@ -27,10 +27,15 @@
 
     IEnumerable<TaxRateViewModel>? taxRates;
 
-    protected override async Task OnInitializedAsync()
+    private async Task ReloadGrid()
     {
         string uri = "taxrates";
         taxRates = await HttpClient.GetFromJsonAsync<IEnumerable<TaxRateViewModel>>(uri);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ReloadGrid();
     }
 
     private async Task CreateButtonClick()
@@ -47,16 +52,16 @@
         var dialog = await DialogService.ShowDialogAsync<EditTaxRateDialog>(content, parameters);
 
         var result = await dialog.Result;
-        if (!result.Cancelled && result.Data != null)
+        if (!result.Cancelled)
         {
-            model = (TaxRateInputModel)result.Data;
+            await ReloadGrid();
         }
     }
 
-    private async Task EditButtonClick()
+    private async Task EditButtonClick(TaxRateViewModel context)
     {
         TaxRateInputModel model = new();
-        DialogContent content = new(); 
+        DialogContent content = new() { Id = context.Id }; 
         DialogParameters parameters = new()
             {
                 Title = $"Modifica Aliquota Iva",
@@ -67,9 +72,9 @@
         var dialog = await DialogService.ShowDialogAsync<EditTaxRateDialog>(content, parameters);
 
         var result = await dialog.Result;
-        if (!result.Cancelled && result.Data != null)
+        if (!result.Cancelled)
         {
-            model = (TaxRateInputModel)result.Data;
+            await ReloadGrid(); 
         }
     }
 }
