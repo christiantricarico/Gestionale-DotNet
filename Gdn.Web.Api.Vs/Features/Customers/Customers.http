@@ -1,0 +1,44 @@
+@BaseUrl = https://localhost:7256/api/customers
+
+GET {{BaseUrl}}
+
+###
+
+GET {{BaseUrl}}/1
+
+###
+
+POST {{BaseUrl}}
+Content-Type: application/json
+
+{
+    "code": "CUS001",
+    "name": "Customer 1",
+    "description": "Customer description 1"
+}
+
+###
+
+POST {{BaseUrl}}
+Content-Type: application/json
+
+{
+    "code": "CUS001",
+    "name": "Customer 1 - updated",
+    "description": "Customer description 1 - updated"
+}
+
+###
+
+PUT {{BaseUrl}}
+Content-Type: application/json
+
+{
+    "id": 1,
+    "code": "TR01",
+    "name": "Tax rate name 1 - updated",
+    "description": "Tax rate description 1 - updated",
+    "rate": 22
+}
+
+###
