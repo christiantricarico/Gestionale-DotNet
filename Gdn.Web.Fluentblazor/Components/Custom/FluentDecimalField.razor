@@ -1,10 +1,11 @@
-﻿<FluentTextField @bind-Value="StringValue" Name="@Name" Label="@Label" Required="@Required" />
+﻿<FluentTextField Name="@Name" Label="@Label" Required="@Required"
+                 @bind-Value="@StringValue" />
 
 @code {
 
     [Parameter]
     public string? Name { get; set; }
-    
+
     [Parameter]
     public string? Label { get; set; }
 
@@ -19,11 +20,34 @@
 
     private string? StringValue
     {
-        get => DecimalValue.ToString("n2");
-        set 
-        { 
+        get
+        {
+            return DecimalValue.ToString("n2");
+        }
+        set
+        {
             DecimalValue = UIUtils.ConvertTextToDecimal(value);
             DecimalValueChanged.InvokeAsync(DecimalValue);
         }
     }
+
+    // private string _stringValue;
+
+    // private async Task StringValueChanged(string value)
+    // {
+    //     //var decimalValue = UIUtils.ConvertTextToDecimal(value);
+    //     if (decimal.TryParse(value, out var result))
+    //     {
+    //         DecimalValue = result;
+    //     }
+    //     else
+    //     {
+    //         DecimalValue = 0;
+    //     }
+
+    //     _stringValue = DecimalValue.ToString("n2");
+    //     await InvokeAsync(StateHasChanged);
+    //     //return DecimalValueChanged.InvokeAsync(DecimalValue);
+    //     //StateHasChanged();
+    // }
 }

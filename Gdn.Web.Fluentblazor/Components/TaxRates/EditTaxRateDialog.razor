@@ -29,7 +29,7 @@
                 </FluentGridItem>
                 <FluentGridItem xs="4">
                     <FluentDecimalField Name="@nameof(TaxRateInputModel.Rate)" Label="Aliquota (%)" Required="true"
-                                        @bind-DecimalValue="Model.Rate" />
+                                        DecimalValue="Model.Rate" DecimalValueChanged="RateChanged" />
                 </FluentGridItem>
                 <FluentGridItem xs="8">
                     <FluentCombobox Items=@_taxRateNatureOptions
@@ -127,6 +127,7 @@
         if (rate != 0 && _selectedTaxRateNatureOption is not null)
         {
             _selectedTaxRateNatureOption.Selected = false;
+            _selectedTaxRateNatureOption = null;
         }
     }
 
