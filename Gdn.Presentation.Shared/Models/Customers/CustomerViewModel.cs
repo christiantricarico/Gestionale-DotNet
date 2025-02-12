@@ -1,0 +1,17 @@
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Gdn.Presentation.Shared.Models.Customers;
+
+public class CustomerViewModel
+{
+    public int Id { get; set; }
+
+    [Display(Name = "Codice")]
+    public string Code { get; set; } = default!;
+
+    [Display(Name = "Nome")]
+    public string? Name { get; set; }
+
+    [Display(Name = "Descrizione")]
+    public string? Description { get; set; }
+}

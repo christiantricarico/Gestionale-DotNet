@@ -23,9 +23,9 @@ POST {{BaseUrl}}
 Content-Type: application/json
 
 {
-    "code": "CUS001",
-    "name": "Customer 1 - updated",
-    "description": "Customer description 1 - updated"
+    "code": "CUS002",
+    "name": "Customer 2",
+    "description": "Customer description 2"
 }
 
 ###
@@ -35,10 +35,9 @@ Content-Type: application/json
 
 {
     "id": 1,
-    "code": "TR01",
-    "name": "Tax rate name 1 - updated",
-    "description": "Tax rate description 1 - updated",
-    "rate": 22
+    "code": "CUS001",
+    "name": "Customer 1 - updated",
+    "description": "Customer description 1 - updated"
 }
 
 ###
