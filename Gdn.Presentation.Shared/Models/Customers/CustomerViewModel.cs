@@ -14,4 +14,10 @@ public class CustomerViewModel
 
     [Display(Name = "Descrizione")]
     public string? Description { get; set; }
+
+    [Display(Name = "Codice fiscale")]
+    public string? FiscalCode { get; set; }
+
+    [Display(Name = "Partita iva")]
+    public string? VatNumber { get; set; }
 }

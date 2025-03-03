@@ -14,7 +14,9 @@ Content-Type: application/json
 {
     "code": "CUS001",
     "name": "Customer 1",
-    "description": "Customer description 1"
+    "description": "Customer description 1",
+    "fiscalCode": null,
+    "vatNumber": "04429150750"
 }
 
 ###
@@ -37,7 +39,9 @@ Content-Type: application/json
     "id": 1,
     "code": "CUS001",
     "name": "Customer 1 - updated",
-    "description": "Customer description 1 - updated"
+    "description": "Customer description 1 - updated",
+    "fiscalCode": "TRCCRS83L08D883Q",
+    "vatNumber": "04429150750"
 }
 
 ###

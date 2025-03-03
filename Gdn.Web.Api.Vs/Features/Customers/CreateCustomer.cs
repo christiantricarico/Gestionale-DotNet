@@ -8,8 +8,8 @@ namespace Gdn.Web.Api.Vs.Features.Customers;
 
 public class CreateCustomer
 {
-    public record Request(string Code, string? Name, string? Description);
-    public record Response(int Id, string Code, string? Name, string? Description);
+    public record Request(string Code, string? Name, string? Description, string? FiscalCode, string? VatNumber);
+    public record Response(int Id, string Code, string? Name, string? Description, string? FiscalCode, string? VatNumber);
 
     public sealed class Endpoint : IEndpoint
     {
@@ -41,13 +41,16 @@ public class CreateCustomer
 
         await unitOfWork.SaveChangesAsync();
 
-        return ResultHelper.Created(new Response(customer.Id, customer.Code, customer.Name, customer.Description));
+        return ResultHelper.Created(new Response(customer.Id, customer.Code, customer.Name, customer.Description,
+            customer.FiscalCode, customer.VatNumber));
     }
 
     private static Customer MapCustomer(Request request) => new()
     {
         Code = request.Code,
         Name = request.Name,
-        Description = request.Description
+        Description = request.Description,
+        FiscalCode = request.FiscalCode,
+        VatNumber = request.VatNumber
     };
 }

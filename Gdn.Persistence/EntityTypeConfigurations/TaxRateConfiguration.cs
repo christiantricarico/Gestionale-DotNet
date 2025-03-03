@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Gdn.Persistence.EntityTypeConfigurations;
 
-public class TaxRateConfiguration : IEntityTypeConfiguration<TaxRate>
+internal class TaxRateConfiguration : IEntityTypeConfiguration<TaxRate>
 {
     public void Configure(EntityTypeBuilder<TaxRate> builder)
     {

@@ -19,13 +19,19 @@
 
             <FluentGrid Spacing="1">
                 <FluentGridItem xs="12">
-                    <FluentTextField Name="@nameof(TaxRateInputModel.Code)" @bind-Value="Model.Code" Label="Codice" Autofocus="true" Required="true" />
+                    <FluentTextField Name="@nameof(CustomerInputModel.Code)" @bind-Value="Model.Code" Label="Codice" Autofocus="true" Required="true" />
                 </FluentGridItem>
                 <FluentGridItem xs="12">
-                    <FluentTextField Name="@nameof(TaxRateInputModel.Name)" @bind-Value="Model.Name" Label="Nome" Style="width: 100%" />
+                    <FluentTextField Name="@nameof(CustomerInputModel.Name)" @bind-Value="Model.Name" Label="Nome" Style="width: 100%" />
                 </FluentGridItem>
                 <FluentGridItem xs="12">
-                    <FluentTextArea Name="@nameof(TaxRateInputModel.Description)" Rows="3" Cols="60" @bind-Value="Model.Description" Label="Descrizione" Style="width: 100%" />
+                    <FluentTextArea Name="@nameof(CustomerInputModel.Description)" Rows="3" Cols="60" @bind-Value="Model.Description" Label="Descrizione" Style="width: 100%" />
+                </FluentGridItem>
+                <FluentGridItem xs="12" sm="6">
+                    <FluentTextField Name="@nameof(CustomerInputModel.FiscalCode)" @bind-Value="Model.FiscalCode" Label="Codice fiscale" />
+                </FluentGridItem>
+                <FluentGridItem xs="12" sm="6">
+                    <FluentTextField Name="@nameof(CustomerInputModel.VatNumber)" @bind-Value="Model.VatNumber" Label="Partita Iva" />
                 </FluentGridItem>
             </FluentGrid>
         </EditForm>

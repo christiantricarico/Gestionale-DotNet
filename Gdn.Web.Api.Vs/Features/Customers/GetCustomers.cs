@@ -6,7 +6,7 @@ namespace Gdn.Web.Api.Vs.Features.Customers;
 
 public class GetCustomers
 {
-    public record Response(int Id, string Code, string? Name, string? Description);
+    public record Response(int Id, string Code, string? Name, string? Description, string? FiscalCode, string? VatNumber);
 
     public sealed class Endpoint : IEndpoint
     {
@@ -26,6 +26,6 @@ public class GetCustomers
 
     private static Response MapResponse(Customer entity)
     {
-        return new(entity.Id, entity.Code, entity.Name, entity.Description);
+        return new(entity.Id, entity.Code, entity.Name, entity.Description, entity.FiscalCode, entity.VatNumber);
     }
 }

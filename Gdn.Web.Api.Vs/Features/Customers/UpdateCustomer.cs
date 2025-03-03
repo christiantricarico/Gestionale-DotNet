@@ -8,8 +8,8 @@ namespace Gdn.Web.Api.Vs.Features.Customers;
 
 public class UpdateCustomer
 {
-    public record Request(int Id, string Code, string? Name, string? Description);
-    public record Response(int Id, string Code, string? Name, string? Description);
+    public record Request(int Id, string Code, string? Name, string? Description, string? FiscalCode, string? VatNumber);
+    public record Response(int Id, string Code, string? Name, string? Description, string? FiscalCode, string? VatNumber);
 
     public sealed class Endpoint : IEndpoint
     {
@@ -52,8 +52,10 @@ public class UpdateCustomer
         customer.Code = request.Code;
         customer.Name = request.Name;
         customer.Description = request.Description;
+        customer.FiscalCode = request.FiscalCode;
+        customer.VatNumber = request.VatNumber;
     }
 
     private static Response MapResponse(Customer entity) =>
-        new(entity.Id, entity.Code, entity.Name, entity.Description);
+        new(entity.Id, entity.Code, entity.Name, entity.Description, entity.FiscalCode, entity.VatNumber);
 }

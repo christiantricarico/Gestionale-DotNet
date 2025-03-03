@@ -14,4 +14,6 @@ public class CustomerInputModel
     public string? Name { get; set; }
 
     public string? Description { get; set; }
+    public string? FiscalCode { get; set; }
+    public string? VatNumber { get; set; }
 }
