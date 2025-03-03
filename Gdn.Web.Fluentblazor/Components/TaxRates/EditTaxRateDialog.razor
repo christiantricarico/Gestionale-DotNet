@@ -111,10 +111,10 @@
             Model!.TaxRateNatureId = _selectedTaxRateNatureOption?.Value;
 
             string uri = "taxrates";
-            if (Model.Id == 0)
-                await HttpClient.PostAsJsonAsync<TaxRateInputModel>(uri, Model);
-            else
+            if (Model.Id.HasValue)
                 await HttpClient.PutAsJsonAsync<TaxRateInputModel>(uri, Model);
+            else
+                await HttpClient.PostAsJsonAsync<TaxRateInputModel>(uri, Model);
 
             await Dialog.CloseAsync(Model);
         }

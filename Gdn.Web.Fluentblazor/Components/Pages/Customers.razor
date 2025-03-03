@@ -16,7 +16,7 @@
         <PropertyColumn Property="@(p => p.VatNumber)" Sortable="true" />
         <TemplateColumn Title="Azioni" Align="@Align.End">
             <FluentButton aria-label="Modifica" IconEnd="@(new Icons.Regular.Size16.Edit())" OnClick="@(() => EditButtonClick(context))" />
-            <FluentButton aria-label="Elimina" IconEnd="@(new Icons.Regular.Size16.Delete())" OnClick="@(() => Console.WriteLine("Delete clicked"))" />
+            <FluentButton aria-label="Elimina" IconEnd="@(new Icons.Regular.Size16.Delete())" OnClick="@(() => DeleteButtonClick(context))" />
         </TemplateColumn>
     </FluentDataGrid>
 }
@@ -76,5 +76,17 @@
         {
             await ReloadGrid();
         }
+    }
+
+    private async Task DeleteButtonClick(CustomerViewModel context)
+    {
+        var dialog = await DialogService.ShowConfirmationAsync("Sei sicuro di voler eliminare questo elemento?", "Sì", "No", "Eliminazione");
+        var result = await dialog.Result;
+        if (result.Cancelled)
+            return;
+
+        string uri = $"customers/{context.Id}";
+        await HttpClient.DeleteAsync(uri);
+        await ReloadGrid();
     }
 }

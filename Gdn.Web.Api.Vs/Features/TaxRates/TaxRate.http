@@ -46,3 +46,7 @@ Content-Type: application/json
 }
 
 ###
+
+DELETE {{BaseUrl}}/1
+
+###
