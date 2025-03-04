@@ -27,6 +27,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gdn.Application.UnitTests",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gdn.Web.Api.Vs", "Gdn.Web.Api.Vs\Gdn.Web.Api.Vs.csproj", "{238ED545-CC95-4F55-9717-277CB172163A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gdn.AppHost", "Gdn.AppHost\Gdn.AppHost.csproj", "{A78BAFC3-AFBE-4356-92F4-3EB9BF298F1E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gdn.ServiceDefaults", "Gdn.ServiceDefaults\Gdn.ServiceDefaults.csproj", "{D2113C46-E4B2-985A-DBF3-06374F1B758F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -61,6 +65,14 @@ Global
 		{238ED545-CC95-4F55-9717-277CB172163A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{238ED545-CC95-4F55-9717-277CB172163A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{238ED545-CC95-4F55-9717-277CB172163A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A78BAFC3-AFBE-4356-92F4-3EB9BF298F1E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A78BAFC3-AFBE-4356-92F4-3EB9BF298F1E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A78BAFC3-AFBE-4356-92F4-3EB9BF298F1E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A78BAFC3-AFBE-4356-92F4-3EB9BF298F1E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D2113C46-E4B2-985A-DBF3-06374F1B758F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D2113C46-E4B2-985A-DBF3-06374F1B758F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D2113C46-E4B2-985A-DBF3-06374F1B758F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D2113C46-E4B2-985A-DBF3-06374F1B758F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

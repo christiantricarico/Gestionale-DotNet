@@ -13,5 +13,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Gdn.Persistence\Gdn.Persistence.csproj" />
+    <ProjectReference Include="..\Gdn.ServiceDefaults\Gdn.ServiceDefaults.csproj" />
   </ItemGroup>
 </Project>
