@@ -1,5 +1,0 @@
-# For more info on HTTP files go to https://aka.ms/vs/httpfile
-
-@BaseUrl = http://localhost:5089/api/taxratenature
-
-GET {{BaseUrl}}
