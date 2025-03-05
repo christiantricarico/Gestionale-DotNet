@@ -1,0 +1,86 @@
+﻿@page "/measurementunits"
+
+@inject IHttpClientFactory HttpClientFactory
+@inject IDialogService DialogService
+
+<h3>Unità di misura</h3>
+
+@if (measurementUnits != null)
+{
+    <FluentButton OnClick="@CreateButtonClick">Nuova Unità di misura</FluentButton>
+    <FluentDataGrid Items="@measurementUnits.AsQueryable()" AutoFit="true" RowSize="DataGridRowSize.Medium" ShowHover="true">
+        <PropertyColumn Property="@(p => p.Code)" Sortable="true" />
+        <PropertyColumn Property="@(p => p.Name)" Sortable="true" />
+        <PropertyColumn Property="@(p => p.Description)" Sortable="true" />
+        <TemplateColumn Title="Azioni" Align="@Align.End">
+            <FluentButton aria-label="Modifica" IconEnd="@(new Icons.Regular.Size16.Edit())" OnClick="@(() => EditButtonClick(context))" />
+            <FluentButton aria-label="Elimina" IconEnd="@(new Icons.Regular.Size16.Delete())" OnClick="@(() => DeleteButtonClick(context))" />
+        </TemplateColumn>
+    </FluentDataGrid>
+}
+
+@code {
+
+    private HttpClient HttpClient => HttpClientFactory.CreateApiClientVs();
+
+    IEnumerable<MeasurementUnitViewModel>? measurementUnits;
+
+    private async Task ReloadGrid()
+    {
+        string uri = "measurementunits";
+        measurementUnits = await HttpClient.GetFromJsonAsync<IEnumerable<MeasurementUnitViewModel>>(uri);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ReloadGrid();
+    }
+
+    private async Task CreateButtonClick()
+    {
+        MeasurementUnitInputModel model = new();
+        DialogContent content = new();
+        DialogParameters parameters = new()
+            {
+                Title = $"Creazione Unità di misura",
+                PreventDismissOnOverlayClick = true,
+                PreventScroll = true
+            };
+
+        var dialog = await DialogService.ShowDialogAsync<EditMeasurementUnitDialog>(content, parameters);
+
+        var result = await dialog.Result;
+        if (!result.Cancelled)
+            await ReloadGrid();
+    }
+
+    private async Task EditButtonClick(MeasurementUnitViewModel context)
+    {
+        MeasurementUnitInputModel model = new();
+        DialogContent content = new() { Id = context.Id };
+        DialogParameters parameters = new()
+            {
+                Title = $"Modifica Unità di misura",
+                PreventDismissOnOverlayClick = true,
+                PreventScroll = true
+            };
+
+        var dialog = await DialogService.ShowDialogAsync<EditMeasurementUnitDialog>(content, parameters);
+
+        var result = await dialog.Result;
+        if (!result.Cancelled)
+            await ReloadGrid();
+    }
+
+    private async Task DeleteButtonClick(MeasurementUnitViewModel context)
+    {
+        var dialog = await DialogService.ShowConfirmationAsync("Sei sicuro di voler eliminare questo elemento?", "Sì", "No", "Eliminazione");
+        var result = await dialog.Result;
+        if (result.Cancelled)
+            return;
+
+        string uri = $"measurementunits/{context.Id}";
+        await HttpClient.DeleteAsync(uri);
+        await ReloadGrid();
+    }
+}
