@@ -14,7 +14,7 @@ public class Invoice : TrackedEntity<int>
 
 public class InvoiceRow : TrackedEntity<long>
 {
-    public string RowType { get; set; } = DocumentRowType.PRODUCT;
+    public string RowType { get; set; } = DocumentRowType.DESCRIPTIVE;
     public string? Description { get; set; }
     public decimal? Quantity { get; set; }
     public decimal? UnitPrice { get; set; }
@@ -27,7 +27,4 @@ public class InvoiceRow : TrackedEntity<long>
 
     public int? TaxRateId { get; set; }
     public TaxRate? TaxRate { get; set; }
-
-    public int? ProductId { get; set; }
-    public Product? Product { get; set; }
 }

@@ -42,8 +42,8 @@ namespace Gdn.Persistence.Migrations
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     IsDeleted = table.Column<bool>(type: "bit", nullable: false),
-                    Code = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Code = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
@@ -141,6 +141,44 @@ namespace Gdn.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "InvoiceRows",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    RowType = table.Column<string>(type: "nvarchar(3)", maxLength: 3, nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Quantity = table.Column<decimal>(type: "decimal(18,6)", precision: 18, scale: 6, nullable: true),
+                    UnitPrice = table.Column<decimal>(type: "decimal(18,6)", precision: 18, scale: 6, nullable: true),
+                    InvoiceId = table.Column<int>(type: "int", nullable: false),
+                    MeasurementUnitId = table.Column<int>(type: "int", nullable: true),
+                    TaxRateId = table.Column<int>(type: "int", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_InvoiceRows", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_InvoiceRows_Invoices_InvoiceId",
+                        column: x => x.InvoiceId,
+                        principalTable: "Invoices",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_InvoiceRows_MeasurementUnit_MeasurementUnitId",
+                        column: x => x.MeasurementUnitId,
+                        principalTable: "MeasurementUnit",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_InvoiceRows_TaxRates_TaxRateId",
+                        column: x => x.TaxRateId,
+                        principalTable: "TaxRates",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Products",
                 columns: table => new
                 {
@@ -166,50 +204,6 @@ namespace Gdn.Persistence.Migrations
                         principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_Products_TaxRates_TaxRateId",
-                        column: x => x.TaxRateId,
-                        principalTable: "TaxRates",
-                        principalColumn: "Id");
-                });
-
-            migrationBuilder.CreateTable(
-                name: "InvoiceRows",
-                columns: table => new
-                {
-                    Id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    RowType = table.Column<string>(type: "nvarchar(3)", maxLength: 3, nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Quantity = table.Column<decimal>(type: "decimal(18,6)", precision: 18, scale: 6, nullable: true),
-                    UnitPrice = table.Column<decimal>(type: "decimal(18,6)", precision: 18, scale: 6, nullable: true),
-                    InvoiceId = table.Column<int>(type: "int", nullable: false),
-                    MeasurementUnitId = table.Column<int>(type: "int", nullable: true),
-                    TaxRateId = table.Column<int>(type: "int", nullable: true),
-                    ProductId = table.Column<int>(type: "int", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_InvoiceRows", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_InvoiceRows_Invoices_InvoiceId",
-                        column: x => x.InvoiceId,
-                        principalTable: "Invoices",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_InvoiceRows_MeasurementUnit_MeasurementUnitId",
-                        column: x => x.MeasurementUnitId,
-                        principalTable: "MeasurementUnit",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_InvoiceRows_Products_ProductId",
-                        column: x => x.ProductId,
-                        principalTable: "Products",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_InvoiceRows_TaxRates_TaxRateId",
                         column: x => x.TaxRateId,
                         principalTable: "TaxRates",
                         principalColumn: "Id");
@@ -257,11 +251,6 @@ namespace Gdn.Persistence.Migrations
                 column: "MeasurementUnitId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_InvoiceRows_ProductId",
-                table: "InvoiceRows",
-                column: "ProductId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_InvoiceRows_TaxRateId",
                 table: "InvoiceRows",
                 column: "TaxRateId");
@@ -299,22 +288,22 @@ namespace Gdn.Persistence.Migrations
                 name: "InvoiceRows");
 
             migrationBuilder.DropTable(
+                name: "Products");
+
+            migrationBuilder.DropTable(
                 name: "Invoices");
 
             migrationBuilder.DropTable(
                 name: "MeasurementUnit");
 
             migrationBuilder.DropTable(
-                name: "Products");
-
-            migrationBuilder.DropTable(
-                name: "Customer");
-
-            migrationBuilder.DropTable(
                 name: "ProductCategories");
 
             migrationBuilder.DropTable(
                 name: "TaxRates");
+
+            migrationBuilder.DropTable(
+                name: "Customer");
 
             migrationBuilder.DropTable(
                 name: "TaxRateNatures");

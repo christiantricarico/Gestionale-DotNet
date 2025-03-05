@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Gdn.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250303070736_InitialCreate")]
+    [Migration("20250305083104_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -125,9 +125,6 @@ namespace Gdn.Persistence.Migrations
                     b.Property<int?>("MeasurementUnitId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("ProductId")
-                        .HasColumnType("int");
-
                     b.Property<decimal?>("Quantity")
                         .HasPrecision(18, 6)
                         .HasColumnType("decimal(18,6)");
@@ -153,8 +150,6 @@ namespace Gdn.Persistence.Migrations
 
                     b.HasIndex("MeasurementUnitId");
 
-                    b.HasIndex("ProductId");
-
                     b.HasIndex("TaxRateId");
 
                     b.ToTable("InvoiceRows");
@@ -170,7 +165,8 @@ namespace Gdn.Persistence.Migrations
 
                     b.Property<string>("Code")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -182,7 +178,8 @@ namespace Gdn.Persistence.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("Name")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -544,10 +541,6 @@ namespace Gdn.Persistence.Migrations
                         .WithMany()
                         .HasForeignKey("MeasurementUnitId");
 
-                    b.HasOne("Gdn.Domain.Models.Product", "Product")
-                        .WithMany()
-                        .HasForeignKey("ProductId");
-
                     b.HasOne("Gdn.Domain.Models.TaxRate", "TaxRate")
                         .WithMany()
                         .HasForeignKey("TaxRateId");
@@ -555,8 +548,6 @@ namespace Gdn.Persistence.Migrations
                     b.Navigation("Invoice");
 
                     b.Navigation("MeasurementUnit");
-
-                    b.Navigation("Product");
 
                     b.Navigation("TaxRate");
                 });
