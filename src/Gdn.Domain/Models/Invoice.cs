@@ -10,6 +10,8 @@ public class Invoice : TrackedEntity<int>
 
     public int CustomerId { get; set; }
     public Customer Customer { get; set; } = default!;
+
+    public ICollection<InvoiceRow> Rows { get; set; } = new List<InvoiceRow>();
 }
 
 public class InvoiceRow : TrackedEntity<long>
