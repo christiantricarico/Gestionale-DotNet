@@ -26,27 +26,22 @@ Content-Type: application/json
 
 ###
 
-POST {{BaseUrl}}
-Content-Type: application/json
-
-{
-    "code": "CUS002",
-    "name": "Customer 2",
-    "description": "Customer description 2"
-}
-
-###
-
 PUT {{BaseUrl}}
 Content-Type: application/json
-
 {
     "id": 1,
-    "code": "CUS001",
-    "name": "Customer 1 - updated",
-    "description": "Customer description 1 - updated",
-    "fiscalCode": "TRCCRS83L08D883Q",
-    "vatNumber": "04429150750"
+    "number": "1",
+    "date": "2025-03-10",
+    "customerId": 1,
+    "rows": [
+        {
+            "id": 1,
+            "rowType": "DES",
+            "description": "row 1",
+            "quantity": 1,
+            "unitPrice": 10
+        }
+    ]
 }
 
 ###
