@@ -1,0 +1,86 @@
+﻿@page "/invoices"
+
+@inject IHttpClientFactory HttpClientFactory
+@inject IDialogService DialogService
+
+<h3>Fatture</h3>
+
+@if (invoices != null)
+{
+    <FluentButton OnClick="@CreateButtonClick">Nuova fattura</FluentButton>
+    <FluentDataGrid Items="@invoices.AsQueryable()" AutoFit="true" RowSize="DataGridRowSize.Medium" ShowHover="true">
+        <PropertyColumn Property="@(p => p.Number)" Sortable="true" />
+        <PropertyColumn Property="@(p => p.Date)" Sortable="true" />
+        <PropertyColumn Property="@(p => p.CustomerName)" Sortable="true" />
+        <TemplateColumn Title="Azioni" Align="@Align.End">
+            <FluentButton aria-label="Modifica" IconEnd="@(new Icons.Regular.Size16.Edit())" OnClick="@(() => EditButtonClick(context))" />
+            <FluentButton aria-label="Elimina" IconEnd="@(new Icons.Regular.Size16.Delete())" OnClick="@(() => DeleteButtonClick(context))" />
+        </TemplateColumn>
+    </FluentDataGrid>
+}
+
+@code {
+
+    private HttpClient HttpClient => HttpClientFactory.CreateApiClientVs();
+
+    IEnumerable<InvoiceViewModel>? invoices;
+
+    private async Task ReloadGrid()
+    {
+        string uri = "invoices";
+        invoices = await HttpClient.GetFromJsonAsync<IEnumerable<InvoiceViewModel>>(uri);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ReloadGrid();
+    }
+
+    private async Task CreateButtonClick()
+    {
+        InvoiceInputModel model = new();
+        DialogContent content = new();
+        DialogParameters parameters = new()
+            {
+                Title = $"Creazione Fattura",
+                PreventDismissOnOverlayClick = true,
+                PreventScroll = true
+            };
+
+        var dialog = await DialogService.ShowDialogAsync<EditCustomerDialog>(content, parameters);
+
+        var result = await dialog.Result;
+        if (!result.Cancelled)
+            await ReloadGrid();
+    }
+
+    private async Task EditButtonClick(InvoiceViewModel context)
+    {
+        InvoiceInputModel model = new();
+        DialogContent content = new() { Id = context.Id };
+        DialogParameters parameters = new()
+            {
+                Title = $"Modifica Fattura",
+                PreventDismissOnOverlayClick = true,
+                PreventScroll = true
+            };
+
+        var dialog = await DialogService.ShowDialogAsync<EditCustomerDialog>(content, parameters);
+
+        var result = await dialog.Result;
+        if (!result.Cancelled)
+            await ReloadGrid();
+    }
+
+    private async Task DeleteButtonClick(InvoiceViewModel context)
+    {
+        var dialog = await DialogService.ShowConfirmationAsync("Sei sicuro di voler eliminare questo elemento?", "Sì", "No", "Eliminazione");
+        var result = await dialog.Result;
+        if (result.Cancelled)
+            return;
+
+        string uri = $"invoices/{context.Id}";
+        await HttpClient.DeleteAsync(uri);
+        await ReloadGrid();
+    }
+}
