@@ -4,7 +4,7 @@ GET {{BaseUrl}}
 
 ###
 
-GET {{BaseUrl}}/1
+GET {{BaseUrl}}/3
 
 ###
 
