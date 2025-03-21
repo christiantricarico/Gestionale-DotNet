@@ -1,11 +1,19 @@
-﻿namespace Gdn.Presentation.Shared.Models.Invoices;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Gdn.Presentation.Shared.Models.Invoices;
 
 public class InvoiceInputModel
 {
     public int? Id { get; set; }
+
+    [Required(ErrorMessage = "Numero è richiesto.")]
     public string Number { get; set; } = default!;
-    public DateOnly Date { get; set; }
-    public int CustomerId { get; set; }
+
+    [Required(ErrorMessage = "Data è richiesto.")]
+    public DateTime? Date { get; set; }
+
+    [Required(ErrorMessage = "Cliente è richiesto.")]
+    public int? CustomerId { get; set; }
 }
 
 public class InvoiceRowInputModel

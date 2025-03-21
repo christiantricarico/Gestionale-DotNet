@@ -1,0 +1,127 @@
+﻿@implements IDialogContentComponent<DialogContent>
+@implements IDisposable
+
+<FluentDialogHeader ShowDismiss="true">
+    <FluentStack VerticalAlignment="VerticalAlignment.Center">
+        <FluentIcon Value="@(new Icons.Regular.Size24.WindowApps())" />
+        <FluentLabel Typo="Typography.PaneHeader">
+            @Dialog.Instance.Parameters.Title
+        </FluentLabel>
+    </FluentStack>
+</FluentDialogHeader>
+
+<FluentDialogBody>
+    @if (Model is not null)
+    {
+        <EditForm EditContext="EditContext" FormName="edit-invoice-form">
+            <DataAnnotationsValidator />
+
+            <FluentGrid Spacing="1">
+                <FluentGridItem xs="12" sm="6">
+                    <FluentTextField Name="@nameof(InvoiceInputModel.Number)" @bind-Value="Model.Number" Label="Numero"
+                                     Autofocus="true" Required="true" Style="width: 100%" />
+                    <FluentValidationMessage For="@(() => Model.Number)" />
+                </FluentGridItem>
+                <FluentGridItem xs="12" sm="6">
+                    <FluentDatePicker Name="@nameof(InvoiceInputModel.Date)" @bind-Value="Model.Date" Label="Data"
+                                      Required="true" Style="width: 100%" />
+                    <FluentValidationMessage For="@(() => Model.Date)" />
+                </FluentGridItem>
+                <FluentGridItem xs="12">
+                    <FluentCombobox Items=@Customers
+                                    @bind-SelectedOption="SelectedCustomer"
+                                    Required="true"
+                                    OptionText="@(c => c?.Name)"
+                                    Label="Cliente" Style="width: 100%" Height="200px"
+                                    Autocomplete="ComboboxAutocomplete.Both" />
+                    <FluentValidationMessage For="@(() => Model.CustomerId)" />
+                </FluentGridItem>
+            </FluentGrid>
+        </EditForm>
+    }
+</FluentDialogBody>
+
+<FluentDialogFooter>
+    <FluentButton Appearance="Appearance.Accent"
+                  OnClick="@SaveAsync">
+        Salva
+    </FluentButton>
+</FluentDialogFooter>
+
+@code {
+
+    [Inject]
+    private IHttpClientFactory HttpClientFactory { get; set; } = default!;
+
+    [CascadingParameter]
+    public FluentDialog Dialog { get; set; } = default!;
+
+    [Parameter]
+    public DialogContent Content { get; set; } = default!;
+
+    private HttpClient HttpClient => HttpClientFactory.CreateApiClientVs();
+    private InvoiceInputModel Model { get; set; } = default!;
+    private EditContext EditContext { get; set; } = default!;
+
+    IEnumerable<CustomerViewModel>? Customers;
+    List<Option<int>>? _customerOptions;
+    Option<int>? _selectedCustomerOption;
+    string? _customerValue;
+
+    CustomerViewModel? SelectedCustomer;
+
+    private ValidationMessageStore? _messageStore;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Content.Id == 0)
+            Model = new InvoiceInputModel();
+        else
+        {
+            string invoiceUri = $"invoices/{Content.Id}";
+            Model = await HttpClient.GetFromJsonAsync<InvoiceInputModel>(invoiceUri) ?? new();
+        }
+
+        EditContext = new EditContext(Model);
+        EditContext.OnValidationRequested += HandleValidationRequested;
+        _messageStore = new(EditContext);
+
+        string uri = "customers";
+        Customers = await HttpClient.GetFromJsonAsync<IEnumerable<CustomerViewModel>>(uri)
+            ?? Enumerable.Empty<CustomerViewModel>();
+
+        _customerOptions = Customers.Select(c => new Option<int>()
+            {
+                Text = c.Name,
+                Value = c.Id,
+                Selected = Model.CustomerId == c.Id
+            }).ToList();
+    }
+
+    private async Task SaveAsync()
+    {
+        if (EditContext.Validate())
+        {
+            string uri = "invoices";
+            if (!Model.Id.HasValue)
+                await HttpClient.PostAsJsonAsync<InvoiceInputModel>(uri, Model);
+            else
+                await HttpClient.PutAsJsonAsync<InvoiceInputModel>(uri, Model);
+
+            await Dialog.CloseAsync(Model);
+        }
+    }
+
+    private void HandleValidationRequested(object? sender, ValidationRequestedEventArgs args)
+    {
+        _messageStore?.Clear();
+
+        // Custom validation logic
+    }
+
+    public void Dispose()
+    {
+        if (EditContext is not null)
+            EditContext.OnValidationRequested -= HandleValidationRequested;
+    }
+}
