@@ -44,7 +44,9 @@
             {
                 Title = $"Creazione Fattura",
                 PreventDismissOnOverlayClick = true,
-                PreventScroll = true
+                PreventScroll = true,
+                Width = "80%", 
+                TrapFocus = false
             };
 
         var dialog = await DialogService.ShowDialogAsync<EditInvoiceDialog>(content, parameters);

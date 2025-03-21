@@ -1,0 +1,106 @@
+﻿@implements IDialogContentComponent<DialogContent>
+
+<FluentDialogHeader ShowDismiss="true">
+    <FluentStack VerticalAlignment="VerticalAlignment.Center">
+        <FluentIcon Value="@(new Icons.Regular.Size24.WindowApps())" />
+        <FluentLabel Typo="Typography.PaneHeader">
+            @Dialog.Instance.Parameters.Title
+        </FluentLabel>
+    </FluentStack>
+</FluentDialogHeader>
+
+<FluentDialogBody>
+    @if (Model is not null)
+    {
+        <EditForm EditContext="EditContext" FormName="edit-invoicerow-form">
+            <DataAnnotationsValidator />
+            <FluentGrid Spacing="1">
+                <FluentGridItem xs="12">
+                    <FluentTextField Name="@nameof(InvoiceRowInputModel.Description)" @bind-Value="Model.Description" Label="Descrizione"
+                                     Autofocus="true" Required="true" Style="width: 100%" />
+                    <FluentValidationMessage For="@(() => Model.Description)" />
+                </FluentGridItem>
+                <FluentGridItem xs="12" sm="6">
+                    <FluentCombobox Items=@TaxRates
+                                    @bind-SelectedOption="SelectedTaxRate"
+                                    OptionText="@(e => e?.Name)"
+                                    Label="Aliquota Iva" Height="200px" Width="100%"
+                                    Autocomplete="ComboboxAutocomplete.Both" />
+                    <FluentValidationMessage For="@(() => Model.TaxRateId)" />
+                </FluentGridItem>
+                <FluentGridItem xs="12" sm="6">
+                    <FluentCombobox Items=@MeasurementUnits
+                                    @bind-SelectedOption="SelectedMeasurementUnit"
+                                    OptionText="@(e => e?.Name)"
+                                    Label="Unità di misura" Height="200px" Width="100%"
+                                    Autocomplete="ComboboxAutocomplete.Both" />
+                </FluentGridItem>
+                <FluentGridItem xs="6" sm="3">
+                    <FluentDecimalField Name="@nameof(InvoiceRowInputModel.Quantity)" Label="Quantità"
+                                        @bind-DecimalValue="Model.Quantity" Style="width:100%" />
+                </FluentGridItem>
+                <FluentGridItem xs="6" sm="3">
+                    <FluentDecimalField Name="@nameof(InvoiceRowInputModel.UnitPrice)" Label="Prezzo unitario"
+                                        @bind-DecimalValue="Model.UnitPrice" Style="width:100%" />
+                </FluentGridItem>
+            </FluentGrid>
+        </EditForm>
+    }
+</FluentDialogBody>
+
+<FluentDialogFooter>
+    <FluentButton Appearance="Appearance.Accent" OnClick="@SaveAsync">
+        Salva
+    </FluentButton>
+</FluentDialogFooter>
+
+@code {
+
+    [Inject]
+    private IHttpClientFactory HttpClientFactory { get; set; } = default!;
+
+    [CascadingParameter]
+    public FluentDialog Dialog { get; set; } = default!;
+
+    [Parameter]
+    public DialogContent Content { get; set; } = default!;
+
+    private HttpClient HttpClient => HttpClientFactory.CreateApiClientVs();
+    private InvoiceRowInputModel Model { get; set; } = default!;
+    private EditContext EditContext { get; set; } = default!;
+
+    IEnumerable<MeasurementUnitViewModel>? MeasurementUnits;
+    MeasurementUnitViewModel? SelectedMeasurementUnit;
+
+    IEnumerable<TaxRateViewModel>? TaxRates;
+    TaxRateViewModel? SelectedTaxRate;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Content.Id == 0)
+            Model = new InvoiceRowInputModel();
+        else
+        {
+            string invoiceUri = $"invoices/rows/{Content.Id}";
+            Model = await HttpClient.GetFromJsonAsync<InvoiceRowInputModel>(invoiceUri) ?? new();
+        }
+
+        EditContext = new EditContext(Model);
+
+        string measurementUnitsUri = "measurementunits";
+        MeasurementUnits = await HttpClient.GetFromJsonAsync<IEnumerable<MeasurementUnitViewModel>>(measurementUnitsUri)
+            ?? Enumerable.Empty<MeasurementUnitViewModel>();
+
+        string taxRatesUri = "taxrates";
+        TaxRates = await HttpClient.GetFromJsonAsync<IEnumerable<TaxRateViewModel>>(taxRatesUri)
+            ?? Enumerable.Empty<TaxRateViewModel>();
+    }
+
+    private async Task SaveAsync()
+    {
+        if (EditContext.Validate())
+        {
+            await Dialog.CloseAsync(Model);
+        }
+    }
+}

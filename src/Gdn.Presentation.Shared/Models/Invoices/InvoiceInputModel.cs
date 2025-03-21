@@ -14,14 +14,20 @@ public class InvoiceInputModel
 
     [Required(ErrorMessage = "Cliente è richiesto.")]
     public int? CustomerId { get; set; }
+
+    public ICollection<InvoiceRowInputModel> Rows { get; set; } = [];
 }
 
 public class InvoiceRowInputModel
 {
     public long? Id { get; set; }
+
+    [Required(ErrorMessage = "Descrizione è richiesto.")]
     public string? Description { get; set; }
-    public decimal? Quantity { get; set; }
-    public decimal? UnitPrice { get; set; }
+
+    public decimal Quantity { get; set; }
+    public decimal UnitPrice { get; set; }
+    public decimal TotalAmount => Quantity * UnitPrice;
     public int? MeasurementUnitId { get; set; }
     public int? TaxRateId { get; set; }
 }
