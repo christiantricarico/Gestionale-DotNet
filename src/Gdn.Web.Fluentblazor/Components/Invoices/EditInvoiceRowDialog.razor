@@ -22,7 +22,9 @@
                 </FluentGridItem>
                 <FluentGridItem xs="12" sm="6">
                     <FluentCombobox Items=@TaxRates
-                                    @bind-SelectedOption="SelectedTaxRate"
+                                    TOption="TaxRateViewModel"
+                                    SelectedOption="SelectedTaxRate"
+                                    SelectedOptionChanged="o => SelectedTaxRateChanged(o)"
                                     OptionText="@(e => e?.Name)"
                                     Label="Aliquota Iva" Height="200px" Width="100%"
                                     Autocomplete="ComboboxAutocomplete.Both" />
@@ -30,7 +32,9 @@
                 </FluentGridItem>
                 <FluentGridItem xs="12" sm="6">
                     <FluentCombobox Items=@MeasurementUnits
-                                    @bind-SelectedOption="SelectedMeasurementUnit"
+                                    TOption="MeasurementUnitViewModel"
+                                    SelectedOption="SelectedMeasurementUnit"
+                                    SelectedOptionChanged="o => SelectedMeasurementUnitChanged(o)"
                                     OptionText="@(e => e?.Name)"
                                     Label="Unità di misura" Height="200px" Width="100%"
                                     Autocomplete="ComboboxAutocomplete.Both" />
@@ -96,11 +100,27 @@
             ?? Enumerable.Empty<TaxRateViewModel>();
     }
 
+    private void SelectedMeasurementUnitChanged(MeasurementUnitViewModel? measurementUnit)
+    {
+        Model.MeasurementUnitId = measurementUnit?.Id ?? 0;
+    }
+
+    private void SelectedTaxRateChanged(TaxRateViewModel? taxRate)
+    {
+        Model.TaxRateId = taxRate?.Id ?? 0;
+    }
+
     private async Task SaveAsync()
     {
         if (EditContext.Validate())
         {
-            await Dialog.CloseAsync(Model);
+            EditInvoiceRowDataSet dataSet = new()
+                {
+                    Input = Model,
+                    SelectedTaxRate = SelectedTaxRate,
+                    SelectedMeasurementUnit = SelectedMeasurementUnit
+                };
+            await Dialog.CloseAsync(dataSet);
         }
     }
 }

@@ -1,5 +1,4 @@
 ﻿@implements IDialogContentComponent<DialogContent>
-@implements IDisposable
 
 @inject IDialogService DialogService
 
@@ -20,21 +19,21 @@
             <FluentGrid Spacing="1">
                 <FluentGridItem xs="12" sm="3">
                     <FluentTextField Name="@nameof(InvoiceInputModel.Number)" @bind-Value="Model.Number" Label="Numero"
-                                     Autofocus="true" Required="true" Style="width: 100%" />
+                    Autofocus="true" Required="true" Style="width: 100%" />
                     <FluentValidationMessage For="@(() => Model.Number)" />
                 </FluentGridItem>
                 <FluentGridItem xs="12" sm="3">
                     <FluentDatePicker Name="@nameof(InvoiceInputModel.Date)" @bind-Value="Model.Date" Label="Data"
-                                      Required="true" Style="width: 100%" />
+                    Required="true" Style="width: 100%" />
                     <FluentValidationMessage For="@(() => Model.Date)" />
                 </FluentGridItem>
                 <FluentGridItem xs="12" sm="6">
                     <FluentCombobox Items=@Customers
-                                    @bind-SelectedOption="SelectedCustomer"
-                                    Required="true"
-                                    OptionText="@(c => c?.Name)"
-                                    Label="Cliente" Height="200px"
-                                    Autocomplete="ComboboxAutocomplete.Both" Style="width: 100%" />
+                    @bind-SelectedOption="SelectedCustomer"
+                    Required="true"
+                    OptionText="@(c => c?.Name)"
+                    Label="Cliente" Height="200px"
+                    Autocomplete="ComboboxAutocomplete.Both" Style="width: 100%" />
                     <FluentValidationMessage For="@(() => Model.CustomerId)" />
                 </FluentGridItem>
                 <FluentGridItem xs="12">
@@ -42,11 +41,11 @@
                         <FluentStack Orientation="Orientation.Vertical" Width="40px" Style="margin-top: 43px">
                             <FluentButton IconStart="@(new Icons.Regular.Size24.Add())" OnClick="AddRowClick" />
                         </FluentStack>
-                        <FluentDataGrid Items="Model.Rows.AsQueryable()">
+                        <FluentDataGrid Items="Rows.AsQueryable()">
                             <PropertyColumn Property="@(p => p.Id)" />
                             <PropertyColumn Property="@(p => p.Description)" Title="Descrizione" />
-                            <PropertyColumn Property="@(p => p.TaxRateId)" Title="Aliq.Iva" />
-                            <PropertyColumn Property="@(p => p.MeasurementUnitId)" Title="Um" />
+                            <PropertyColumn Property="@(p => p.TaxRateName)" Title="Aliq.Iva" />
+                            <PropertyColumn Property="@(p => p.MeasurementUnitName)" Title="Um" />
                             <PropertyColumn Property="@(p => p.Quantity)" Title="Quantità" Format="N2" Align="Align.End" />
                             <PropertyColumn Property="@(p => p.UnitPrice)" Title="Prezzo" Format="c" Align="Align.End" />
                             <PropertyColumn Property="@(p => p.TotalAmount)" Title="Totale" Format="c" Align="Align.End" />
@@ -60,8 +59,7 @@
 </FluentDialogBody>
 
 <FluentDialogFooter>
-    <FluentButton Appearance="Appearance.Accent"
-                  OnClick="@SaveAsync">
+    <FluentButton Appearance="Appearance.Accent" OnClick="@SaveAsync">
         Salva
     </FluentButton>
 </FluentDialogFooter>
@@ -84,7 +82,7 @@
     IEnumerable<CustomerViewModel>? Customers;
     CustomerViewModel? SelectedCustomer;
 
-    private ValidationMessageStore? _messageStore;
+    ICollection<InvoiceRowViewModel> Rows = [];
 
     protected override async Task OnInitializedAsync()
     {
@@ -97,8 +95,6 @@
         }
 
         EditContext = new EditContext(Model);
-        EditContext.OnValidationRequested += HandleValidationRequested;
-        _messageStore = new(EditContext);
 
         string customersUri = "customers";
         Customers = await HttpClient.GetFromJsonAsync<IEnumerable<CustomerViewModel>>(customersUri)
@@ -119,19 +115,6 @@
         }
     }
 
-    private void HandleValidationRequested(object? sender, ValidationRequestedEventArgs args)
-    {
-        _messageStore?.Clear();
-
-        // Custom validation logic
-    }
-
-    public void Dispose()
-    {
-        if (EditContext is not null)
-            EditContext.OnValidationRequested -= HandleValidationRequested;
-    }
-
     private async Task AddRowClick(MouseEventArgs ea)
     {
         DialogContent content = new();
@@ -148,9 +131,19 @@
         var result = await dialog.Result;
         if (!result.Cancelled)
         {
-            var rowModel = result.Data as InvoiceRowInputModel;
-            if (rowModel is not null)
-                Model.Rows.Add(rowModel);
+            var dataSet = result.Data as EditInvoiceRowDataSet;
+            if (dataSet is not null && dataSet.Input is not null)
+            {
+                Model.Rows.Add(dataSet.Input);
+                Rows.Add(new()
+                {
+                        Description = dataSet.Input.Description,
+                        TaxRateName = dataSet.SelectedTaxRate?.Name,
+                        MeasurementUnitName = dataSet.SelectedMeasurementUnit?.Name,
+                        Quantity = dataSet.Input.Quantity,
+                        UnitPrice = dataSet.Input.UnitPrice
+                });
+            }
         }
     }
 }

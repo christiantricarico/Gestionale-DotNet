@@ -27,7 +27,6 @@ public class InvoiceRowInputModel
 
     public decimal Quantity { get; set; }
     public decimal UnitPrice { get; set; }
-    public decimal TotalAmount => Quantity * UnitPrice;
     public int? MeasurementUnitId { get; set; }
     public int? TaxRateId { get; set; }
 }

@@ -37,4 +37,7 @@ public class InvoiceRowViewModel
 
     [Display(Name = "Aliquota IVA")]
     public string? TaxRateName { get; set; }
+
+    [Display(Name = "Totale")]
+    public decimal TotalAmount => Quantity ?? 0 * UnitPrice ?? 0;
 }
