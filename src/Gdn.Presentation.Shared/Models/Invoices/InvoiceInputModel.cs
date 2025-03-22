@@ -10,7 +10,8 @@ public class InvoiceInputModel
     public string Number { get; set; } = default!;
 
     [Required(ErrorMessage = "Data è richiesto.")]
-    public DateTime? Date { get; set; }
+    public DateTime? DateWithTime { get; set; }
+    public DateOnly Date => DateOnly.FromDateTime(DateWithTime ?? DateTime.MinValue);
 
     [Required(ErrorMessage = "Cliente è richiesto.")]
     public int? CustomerId { get; set; }

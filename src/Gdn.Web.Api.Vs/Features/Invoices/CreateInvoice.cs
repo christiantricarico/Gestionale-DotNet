@@ -2,13 +2,14 @@
 using Gdn.Domain.Data;
 using Gdn.Domain.Data.Repositories;
 using Gdn.Domain.Models;
+using Gdn.Domain.Models.Enums;
 using Gdn.Web.Api.Vs.Endpoints;
 
 namespace Gdn.Web.Api.Vs.Features.Invoices;
 
 public class CreateInvoice
 {
-    public record RequestRow(string RowType, string? Description, decimal? Quantity, decimal? UnitPrice, int? MeasurementUnitId, int? TaxRateId);
+    public record RequestRow(string? Description, decimal? Quantity, decimal? UnitPrice, int? MeasurementUnitId, int? TaxRateId);
     public record Request(string Number, DateOnly Date, int CustomerId, IEnumerable<RequestRow> Rows);
 
     public record ResponseRow(long Id, string RowType, string? Description, decimal? Quantity, decimal? UnitPrice, int? MeasurementUnitId, int? TaxRateId);
@@ -56,7 +57,7 @@ public class CreateInvoice
 
     private static InvoiceRow MapInvoiceRow(RequestRow request) => new()
     {
-        RowType = request.RowType,
+        RowType = DocumentRowType.DESCRIPTIVE,
         Description = request.Description,
         Quantity = request.Quantity,
         UnitPrice = request.UnitPrice,

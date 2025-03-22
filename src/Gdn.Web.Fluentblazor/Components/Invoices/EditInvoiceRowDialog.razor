@@ -102,12 +102,14 @@
 
     private void SelectedMeasurementUnitChanged(MeasurementUnitViewModel? measurementUnit)
     {
-        Model.MeasurementUnitId = measurementUnit?.Id ?? 0;
+        SelectedMeasurementUnit = measurementUnit;
+        Model.MeasurementUnitId = measurementUnit?.Id;
     }
 
     private void SelectedTaxRateChanged(TaxRateViewModel? taxRate)
     {
-        Model.TaxRateId = taxRate?.Id ?? 0;
+        SelectedTaxRate = taxRate;
+        Model.TaxRateId = taxRate?.Id;
     }
 
     private async Task SaveAsync()

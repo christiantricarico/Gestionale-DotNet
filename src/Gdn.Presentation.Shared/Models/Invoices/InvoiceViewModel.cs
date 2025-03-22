@@ -39,5 +39,5 @@ public class InvoiceRowViewModel
     public string? TaxRateName { get; set; }
 
     [Display(Name = "Totale")]
-    public decimal TotalAmount => Quantity ?? 0 * UnitPrice ?? 0;
+    public decimal TotalAmount => (Quantity ?? 0) * (UnitPrice ?? 0);
 }
