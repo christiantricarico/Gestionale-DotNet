@@ -51,6 +51,10 @@
                             <PropertyColumn Property="@(p => p.Quantity)" Title="Quantità" Format="N2" Align="Align.End" />
                             <PropertyColumn Property="@(p => p.UnitPrice)" Title="Prezzo" Format="C" Align="Align.End" />
                             <PropertyColumn Property="@(p => p.TotalAmount)" Title="Totale" Format="C" Align="Align.End" />
+                            <TemplateColumn Title="Azioni" Align="@Align.End" Context="rowContext">
+                                <FluentButton aria-label="Modifica" IconEnd="@(new Icons.Regular.Size16.Edit())" OnClick="@(() => EditRowClick(rowContext))" />
+                                <FluentButton aria-label="Elimina" IconEnd="@(new Icons.Regular.Size16.Delete())" OnClick="@(() => DeleteRowClick(rowContext))" />
+                            </TemplateColumn>
                         </FluentDataGrid>
                     </FluentStack>
 
@@ -175,5 +179,56 @@
                     });
             }
         }
+    }
+
+    private async Task EditRowClick(InvoiceRowViewModel context)
+    {
+        InvoiceInputModel model = new();
+        DialogContent content = new() { Id = Convert.ToInt32(context.Id) };
+        DialogParameters parameters = new()
+            {
+                Title = $"Modifica riga fattura",
+                PreventDismissOnOverlayClick = true,
+                PreventScroll = true,
+                TrapFocus = false,
+                Width = "700px"
+            };
+
+        var dialog = await DialogService.ShowDialogAsync<EditInvoiceRowDialog>(content, parameters);
+        var result = await dialog.Result;
+        if (!result.Cancelled)
+        {
+            var dataSet = result.Data as EditInvoiceRowDataSet;
+            if (dataSet is not null && dataSet.Input is not null)
+            {
+                var inputModel = Model.Rows.Single(r => r.Id == dataSet.Input.Id);
+                inputModel = dataSet.Input;
+
+                var viewModel = Rows.Single(r => r.Id == dataSet.Input.Id);
+                viewModel = new()
+                    {
+                        Description = dataSet.Input.Description,
+                        TaxRateName = dataSet.SelectedTaxRate?.Name,
+                        MeasurementUnitName = dataSet.SelectedMeasurementUnit?.Name,
+                        Quantity = dataSet.Input.Quantity,
+                        UnitPrice = dataSet.Input.UnitPrice
+                    };
+            }
+        }
+    }
+
+    private async Task DeleteRowClick(InvoiceRowViewModel context)
+    {
+        var dialog = await DialogService.ShowConfirmationAsync("Sei sicuro di voler eliminare questo elemento?", "Sì", "No", "Eliminazione");
+        var result = await dialog.Result;
+        if (result.Cancelled)
+            return;
+
+        // set input model as deleted
+        var inputModel = Model.Rows.Single(r => r.Id == context.Id);
+        inputModel.InputStatus = 3; 
+
+        // delete view model
+        Rows.Remove(context);
     }
 }

@@ -8,7 +8,9 @@ namespace Gdn.Web.Api.Vs.Features.Invoices;
 
 public class UpdateInvoice
 {
-    public record RequestRow(long? Id, string RowType, string? Description, decimal? Quantity, decimal? UnitPrice, int? MeasurementUnitId, int? TaxRateId);
+    public record RequestRow(InputStatus InputStatus, long? Id, string RowType, string? Description,
+        decimal? Quantity, decimal? UnitPrice,
+        int? MeasurementUnitId, int? TaxRateId);
     public record Request(int Id, string Number, DateOnly Date, int CustomerId, IEnumerable<RequestRow> Rows);
 
     public record ResponseRow(long Id, string RowType, string? Description, decimal? Quantity, decimal? UnitPrice, int? MeasurementUnitId, int? TaxRateId);
@@ -54,18 +56,32 @@ public class UpdateInvoice
         invoice.Number = request.Number;
         invoice.Date = request.Date;
         invoice.CustomerId = request.CustomerId;
-        invoice.Rows = request.Rows.Select(r => MapInvoiceRow(invoice, r)).ToList();
+
+        foreach (var requestRow in request.Rows)
+        {
+            if (requestRow.InputStatus == InputStatus.Added)
+            {
+                var row = new InvoiceRow();
+                row = MapInvoiceRow(row, requestRow);
+                invoice.Rows.Add(row);
+            }
+
+            if (requestRow.InputStatus == InputStatus.Updated)
+            {
+                var row = invoice.Rows.Single(r => r.Id == requestRow.Id);
+                row = MapInvoiceRow(row, requestRow);
+            }
+
+            if (requestRow.InputStatus == InputStatus.Deleted)
+            {
+                var row = invoice.Rows.Single(r => r.Id == requestRow.Id);
+                invoice.Rows.Remove(row);
+            }
+        }
     }
 
-    private static InvoiceRow MapInvoiceRow(Invoice invoice, RequestRow request)
+    private static InvoiceRow MapInvoiceRow(InvoiceRow row, RequestRow request)
     {
-        InvoiceRow row;
-
-        if (request.Id.HasValue)
-            row = invoice.Rows.Single(r => r.Id == request.Id);
-        else
-            row = new();
-
         row.Description = request.Description;
         row.Quantity = request.Quantity;
         row.UnitPrice = request.UnitPrice;

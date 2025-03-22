@@ -21,6 +21,7 @@ public class InvoiceInputModel
 
 public class InvoiceRowInputModel
 {
+    public int InputStatus { get; set; }
     public long? Id { get; set; }
 
     [Required(ErrorMessage = "Descrizione è richiesto.")]

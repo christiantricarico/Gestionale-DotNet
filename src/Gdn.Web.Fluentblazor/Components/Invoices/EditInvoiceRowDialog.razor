@@ -82,11 +82,15 @@
     protected override async Task OnInitializedAsync()
     {
         if (Content.Id == 0)
+        {
             Model = new InvoiceRowInputModel();
+            Model.InputStatus = 1; // added
+        }
         else
         {
             string invoiceUri = $"invoices/rows/{Content.Id}";
             Model = await HttpClient.GetFromJsonAsync<InvoiceRowInputModel>(invoiceUri) ?? new();
+            Model.InputStatus = 2; // updated
         }
 
         EditContext = new EditContext(Model);
