@@ -19,23 +19,23 @@
             <FluentGrid Spacing="1">
                 <FluentGridItem xs="12" sm="3">
                     <FluentTextField Name="@nameof(InvoiceInputModel.Number)" @bind-Value="Model.Number" Label="Numero"
-                                     Autofocus="true" Required="true" Style="width: 100%" />
+                    Autofocus="true" Required="true" Style="width: 100%" />
                     <FluentValidationMessage For="@(() => Model.Number)" />
                 </FluentGridItem>
                 <FluentGridItem xs="12" sm="3">
                     <FluentDatePicker Name="@nameof(InvoiceInputModel.DateWithTime)" @bind-Value="Model.DateWithTime" Label="Data"
-                                      Required="true" Style="width: 100%" />
+                    Required="true" Style="width: 100%" />
                     <FluentValidationMessage For="@(() => Model.DateWithTime)" />
                 </FluentGridItem>
                 <FluentGridItem xs="12" sm="6">
                     <FluentCombobox Items=@Customers
-                                    TOption="CustomerViewModel"
-                                    SelectedOption="SelectedCustomer"
-                                    SelectedOptionChanged="o => SelectedCustomerChanged(o)"
-                                    Required="true"
-                                    OptionText="@(c => c?.Name)"
-                                    Label="Cliente" Height="200px"
-                                    Autocomplete="ComboboxAutocomplete.Both" Style="width: 100%" />
+                    TOption="CustomerViewModel"
+                    SelectedOption="SelectedCustomer"
+                    SelectedOptionChanged="o => SelectedCustomerChanged(o)"
+                    Required="true"
+                    OptionText="@(c => c?.Name)"
+                    Label="Cliente" Height="200px"
+                    Autocomplete="ComboboxAutocomplete.Both" Style="width: 100%" />
                     <FluentValidationMessage For="@(() => Model.CustomerId)" />
                 </FluentGridItem>
                 <FluentGridItem xs="12">
@@ -93,7 +93,26 @@
         else
         {
             string invoiceUri = $"invoices/{Content.Id}";
-            Model = await HttpClient.GetFromJsonAsync<InvoiceInputModel>(invoiceUri) ?? new();
+            var viewModel = await HttpClient.GetFromJsonAsync<InvoiceViewModel>(invoiceUri) ?? new();
+            
+            Model = new InvoiceInputModel
+                {
+                    Id = viewModel.Id,
+                    Number = viewModel.Number,
+                    DateWithTime = viewModel.Date.ToDateTime(TimeOnly.MinValue),
+                    CustomerId = viewModel.CustomerId,
+                    Rows = viewModel.Rows.Select(r => new InvoiceRowInputModel
+                    {
+                        Id = r.Id,
+                        Description = r.Description,
+                        TaxRateId = r.TaxRateId,
+                        MeasurementUnitId = r.MeasurementUnitId,
+                        Quantity = r.Quantity ?? 0,
+                        UnitPrice = r.UnitPrice ?? 0
+                    }).ToList()
+                };
+
+            Rows = viewModel.Rows.ToList();
         }
 
         EditContext = new EditContext(Model);
@@ -101,6 +120,9 @@
         string customersUri = "customers";
         Customers = await HttpClient.GetFromJsonAsync<IEnumerable<CustomerViewModel>>(customersUri)
             ?? Enumerable.Empty<CustomerViewModel>();
+
+        if (Model.CustomerId.HasValue)
+            SelectedCustomer = Customers.SingleOrDefault(c => c.Id == Model.CustomerId);
     }
 
     private void SelectedCustomerChanged(CustomerViewModel? customer)

@@ -46,7 +46,7 @@
                 PreventDismissOnOverlayClick = true,
                 PreventScroll = true,
                 Width = "80%", 
-                TrapFocus = false
+                TrapFocus = false // avoid not working focus when multiple dialogs are opened
             };
 
         var dialog = await DialogService.ShowDialogAsync<EditInvoiceDialog>(content, parameters);
@@ -64,7 +64,9 @@
             {
                 Title = $"Modifica Fattura",
                 PreventDismissOnOverlayClick = true,
-                PreventScroll = true
+                PreventScroll = true,
+                Width = "80%",
+                TrapFocus = false // avoid not working focus when multiple dialogs are opened
             };
 
         var dialog = await DialogService.ShowDialogAsync<EditInvoiceDialog>(content, parameters);

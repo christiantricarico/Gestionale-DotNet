@@ -8,7 +8,7 @@ namespace Gdn.Web.Api.Vs.Features.Invoices;
 
 public class UpdateInvoice
 {
-    public record RequestRow(long Id, string RowType, string? Description, decimal? Quantity, decimal? UnitPrice, int? MeasurementUnitId, int? TaxRateId);
+    public record RequestRow(long? Id, string RowType, string? Description, decimal? Quantity, decimal? UnitPrice, int? MeasurementUnitId, int? TaxRateId);
     public record Request(int Id, string Number, DateOnly Date, int CustomerId, IEnumerable<RequestRow> Rows);
 
     public record ResponseRow(long Id, string RowType, string? Description, decimal? Quantity, decimal? UnitPrice, int? MeasurementUnitId, int? TaxRateId);
@@ -38,7 +38,7 @@ public class UpdateInvoice
 
         var invoiceRepository = unitOfWork.GetRepository<IInvoiceRepository>();
 
-        var invoice = await invoiceRepository.GetAsync(request.Id);
+        var invoice = await invoiceRepository.GetAsync(request.Id, ["Rows"]);
         if (invoice is null)
             return ResultHelper.NotFound(InvoiceErrors.NotFound(request.Id));
 
@@ -54,19 +54,26 @@ public class UpdateInvoice
         invoice.Number = request.Number;
         invoice.Date = request.Date;
         invoice.CustomerId = request.CustomerId;
-        invoice.Rows = request.Rows.Select(r => MapInvoiceRow(r)).ToList();
+        invoice.Rows = request.Rows.Select(r => MapInvoiceRow(invoice, r)).ToList();
     }
 
-    private static InvoiceRow MapInvoiceRow(RequestRow request) => new()
+    private static InvoiceRow MapInvoiceRow(Invoice invoice, RequestRow request)
     {
-        Id = request.Id,
-        RowType = request.RowType,
-        Description = request.Description,
-        Quantity = request.Quantity,
-        UnitPrice = request.UnitPrice,
-        MeasurementUnitId = request.MeasurementUnitId,
-        TaxRateId = request.TaxRateId
-    };
+        InvoiceRow row;
+
+        if (request.Id.HasValue)
+            row = invoice.Rows.Single(r => r.Id == request.Id);
+        else
+            row = new();
+
+        row.Description = request.Description;
+        row.Quantity = request.Quantity;
+        row.UnitPrice = request.UnitPrice;
+        row.MeasurementUnitId = request.MeasurementUnitId;
+        row.TaxRateId = request.TaxRateId;
+
+        return row;
+    }
 
     private static Response MapResponse(Invoice invoice)
         => new(invoice.Id, invoice.Number, invoice.Date, invoice.CustomerId, invoice.Rows.Select(r => MapResponseRow(r)));
