@@ -99,9 +99,15 @@
         MeasurementUnits = await HttpClient.GetFromJsonAsync<IEnumerable<MeasurementUnitViewModel>>(measurementUnitsUri)
             ?? Enumerable.Empty<MeasurementUnitViewModel>();
 
+        if (Model.MeasurementUnitId.HasValue)
+            SelectedMeasurementUnit = MeasurementUnits.Single(e => e.Id == Model.MeasurementUnitId);
+
         string taxRatesUri = "taxrates";
         TaxRates = await HttpClient.GetFromJsonAsync<IEnumerable<TaxRateViewModel>>(taxRatesUri)
             ?? Enumerable.Empty<TaxRateViewModel>();
+
+        if (Model.TaxRateId.HasValue)
+            SelectedTaxRate = TaxRates.Single(e => e.Id == Model.TaxRateId);
     }
 
     private void SelectedMeasurementUnitChanged(MeasurementUnitViewModel? measurementUnit)

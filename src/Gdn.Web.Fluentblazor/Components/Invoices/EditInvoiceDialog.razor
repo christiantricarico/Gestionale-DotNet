@@ -202,17 +202,21 @@
             if (dataSet is not null && dataSet.Input is not null)
             {
                 var inputModel = Model.Rows.Single(r => r.Id == dataSet.Input.Id);
-                inputModel = dataSet.Input;
+                inputModel.InputStatus = dataSet.Input.InputStatus;
+                inputModel.Description = dataSet.Input.Description;
+                inputModel.TaxRateId = dataSet.Input.TaxRateId;
+                inputModel.MeasurementUnitId = dataSet.Input.MeasurementUnitId;
+                inputModel.Quantity = dataSet.Input.Quantity;
+                inputModel.UnitPrice = dataSet.Input.UnitPrice;
 
                 var viewModel = Rows.Single(r => r.Id == dataSet.Input.Id);
-                viewModel = new()
-                    {
-                        Description = dataSet.Input.Description,
-                        TaxRateName = dataSet.SelectedTaxRate?.Name,
-                        MeasurementUnitName = dataSet.SelectedMeasurementUnit?.Name,
-                        Quantity = dataSet.Input.Quantity,
-                        UnitPrice = dataSet.Input.UnitPrice
-                    };
+                viewModel.Description = dataSet.Input.Description;
+                viewModel.TaxRateId = dataSet.Input.TaxRateId;
+                viewModel.TaxRateName = dataSet.SelectedTaxRate?.Name;
+                viewModel.MeasurementUnitId = dataSet.Input.MeasurementUnitId;
+                viewModel.MeasurementUnitName = dataSet.SelectedMeasurementUnit?.Name;
+                viewModel.Quantity = dataSet.Input.Quantity;
+                viewModel.UnitPrice = dataSet.Input.UnitPrice;
             }
         }
     }
