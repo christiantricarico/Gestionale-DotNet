@@ -1,4 +1,4 @@
-﻿@implements IDialogContentComponent<DialogContent>
+﻿@implements IDialogContentComponent<InvoiceRowEditModel>
 
 <FluentDialogHeader ShowDismiss="true">
     <FluentStack VerticalAlignment="VerticalAlignment.Center">
@@ -16,7 +16,7 @@
             <DataAnnotationsValidator />
             <FluentGrid Spacing="1">
                 <FluentGridItem xs="12">
-                    <FluentTextField Name="@nameof(InvoiceRowInputModel.Description)" @bind-Value="Model.Description" Label="Descrizione"
+                    <FluentTextField Name="@nameof(InvoiceRowEditModel.Description)" @bind-Value="Model.Description" Label="Descrizione"
                                      Autofocus="true" Required="true" Style="width: 100%" />
                     <FluentValidationMessage For="@(() => Model.Description)" />
                 </FluentGridItem>
@@ -40,11 +40,11 @@
                                     Autocomplete="ComboboxAutocomplete.Both" />
                 </FluentGridItem>
                 <FluentGridItem xs="6" sm="3">
-                    <FluentDecimalField Name="@nameof(InvoiceRowInputModel.Quantity)" Label="Quantità"
+                    <FluentDecimalField Name="@nameof(InvoiceRowEditModel.Quantity)" Label="Quantità"
                                         @bind-DecimalValue="Model.Quantity" Style="width:100%" />
                 </FluentGridItem>
                 <FluentGridItem xs="6" sm="3">
-                    <FluentDecimalField Name="@nameof(InvoiceRowInputModel.UnitPrice)" Label="Prezzo unitario"
+                    <FluentDecimalField Name="@nameof(InvoiceRowEditModel.UnitPrice)" Label="Prezzo unitario"
                                         @bind-DecimalValue="Model.UnitPrice" Style="width:100%" />
                 </FluentGridItem>
             </FluentGrid>
@@ -67,10 +67,10 @@
     public FluentDialog Dialog { get; set; } = default!;
 
     [Parameter]
-    public DialogContent Content { get; set; } = default!;
+    public InvoiceRowEditModel Content { get; set; } = default!;
 
     private HttpClient HttpClient => HttpClientFactory.CreateApiClientVs();
-    private InvoiceRowInputModel Model { get; set; } = default!;
+    private InvoiceRowEditModel Model { get; set; } = default!;
     private EditContext EditContext { get; set; } = default!;
 
     IEnumerable<MeasurementUnitViewModel>? MeasurementUnits;
@@ -81,17 +81,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        if (Content.Id == 0)
-        {
-            Model = new InvoiceRowInputModel();
-            Model.InputStatus = 1; // added
-        }
-        else
-        {
-            string invoiceUri = $"invoices/rows/{Content.Id}";
-            Model = await HttpClient.GetFromJsonAsync<InvoiceRowInputModel>(invoiceUri) ?? new();
-            Model.InputStatus = 2; // updated
-        }
+        Model = Content;
 
         EditContext = new EditContext(Model);
 
@@ -114,25 +104,19 @@
     {
         SelectedMeasurementUnit = measurementUnit;
         Model.MeasurementUnitId = measurementUnit?.Id;
+        Model.MeasurementUnitName = measurementUnit?.Name;
     }
 
     private void SelectedTaxRateChanged(TaxRateViewModel? taxRate)
     {
         SelectedTaxRate = taxRate;
         Model.TaxRateId = taxRate?.Id;
+        Model.TaxRateName = taxRate?.Name;
     }
 
     private async Task SaveAsync()
     {
         if (EditContext.Validate())
-        {
-            EditInvoiceRowDataSet dataSet = new()
-                {
-                    Input = Model,
-                    SelectedTaxRate = SelectedTaxRate,
-                    SelectedMeasurementUnit = SelectedMeasurementUnit
-                };
-            await Dialog.CloseAsync(dataSet);
-        }
+            await Dialog.CloseAsync();
     }
 }

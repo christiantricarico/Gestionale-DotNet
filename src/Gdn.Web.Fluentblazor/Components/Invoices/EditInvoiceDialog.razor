@@ -18,24 +18,24 @@
             <DataAnnotationsValidator />
             <FluentGrid Spacing="1">
                 <FluentGridItem xs="12" sm="3">
-                    <FluentTextField Name="@nameof(InvoiceInputModel.Number)" @bind-Value="Model.Number" Label="Numero"
-                    Autofocus="true" Required="true" Style="width: 100%" />
+                    <FluentTextField Name="@nameof(InvoiceEditModel.Number)" @bind-Value="Model.Number" Label="Numero"
+                                     Autofocus="true" Required="true" Style="width: 100%" />
                     <FluentValidationMessage For="@(() => Model.Number)" />
                 </FluentGridItem>
                 <FluentGridItem xs="12" sm="3">
-                    <FluentDatePicker Name="@nameof(InvoiceInputModel.DateWithTime)" @bind-Value="Model.DateWithTime" Label="Data"
-                    Required="true" Style="width: 100%" />
+                    <FluentDatePicker Name="@nameof(InvoiceEditModel.DateWithTime)" @bind-Value="Model.DateWithTime" Label="Data"
+                                      Required="true" Style="width: 100%" />
                     <FluentValidationMessage For="@(() => Model.DateWithTime)" />
                 </FluentGridItem>
                 <FluentGridItem xs="12" sm="6">
                     <FluentCombobox Items=@Customers
-                    TOption="CustomerViewModel"
-                    SelectedOption="SelectedCustomer"
-                    SelectedOptionChanged="o => SelectedCustomerChanged(o)"
-                    Required="true"
-                    OptionText="@(c => c?.Name)"
-                    Label="Cliente" Height="200px"
-                    Autocomplete="ComboboxAutocomplete.Both" Style="width: 100%" />
+                                    TOption="CustomerViewModel"
+                                    SelectedOption="SelectedCustomer"
+                                    SelectedOptionChanged="o => SelectedCustomerChanged(o)"
+                                    Required="true"
+                                    OptionText="@(c => c?.Name)"
+                                    Label="Cliente" Height="200px"
+                                    Autocomplete="ComboboxAutocomplete.Both" Style="width: 100%" />
                     <FluentValidationMessage For="@(() => Model.CustomerId)" />
                 </FluentGridItem>
                 <FluentGridItem xs="12">
@@ -43,7 +43,7 @@
                         <FluentStack Orientation="Orientation.Vertical" Width="40px" Style="margin-top: 43px">
                             <FluentButton IconStart="@(new Icons.Regular.Size24.Add())" OnClick="AddRowClick" />
                         </FluentStack>
-                        <FluentDataGrid Items="Rows.AsQueryable()" ShowHover="true">
+                        <FluentDataGrid Items="Model.Rows.Where(r => r.InputStatus != 3).AsQueryable()" ShowHover="true">
                             <PropertyColumn Property="@(p => p.Id)" />
                             <PropertyColumn Property="@(p => p.Description)" Title="Descrizione" />
                             <PropertyColumn Property="@(p => p.TaxRateName)" Title="Aliq.Iva" />
@@ -82,41 +82,21 @@
     public DialogContent Content { get; set; } = default!;
 
     private HttpClient HttpClient => HttpClientFactory.CreateApiClientVs();
-    private InvoiceInputModel Model { get; set; } = default!;
+    private InvoiceEditModel Model { get; set; } = default!;
     private EditContext EditContext { get; set; } = default!;
 
     IEnumerable<CustomerViewModel>? Customers;
     CustomerViewModel? SelectedCustomer;
 
-    ICollection<InvoiceRowViewModel> Rows = [];
-
     protected override async Task OnInitializedAsync()
     {
         if (Content.Id == 0)
-            Model = new InvoiceInputModel();
+            Model = new InvoiceEditModel();
         else
         {
             string invoiceUri = $"invoices/{Content.Id}";
-            var viewModel = await HttpClient.GetFromJsonAsync<InvoiceViewModel>(invoiceUri) ?? new();
-            
-            Model = new InvoiceInputModel
-                {
-                    Id = viewModel.Id,
-                    Number = viewModel.Number,
-                    DateWithTime = viewModel.Date.ToDateTime(TimeOnly.MinValue),
-                    CustomerId = viewModel.CustomerId,
-                    Rows = viewModel.Rows.Select(r => new InvoiceRowInputModel
-                    {
-                        Id = r.Id,
-                        Description = r.Description,
-                        TaxRateId = r.TaxRateId,
-                        MeasurementUnitId = r.MeasurementUnitId,
-                        Quantity = r.Quantity ?? 0,
-                        UnitPrice = r.UnitPrice ?? 0
-                    }).ToList()
-                };
-
-            Rows = viewModel.Rows.ToList();
+            Model = await HttpClient.GetFromJsonAsync<InvoiceEditModel>(invoiceUri) ?? new();
+            Model.DateWithTime = Model.Date.ToDateTime(TimeOnly.MinValue);
         }
 
         EditContext = new EditContext(Model);
@@ -137,13 +117,15 @@
 
     private async Task SaveAsync()
     {
+        Model.Date = DateOnly.FromDateTime(Model.DateWithTime ?? DateTime.MinValue);
+
         if (EditContext.Validate())
         {
             string uri = "invoices";
             if (!Model.Id.HasValue)
-                await HttpClient.PostAsJsonAsync<InvoiceInputModel>(uri, Model);
+                await HttpClient.PostAsJsonAsync<InvoiceEditModel>(uri, Model);
             else
-                await HttpClient.PutAsJsonAsync<InvoiceInputModel>(uri, Model);
+                await HttpClient.PutAsJsonAsync<InvoiceEditModel>(uri, Model);
 
             await Dialog.CloseAsync(Model);
         }
@@ -151,7 +133,7 @@
 
     private async Task AddRowClick(MouseEventArgs ea)
     {
-        DialogContent content = new();
+        InvoiceRowEditModel content = new();
         DialogParameters parameters = new()
             {
                 Title = $"Creazione riga fattura",
@@ -165,26 +147,13 @@
         var result = await dialog.Result;
         if (!result.Cancelled)
         {
-            var dataSet = result.Data as EditInvoiceRowDataSet;
-            if (dataSet is not null && dataSet.Input is not null)
-            {
-                Model.Rows.Add(dataSet.Input);
-                Rows.Add(new()
-                    {
-                        Description = dataSet.Input.Description,
-                        TaxRateName = dataSet.SelectedTaxRate?.Name,
-                        MeasurementUnitName = dataSet.SelectedMeasurementUnit?.Name,
-                        Quantity = dataSet.Input.Quantity,
-                        UnitPrice = dataSet.Input.UnitPrice
-                    });
-            }
+            content.InputStatus = 1; // added
+            Model.Rows.Add(content);
         }
     }
 
-    private async Task EditRowClick(InvoiceRowViewModel context)
+    private async Task EditRowClick(InvoiceRowEditModel context)
     {
-        InvoiceInputModel model = new();
-        DialogContent content = new() { Id = Convert.ToInt32(context.Id) };
         DialogParameters parameters = new()
             {
                 Title = $"Modifica riga fattura",
@@ -194,45 +163,22 @@
                 Width = "700px"
             };
 
-        var dialog = await DialogService.ShowDialogAsync<EditInvoiceRowDialog>(content, parameters);
+        var dialog = await DialogService.ShowDialogAsync<EditInvoiceRowDialog>(context, parameters);
         var result = await dialog.Result;
         if (!result.Cancelled)
         {
-            var dataSet = result.Data as EditInvoiceRowDataSet;
-            if (dataSet is not null && dataSet.Input is not null)
-            {
-                var inputModel = Model.Rows.Single(r => r.Id == dataSet.Input.Id);
-                inputModel.InputStatus = dataSet.Input.InputStatus;
-                inputModel.Description = dataSet.Input.Description;
-                inputModel.TaxRateId = dataSet.Input.TaxRateId;
-                inputModel.MeasurementUnitId = dataSet.Input.MeasurementUnitId;
-                inputModel.Quantity = dataSet.Input.Quantity;
-                inputModel.UnitPrice = dataSet.Input.UnitPrice;
-
-                var viewModel = Rows.Single(r => r.Id == dataSet.Input.Id);
-                viewModel.Description = dataSet.Input.Description;
-                viewModel.TaxRateId = dataSet.Input.TaxRateId;
-                viewModel.TaxRateName = dataSet.SelectedTaxRate?.Name;
-                viewModel.MeasurementUnitId = dataSet.Input.MeasurementUnitId;
-                viewModel.MeasurementUnitName = dataSet.SelectedMeasurementUnit?.Name;
-                viewModel.Quantity = dataSet.Input.Quantity;
-                viewModel.UnitPrice = dataSet.Input.UnitPrice;
-            }
+            if (context.InputStatus == 0)
+                context.InputStatus = 2; // updated
         }
     }
 
-    private async Task DeleteRowClick(InvoiceRowViewModel context)
+    private async Task DeleteRowClick(InvoiceRowEditModel context)
     {
         var dialog = await DialogService.ShowConfirmationAsync("Sei sicuro di voler eliminare questo elemento?", "Sì", "No", "Eliminazione");
         var result = await dialog.Result;
         if (result.Cancelled)
             return;
 
-        // set input model as deleted
-        var inputModel = Model.Rows.Single(r => r.Id == context.Id);
-        inputModel.InputStatus = 3; 
-
-        // delete view model
-        Rows.Remove(context);
+        context.InputStatus = 3; // deleted
     }
 }

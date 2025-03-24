@@ -38,7 +38,6 @@
 
     private async Task CreateButtonClick()
     {
-        InvoiceInputModel model = new();
         DialogContent content = new();
         DialogParameters parameters = new()
             {
@@ -58,7 +57,6 @@
 
     private async Task EditButtonClick(InvoiceViewModel context)
     {
-        InvoiceInputModel model = new();
         DialogContent content = new() { Id = context.Id };
         DialogParameters parameters = new()
             {

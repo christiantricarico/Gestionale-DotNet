@@ -72,7 +72,7 @@ public class UpdateInvoice
                 row = MapInvoiceRow(row, requestRow);
             }
 
-            if (requestRow.InputStatus == InputStatus.Deleted)
+            if (requestRow.InputStatus == InputStatus.Deleted && requestRow.Id.HasValue)
             {
                 var row = invoice.Rows.Single(r => r.Id == requestRow.Id);
                 invoice.Rows.Remove(row);
