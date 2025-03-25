@@ -43,7 +43,7 @@
                         <FluentStack Orientation="Orientation.Vertical" Width="40px" Style="margin-top: 43px">
                             <FluentButton IconStart="@(new Icons.Regular.Size24.Add())" OnClick="AddRowClick" />
                         </FluentStack>
-                        <FluentDataGrid Items="Model.Rows.Where(r => r.InputStatus != 3).AsQueryable()" ShowHover="true">
+                        <FluentDataGrid Items="Model.Rows.Where(r => r.InputStatus != 3).AsQueryable()" RowSize="DataGridRowSize.Medium" ShowHover="true">
                             <PropertyColumn Property="@(p => p.Id)" />
                             <PropertyColumn Property="@(p => p.Description)" Title="Descrizione" />
                             <PropertyColumn Property="@(p => p.TaxRateName)" Title="Aliq.Iva" />
