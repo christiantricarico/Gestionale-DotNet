@@ -5,7 +5,7 @@
     <label for="navmenu-toggle" class="navmenu-icon"><FluentIcon Value="@(new Icons.Regular.Size20.Navigation())" Color="Color.Fill" /></label>
     <nav class="sitenav" aria-labelledby="main-menu" onclick="document.getElementById('navmenu-toggle').click();">
         <FluentNavMenu Id="main-menu" Collapsible="true" Width="250" Title="Navigation menu" @bind-Expanded="expanded">
-            <FluentNavLink Href="/" Match="NavLinkMatch.All" Icon="@(new Icons.Regular.Size20.Home())" IconColor="Color.Accent">Home</FluentNavLink>
+            <FluentNavLink Href="/" Match="NavLinkMatch.All" Icon="@(new Icons.Regular.Size20.Home())" IconColor="Color.Accent">Panoramica</FluentNavLink>
             <FluentNavLink Href="invoices" Icon="@(new Icons.Regular.Size20.List())" IconColor="Color.Accent">Fatture</FluentNavLink>
             <FluentNavGroup Title="Tabelle" Expanded="true" Icon="@(new Icons.Regular.Size20.Table())">
                 <FluentNavLink Href="customers" Icon="@(new Icons.Regular.Size20.List())" IconColor="Color.Accent">Clienti</FluentNavLink>
