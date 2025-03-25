@@ -49,7 +49,7 @@
                 PreventScroll = true
             };
 
-        var dialog = await DialogService.ShowDialogAsync<EditCustomerDialog>(content, parameters);
+        var dialog = await DialogService.ShowDialogAsync<CustomerEditDialog>(content, parameters);
 
         var result = await dialog.Result;
         if (!result.Cancelled)
@@ -69,7 +69,7 @@
                 PreventScroll = true
             };
 
-        var dialog = await DialogService.ShowDialogAsync<EditCustomerDialog>(content, parameters);
+        var dialog = await DialogService.ShowDialogAsync<CustomerEditDialog>(content, parameters);
 
         var result = await dialog.Result;
         if (!result.Cancelled)

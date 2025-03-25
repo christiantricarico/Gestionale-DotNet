@@ -143,7 +143,7 @@
                 Width = "700px"
             };
 
-        var dialog = await DialogService.ShowDialogAsync<EditInvoiceRowDialog>(content, parameters);
+        var dialog = await DialogService.ShowDialogAsync<InvoiceRowEditDialog>(content, parameters);
         var result = await dialog.Result;
         if (!result.Cancelled)
         {
@@ -163,7 +163,7 @@
                 Width = "700px"
             };
 
-        var dialog = await DialogService.ShowDialogAsync<EditInvoiceRowDialog>(context, parameters);
+        var dialog = await DialogService.ShowDialogAsync<InvoiceRowEditDialog>(context, parameters);
         var result = await dialog.Result;
         if (!result.Cancelled)
         {
