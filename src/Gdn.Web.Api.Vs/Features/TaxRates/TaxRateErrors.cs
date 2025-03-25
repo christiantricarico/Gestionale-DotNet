@@ -1,6 +1,4 @@
-﻿using Gdn.Application;
-
-namespace Gdn.Web.Api.Vs.Features.TaxRates;
+﻿namespace Gdn.Web.Api.Vs.Features.TaxRates;
 
 public static class TaxRateErrors
 {

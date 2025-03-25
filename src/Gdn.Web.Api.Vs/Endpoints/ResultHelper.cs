@@ -1,6 +1,4 @@
-﻿using Gdn.Application;
-
-namespace Gdn.Web.Api.Vs.Endpoints;
+﻿namespace Gdn.Web.Api.Vs.Endpoints;
 
 public static class ResultHelper
 {

@@ -1,6 +1,4 @@
-﻿using Gdn.Application;
-
-namespace Gdn.Web.Api.Vs.Features.MeasurementUnits;
+﻿namespace Gdn.Web.Api.Vs.Features.MeasurementUnits;
 
 public static class MeasurementUnitErrors
 {

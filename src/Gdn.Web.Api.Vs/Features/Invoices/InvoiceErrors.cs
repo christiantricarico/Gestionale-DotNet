@@ -1,6 +1,4 @@
-﻿using Gdn.Application;
-
-namespace Gdn.Web.Api.Vs.Features.Invoices;
+﻿namespace Gdn.Web.Api.Vs.Features.Invoices;
 
 public class InvoiceErrors
 {

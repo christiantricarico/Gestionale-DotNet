@@ -1,6 +1,4 @@
-﻿using Gdn.Application;
-
-namespace Gdn.Web.Api.Vs.Features.Customers;
+﻿namespace Gdn.Web.Api.Vs.Features.Customers;
 
 public static class CustomerErrors
 {
