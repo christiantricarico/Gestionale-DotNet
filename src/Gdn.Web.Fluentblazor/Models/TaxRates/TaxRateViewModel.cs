@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Gdn.Presentation.Shared.Models.TaxRates;
+namespace Gdn.Web.Fluentblazor.Models.TaxRates;
 
 public class TaxRateViewModel
 {

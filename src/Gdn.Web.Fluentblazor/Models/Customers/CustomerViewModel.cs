@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Gdn.Presentation.Shared.Models.Customers;
+namespace Gdn.Web.Fluentblazor.Models.Customers;
 
 public class CustomerViewModel
 {

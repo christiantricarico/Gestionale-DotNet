@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Gdn.Presentation.Shared.Models.Customers;
+namespace Gdn.Web.Fluentblazor.Models.MeasurementUnits;
 
-public class CustomerInputModel
+public class MeasurementUnitInputModel
 {
     public int? Id { get; set; }
 
@@ -14,6 +14,4 @@ public class CustomerInputModel
     public string? Name { get; set; }
 
     public string? Description { get; set; }
-    public string? FiscalCode { get; set; }
-    public string? VatNumber { get; set; }
 }

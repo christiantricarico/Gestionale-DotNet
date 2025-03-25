@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Gdn.Presentation.Shared.Models.Invoices;
+namespace Gdn.Web.Fluentblazor.Models.Invoices;
 
 public class InvoiceViewModel
 {

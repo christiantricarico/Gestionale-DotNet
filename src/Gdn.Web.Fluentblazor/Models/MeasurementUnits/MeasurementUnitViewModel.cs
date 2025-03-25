@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Gdn.Presentation.Shared.Models.MeasurementUnits;
+namespace Gdn.Web.Fluentblazor.Models.MeasurementUnits;
 
 public class MeasurementUnitViewModel
 {
