@@ -8,6 +8,10 @@ GET {{BaseUrl}}/3
 
 ###
 
+GET {{BaseUrl}}/pdf/3
+
+###
+
 POST {{BaseUrl}}
 Content-Type: application/json
 {

@@ -2,6 +2,7 @@ using FluentValidation;
 using Gdn.Persistence;
 using Gdn.Web.Api.Vs.Endpoints;
 using Microsoft.EntityFrameworkCore;
+using QuestPDF.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,5 +32,7 @@ app.MapDefaultEndpoints();
 app.UseHttpsRedirection();
 
 app.MapEndpoints();
+
+QuestPDF.Settings.License = LicenseType.Community;
 
 app.Run();
