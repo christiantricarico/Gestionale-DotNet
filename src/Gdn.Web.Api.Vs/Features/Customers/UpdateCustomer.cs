@@ -8,7 +8,9 @@ namespace Gdn.Web.Api.Vs.Features.Customers;
 
 public class UpdateCustomer
 {
-    public record Request(int Id, string Code, string? Name, string? Description, string? FiscalCode, string? VatNumber);
+    public record Request(int Id, string Code, string? Name, string? Description, string? FiscalCode, string? VatNumber,
+        string? Phone, string? Email, string? Website, string? Pec, string? Sdi, string? Notes,
+        string? Street, string? PostalCode, string? City, string? Province, string? Country);
     public record Response(int Id, string Code, string? Name, string? Description, string? FiscalCode, string? VatNumber);
 
     public sealed class Endpoint : IEndpoint
@@ -25,6 +27,18 @@ public class UpdateCustomer
         {
             RuleFor(e => e.Code).NotEmpty().MaximumLength(10);
             RuleFor(e => e.Name).MaximumLength(255);
+            RuleFor(e => e.FiscalCode).MaximumLength(20);
+            RuleFor(e => e.VatNumber).MaximumLength(20);
+            RuleFor(e => e.Phone).MaximumLength(50);
+            RuleFor(e => e.Email).MaximumLength(255);
+            RuleFor(e => e.Website).MaximumLength(255);
+            RuleFor(e => e.Pec).MaximumLength(255);
+            RuleFor(e => e.Sdi).MaximumLength(10);
+            RuleFor(e => e.Street).MaximumLength(255);
+            RuleFor(e => e.PostalCode).MaximumLength(10);
+            RuleFor(e => e.City).MaximumLength(50);
+            RuleFor(e => e.Province).MaximumLength(50);
+            RuleFor(e => e.Country).MaximumLength(50);
         }
     }
 
@@ -36,7 +50,8 @@ public class UpdateCustomer
 
         var customerRepository = unitOfWork.GetRepository<ICustomerRepository>();
 
-        var customer = await customerRepository.GetAsync(request.Id);
+        IEnumerable<string> includes = ["Addresses"];
+        var customer = await customerRepository.GetAsync(request.Id, includes);
         if (customer is null)
             return ResultHelper.NotFound(CustomerErrors.NotFound(request.Id));
 
@@ -54,6 +69,30 @@ public class UpdateCustomer
         customer.Description = request.Description;
         customer.FiscalCode = request.FiscalCode;
         customer.VatNumber = request.VatNumber;
+        customer.Phone = request.Phone;
+        customer.Email = request.Email;
+        customer.Website = request.Website;
+        customer.Pec = request.Pec;
+        customer.Sdi = request.Sdi;
+        customer.Notes = request.Notes;
+
+        MapAddress(customer, request);
+    }
+
+    private static void MapAddress(Customer customer, Request request)
+    {
+        var address = customer.Addresses.FirstOrDefault();
+        if (address is null)
+        {
+            address = new Address();
+            customer.Addresses.Add(address);
+        }
+
+        address.Street = request.Street;
+        address.PostalCode = request.PostalCode;
+        address.City = request.City;
+        address.Province = request.Province;
+        address.Country = request.Country;
     }
 
     private static Response MapResponse(Customer entity) =>

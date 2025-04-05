@@ -6,7 +6,9 @@ namespace Gdn.Web.Api.Vs.Features.Customers;
 
 public class GetCustomers
 {
-    public record Response(int Id, string Code, string? Name, string? Description, string? FiscalCode, string? VatNumber);
+    public record Response(int Id, string Code, string? Name, string? Description, string? FiscalCode, string? VatNumber,
+        string? Phone, string? Email, string? Website, string? Pec, string? Sdi, string? Notes,
+        string? Street, string? PostalCode, string? City, string? Province, string? Country);
 
     public sealed class Endpoint : IEndpoint
     {
@@ -18,7 +20,7 @@ public class GetCustomers
 
     private static async Task<IResult> Handler(ICustomerRepository customerRepository)
     {
-        var data = await customerRepository.GetAllAsync();
+        var data = await customerRepository.GetAllAsync(["Addresses"]);
         var responseData = data.Select(e => MapResponse(e));
 
         return ResultHelper.Ok(responseData);
@@ -26,6 +28,10 @@ public class GetCustomers
 
     private static Response MapResponse(Customer entity)
     {
-        return new(entity.Id, entity.Code, entity.Name, entity.Description, entity.FiscalCode, entity.VatNumber);
+        var address = entity.Addresses.FirstOrDefault();
+
+        return new(entity.Id, entity.Code, entity.Name, entity.Description, entity.FiscalCode, entity.VatNumber,
+            entity.Phone, entity.Email, entity.Website, entity.Pec, entity.Sdi, entity.Notes,
+            address?.Street, address?.PostalCode, address?.City, address?.Province, address?.Country);
     }
 }

@@ -4,7 +4,7 @@ GET {{BaseUrl}}
 
 ###
 
-GET {{BaseUrl}}/1
+GET {{BaseUrl}}/2
 
 ###
 
@@ -37,7 +37,17 @@ Content-Type: application/json
 {
     "code": "CUS002",
     "name": "Customer 2",
-    "description": "Customer description 2"
+    "description": "Customer description 2",
+    "phone": "+39 06 12345678",
+    "email": "customer@gdn.it",
+    "website": "https://www.gdn.it",
+    "sdi": "1234567",
+    "notes": "Customer notes",
+    "street": "Via Roma",
+    "postalCode": "00100",
+    "city": "Rome",
+    "province": "RM",
+    "country": "Italy"
 }
 
 ###
@@ -51,7 +61,17 @@ Content-Type: application/json
     "name": "Customer 1 - updated",
     "description": "Customer description 1 - updated",
     "fiscalCode": "TRCCRS83L08D883Q",
-    "vatNumber": "04429150750"
+    "vatNumber": "04429150750",
+    "phone": "+39 06 12345678",
+    "email": "customer@gdn.it",
+    "website": "https://www.gdn.it",
+    "sdi": "1234567",
+    "notes": "Customer notes",
+    "street": "Via Roma - updated",
+    "postalCode": "00100",
+    "city": "Rome",
+    "province": "RM",
+    "country": "Italy"
 }
 
 ###
