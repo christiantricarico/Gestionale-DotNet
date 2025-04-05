@@ -40,7 +40,7 @@
 
     private async Task CreateButtonClick()
     {
-        CustomerInputModel model = new();
+        CustomerEditModel model = new();
         DialogContent content = new();
         DialogParameters parameters = new()
             {
@@ -60,7 +60,7 @@
 
     private async Task EditButtonClick(CustomerViewModel context)
     {
-        CustomerInputModel model = new();
+        CustomerEditModel model = new();
         DialogContent content = new() { Id = context.Id };
         DialogParameters parameters = new()
             {
