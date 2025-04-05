@@ -17,10 +17,57 @@ namespace Gdn.Persistence.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.2")
+                .HasAnnotation("ProductVersion", "9.0.3")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("Gdn.Domain.Models.Address", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("City")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Country")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("CustomerId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("PostalCode")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("Province")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Street")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CustomerId");
+
+                    b.ToTable("Addresses");
+                });
 
             modelBuilder.Entity("Gdn.Domain.Models.Customer", b =>
                 {
@@ -41,6 +88,10 @@ namespace Gdn.Persistence.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Email")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
                     b.Property<string>("FiscalCode")
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
@@ -52,6 +103,21 @@ namespace Gdn.Persistence.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
+                    b.Property<string>("Notes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Pec")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("Phone")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Sdi")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
@@ -59,9 +125,13 @@ namespace Gdn.Persistence.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
+                    b.Property<string>("Website")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
                     b.HasKey("Id");
 
-                    b.ToTable("Customer");
+                    b.ToTable("Customers");
                 });
 
             modelBuilder.Entity("Gdn.Domain.Models.Invoice", b =>
@@ -183,7 +253,7 @@ namespace Gdn.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("MeasurementUnit");
+                    b.ToTable("MeasurementUnits");
                 });
 
             modelBuilder.Entity("Gdn.Domain.Models.Product", b =>
@@ -515,6 +585,17 @@ namespace Gdn.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Gdn.Domain.Models.Address", b =>
+                {
+                    b.HasOne("Gdn.Domain.Models.Customer", "Customer")
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Customer");
+                });
+
             modelBuilder.Entity("Gdn.Domain.Models.Invoice", b =>
                 {
                     b.HasOne("Gdn.Domain.Models.Customer", "Customer")
@@ -529,7 +610,7 @@ namespace Gdn.Persistence.Migrations
             modelBuilder.Entity("Gdn.Domain.Models.InvoiceRow", b =>
                 {
                     b.HasOne("Gdn.Domain.Models.Invoice", "Invoice")
-                        .WithMany()
+                        .WithMany("Rows")
                         .HasForeignKey("InvoiceId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -580,6 +661,11 @@ namespace Gdn.Persistence.Migrations
                         .HasForeignKey("TaxRateNatureId");
 
                     b.Navigation("TaxRateNature");
+                });
+
+            modelBuilder.Entity("Gdn.Domain.Models.Invoice", b =>
+                {
+                    b.Navigation("Rows");
                 });
 #pragma warning restore 612, 618
         }

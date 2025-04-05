@@ -12,5 +12,10 @@ internal class CustomerConfiguration : IEntityTypeConfiguration<Customer>
         builder.Property(e => e.Name).HasMaxLength(255);
         builder.Property(e => e.FiscalCode).HasMaxLength(20);
         builder.Property(e => e.VatNumber).HasMaxLength(20);
+        builder.Property(e => e.Phone).HasMaxLength(50);
+        builder.Property(e => e.Email).HasMaxLength(255);
+        builder.Property(e => e.Website).HasMaxLength(255);
+        builder.Property(e => e.Pec).HasMaxLength(255);
+        builder.Property(e => e.Sdi).HasMaxLength(10);
     }
 }

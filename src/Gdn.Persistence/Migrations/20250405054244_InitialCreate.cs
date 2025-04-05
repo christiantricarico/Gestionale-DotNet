@@ -14,13 +14,19 @@ namespace Gdn.Persistence.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Customer",
+                name: "Customers",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     FiscalCode = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
                     VatNumber = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
+                    Phone = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    Email = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
+                    Website = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
+                    Pec = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
+                    Sdi = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: true),
+                    Notes = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     IsDeleted = table.Column<bool>(type: "bit", nullable: false),
@@ -30,11 +36,11 @@ namespace Gdn.Persistence.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Customer", x => x.Id);
+                    table.PrimaryKey("PK_Customers", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "MeasurementUnit",
+                name: "MeasurementUnits",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
@@ -48,7 +54,7 @@ namespace Gdn.Persistence.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_MeasurementUnit", x => x.Id);
+                    table.PrimaryKey("PK_MeasurementUnits", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -92,6 +98,33 @@ namespace Gdn.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Addresses",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    CustomerId = table.Column<int>(type: "int", nullable: false),
+                    Street = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
+                    PostalCode = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: true),
+                    City = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    Province = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    Country = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Addresses", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Addresses_Customers_CustomerId",
+                        column: x => x.CustomerId,
+                        principalTable: "Customers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Invoices",
                 columns: table => new
                 {
@@ -108,9 +141,9 @@ namespace Gdn.Persistence.Migrations
                 {
                     table.PrimaryKey("PK_Invoices", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Invoices_Customer_CustomerId",
+                        name: "FK_Invoices_Customers_CustomerId",
                         column: x => x.CustomerId,
-                        principalTable: "Customer",
+                        principalTable: "Customers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -167,9 +200,9 @@ namespace Gdn.Persistence.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_InvoiceRows_MeasurementUnit_MeasurementUnitId",
+                        name: "FK_InvoiceRows_MeasurementUnits_MeasurementUnitId",
                         column: x => x.MeasurementUnitId,
-                        principalTable: "MeasurementUnit",
+                        principalTable: "MeasurementUnits",
                         principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_InvoiceRows_TaxRates_TaxRateId",
@@ -241,6 +274,11 @@ namespace Gdn.Persistence.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_Addresses_CustomerId",
+                table: "Addresses",
+                column: "CustomerId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_InvoiceRows_InvoiceId",
                 table: "InvoiceRows",
                 column: "InvoiceId");
@@ -285,6 +323,9 @@ namespace Gdn.Persistence.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
+                name: "Addresses");
+
+            migrationBuilder.DropTable(
                 name: "InvoiceRows");
 
             migrationBuilder.DropTable(
@@ -294,7 +335,7 @@ namespace Gdn.Persistence.Migrations
                 name: "Invoices");
 
             migrationBuilder.DropTable(
-                name: "MeasurementUnit");
+                name: "MeasurementUnits");
 
             migrationBuilder.DropTable(
                 name: "ProductCategories");
@@ -303,7 +344,7 @@ namespace Gdn.Persistence.Migrations
                 name: "TaxRates");
 
             migrationBuilder.DropTable(
-                name: "Customer");
+                name: "Customers");
 
             migrationBuilder.DropTable(
                 name: "TaxRateNatures");
