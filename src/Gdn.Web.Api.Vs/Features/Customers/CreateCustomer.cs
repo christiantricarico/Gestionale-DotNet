@@ -8,7 +8,9 @@ namespace Gdn.Web.Api.Vs.Features.Customers;
 
 public class CreateCustomer
 {
-    public record Request(string Code, string? Name, string? Description, string? FiscalCode, string? VatNumber);
+    public record Request(string Code, string? Name, string? Description, string? FiscalCode, string? VatNumber,
+        string? Phone, string? Email, string? Website, string? Pec, string? Sdi, string? Notes,
+        string? Street, string? PostalCode, string? City, string? Province, string? Country);
     public record Response(int Id, string Code, string? Name, string? Description, string? FiscalCode, string? VatNumber);
 
     public sealed class Endpoint : IEndpoint
@@ -25,6 +27,18 @@ public class CreateCustomer
         {
             RuleFor(e => e.Code).NotEmpty().MaximumLength(10);
             RuleFor(e => e.Name).MaximumLength(255);
+            RuleFor(e => e.FiscalCode).MaximumLength(20);
+            RuleFor(e => e.VatNumber).MaximumLength(20);
+            RuleFor(e => e.Phone).MaximumLength(50);
+            RuleFor(e => e.Email).MaximumLength(255);
+            RuleFor(e => e.Website).MaximumLength(255);
+            RuleFor(e => e.Pec).MaximumLength(255);
+            RuleFor(e => e.Sdi).MaximumLength(10);
+            RuleFor(e => e.Street).MaximumLength(255);
+            RuleFor(e => e.PostalCode).MaximumLength(10);
+            RuleFor(e => e.City).MaximumLength(50);
+            RuleFor(e => e.Province).MaximumLength(50);
+            RuleFor(e => e.Country).MaximumLength(50);
         }
     }
 
@@ -35,6 +49,9 @@ public class CreateCustomer
             return ResultHelper.BadRequest(validationResult.Errors);
 
         var customer = MapCustomer(request);
+
+        var address = MapAddress(request);
+        customer.Addresses.Add(address);
 
         var customerRepository = unitOfWork.GetRepository<ICustomerRepository>();
         customerRepository.Add(customer);
@@ -51,6 +68,21 @@ public class CreateCustomer
         Name = request.Name,
         Description = request.Description,
         FiscalCode = request.FiscalCode,
-        VatNumber = request.VatNumber
+        VatNumber = request.VatNumber,
+        Phone = request.Phone,
+        Email = request.Email,
+        Website = request.Website,
+        Pec = request.Pec,
+        Sdi = request.Sdi,
+        Notes = request.Notes
+    };
+
+    private static Address MapAddress(Request request) => new()
+    {
+        Street = request.Street,
+        PostalCode = request.PostalCode,
+        City = request.City,
+        Province = request.Province,
+        Country = request.Country
     };
 }

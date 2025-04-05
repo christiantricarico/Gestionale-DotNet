@@ -17,8 +17,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Frontend", "Frontend", "{AD
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gdn.Web.Fluentblazor", "Gdn.Web.Fluentblazor\Gdn.Web.Fluentblazor.csproj", "{6E8650DE-DDEE-4009-B079-41EA77DBAE89}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{0020C031-90C3-41E5-B517-D2D6CED40D68}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gdn.Web.Api.Vs", "Gdn.Web.Api.Vs\Gdn.Web.Api.Vs.csproj", "{238ED545-CC95-4F55-9717-277CB172163A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gdn.AppHost", "Gdn.AppHost\Gdn.AppHost.csproj", "{A78BAFC3-AFBE-4356-92F4-3EB9BF298F1E}"

@@ -12,4 +12,6 @@ public class Customer : RegistryEntity<int>
     public string? Pec { get; set; }
     public string? Sdi { get; set; }
     public string? Notes { get; set; }
+
+    public ICollection<Address> Addresses { get; set; } = new List<Address>();
 }

@@ -16,7 +16,17 @@ Content-Type: application/json
     "name": "Customer 1",
     "description": "Customer description 1",
     "fiscalCode": null,
-    "vatNumber": "04429150750"
+    "vatNumber": "04429150750",
+    "phone": "+39 06 12345678",
+    "email": "customer@gdn.it",
+    "website": "https://www.gdn.it",
+    "sdi": "1234567",
+    "notes": "Customer notes",
+    "street": "Via Roma",
+    "postalCode": "00100",
+    "city": "Rome",
+    "province": "RM",
+    "country": "Italy"
 }
 
 ###
