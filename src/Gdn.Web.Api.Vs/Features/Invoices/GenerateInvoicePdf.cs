@@ -33,12 +33,14 @@ public class GenerateInvoicePdf
 
     private static async Task<InvoiceReportModel> GetReportDataAsync(IInvoiceRepository invoiceRepository, int invoiceId)
     {
-        Invoice? data = await invoiceRepository.GetAsync(invoiceId, ["Customer", "Rows.TaxRate", "Rows.MeasurementUnit"]);
+        Invoice? data = await invoiceRepository.GetAsync(invoiceId, ["Customer.Addresses", "Rows.TaxRate", "Rows.MeasurementUnit"]);
 
         if (data is null)
             throw new Exception("Invoice not found");
 
-        // map data to report model
+        var customer = data.Customer;
+        var customerAddress = customer.Addresses.FirstOrDefault();
+
         var reportModel = new InvoiceReportModel
         {
             Number = data.Number,
@@ -56,12 +58,12 @@ public class GenerateInvoicePdf
             },
             CustomerAddress = new Address
             {
-                CompanyName = data.Customer?.Name,
-                Street = "Customer Street",
-                City = "Customer City",
-                State = "Customer State",
-                Email = "Customer Email",
-                Phone = "Customer Phone"
+                CompanyName = customer?.Name,
+                Street = customerAddress?.Street,
+                City = customerAddress?.City,
+                State = customerAddress?.Province,
+                Email = customer?.Email,
+                Phone = customer?.Phone
             },
             Rows = data.Rows.Select(row => new InvoiceRowReportModel
             {
