@@ -1,5 +1,6 @@
 using FluentValidation;
 using Gdn.Persistence;
+using Gdn.Web.Api.Vs;
 using Gdn.Web.Api.Vs.Endpoints;
 using Microsoft.EntityFrameworkCore;
 using QuestPDF.Infrastructure;
@@ -24,6 +25,10 @@ builder.Services.AddPersistence(options =>
 builder.Services.AddEndpoints();
 
 builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);
+
+builder.Services.AddOptions<CompanyData>()
+    .Bind(builder.Configuration.GetSection("CompanyData"))
+    .ValidateOnStart();
 
 var app = builder.Build();
 

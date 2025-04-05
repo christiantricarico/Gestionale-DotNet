@@ -1,6 +1,7 @@
 ﻿using Gdn.Domain.Data.Repositories;
 using Gdn.Domain.Models;
 using Gdn.Web.Api.Vs.Endpoints;
+using Microsoft.Extensions.Options;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
@@ -17,21 +18,21 @@ public class GenerateInvoicePdf
         }
     }
 
-    private static async Task<IResult> Handler(IInvoiceRepository invoiceRepository, int id)
+    private static async Task<IResult> Handler(int id, IOptions<CompanyData> companyData, IInvoiceRepository invoiceRepository)
     {
-        await GeneratePdfAsync(invoiceRepository, id);
+        await GeneratePdfAsync(id, companyData.Value, invoiceRepository);
 
         return ResultHelper.Ok("PDF content here");
     }
 
-    private static async Task GeneratePdfAsync(IInvoiceRepository invoiceRepository, int invoiceId)
+    private static async Task GeneratePdfAsync(int invoiceId, CompanyData companyData, IInvoiceRepository invoiceRepository)
     {
-        InvoiceReportModel model = await GetReportDataAsync(invoiceRepository, invoiceId);
+        InvoiceReportModel model = await GetReportDataAsync(invoiceId, companyData, invoiceRepository);
         var document = new InvoiceDocument(model);
         document.GeneratePdfAndShow();
     }
 
-    private static async Task<InvoiceReportModel> GetReportDataAsync(IInvoiceRepository invoiceRepository, int invoiceId)
+    private static async Task<InvoiceReportModel> GetReportDataAsync(int invoiceId, CompanyData companyData, IInvoiceRepository invoiceRepository)
     {
         Invoice? data = await invoiceRepository.GetAsync(invoiceId, ["Customer.Addresses", "Rows.TaxRate", "Rows.MeasurementUnit"]);
 
@@ -49,19 +50,21 @@ public class GenerateInvoicePdf
             Notes = "Test di generazione report fattura con QuestPDF",
             SellerAddress = new Address()
             {
-                CompanyName = "Seller Name",
-                Street = "Seller Street",
-                City = "Seller City",
-                State = "Seller State",
-                Email = "Seller Email",
-                Phone = "Seller Phone"
+                CompanyName = companyData.Name,
+                Street = companyData.Street,
+                PostalCode = companyData.PostalCode,
+                City = companyData.City,
+                Province = companyData.Province,
+                Email = companyData.Email,
+                Phone = companyData.Phone
             },
             CustomerAddress = new Address
             {
                 CompanyName = customer?.Name,
                 Street = customerAddress?.Street,
+                PostalCode = customerAddress?.PostalCode,
                 City = customerAddress?.City,
-                State = customerAddress?.Province,
+                Province = customerAddress?.Province,
                 Email = customer?.Email,
                 Phone = customer?.Phone
             },
@@ -101,10 +104,11 @@ public class GenerateInvoicePdf
     internal sealed class Address
     {
         public string? CompanyName { get; set; }
+        public string? PostalCode { get; set; }
         public string? Street { get; set; }
         public string? City { get; set; }
-        public string? State { get; set; }
-        public object? Email { get; set; }
+        public string? Province { get; set; }
+        public string? Email { get; set; }
         public string? Phone { get; set; }
     }
 
@@ -260,7 +264,7 @@ public class GenerateInvoicePdf
 
                 column.Item().Text(Address.CompanyName);
                 column.Item().Text(Address.Street);
-                column.Item().Text($"{Address.City}, {Address.State}");
+                column.Item().Text($"{Address.PostalCode} {Address.City}, {Address.Province}");
                 column.Item().Text(Address.Email);
                 column.Item().Text(Address.Phone);
             });
