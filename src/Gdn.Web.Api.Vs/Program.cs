@@ -27,7 +27,7 @@ builder.Services.AddEndpoints();
 builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);
 
 builder.Services
-    .AddOptions()
+    .AddConfigOptions(builder.Configuration)
     .AddReports();
 
 var app = builder.Build();

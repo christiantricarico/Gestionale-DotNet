@@ -46,13 +46,13 @@ internal sealed class InvoiceDocument : IDocument
 
                 column.Item().Text(text =>
                 {
-                    text.Span("Issue date: ").SemiBold();
+                    text.Span("Data fattura: ").SemiBold();
                     text.Span($"{Model.Date:d}");
                 });
 
                 column.Item().Text(text =>
                 {
-                    text.Span("Due date: ").SemiBold();
+                    text.Span("Data scadenza: ").SemiBold();
                     text.Span($"{Model.Date:d}");
                 });
             });
@@ -69,9 +69,9 @@ internal sealed class InvoiceDocument : IDocument
 
             column.Item().Row(row =>
             {
-                row.RelativeItem().Component(new AddressComponent("Da", Model.SellerAddress));
+                row.RelativeItem().Component(new AddressComponent("Fornitore", Model.SellerAddress));
                 row.ConstantItem(50);
-                row.RelativeItem().Component(new AddressComponent("Per", Model.CustomerAddress));
+                row.RelativeItem().Component(new AddressComponent("Cliente", Model.CustomerAddress));
             });
 
             column.Item().Element(ComposeTable);
@@ -97,10 +97,10 @@ internal sealed class InvoiceDocument : IDocument
             table.Header(header =>
             {
                 header.Cell().Element(CellStyle).Text("#");
-                header.Cell().Element(CellStyle).Text("Product");
-                header.Cell().Element(CellStyle).AlignRight().Text("Unit price");
-                header.Cell().Element(CellStyle).AlignRight().Text("Quantity");
-                header.Cell().Element(CellStyle).AlignRight().Text("Total");
+                header.Cell().Element(CellStyle).Text("Descrizione");
+                header.Cell().Element(CellStyle).AlignRight().Text("Prezzo unit.");
+                header.Cell().Element(CellStyle).AlignRight().Text("Quantità");
+                header.Cell().Element(CellStyle).AlignRight().Text("Totale");
 
                 static IContainer CellStyle(IContainer container)
                 {

@@ -4,7 +4,7 @@ namespace Gdn.Web.Api.Vs;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddOptions(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddConfigOptions(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddOptions<CompanyData>()
             .Bind(configuration.GetSection("CompanyData"))
