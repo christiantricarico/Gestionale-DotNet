@@ -92,6 +92,7 @@ internal sealed class InvoiceDocument : IDocument
                 columns.RelativeColumn();
                 columns.RelativeColumn();
                 columns.RelativeColumn();
+                columns.RelativeColumn();
             });
 
             table.Header(header =>
@@ -101,6 +102,7 @@ internal sealed class InvoiceDocument : IDocument
                 header.Cell().Element(CellStyle).AlignRight().Text("Prezzo unit.");
                 header.Cell().Element(CellStyle).AlignRight().Text("Quantità");
                 header.Cell().Element(CellStyle).AlignRight().Text("Totale");
+                header.Cell().Element(CellStyle).AlignRight().Text("Iva");
 
                 static IContainer CellStyle(IContainer container)
                 {
@@ -115,6 +117,7 @@ internal sealed class InvoiceDocument : IDocument
                 table.Cell().Element(CellStyle).AlignRight().Text($"{item.UnitPrice:c}");
                 table.Cell().Element(CellStyle).AlignRight().Text($"{item.Quantity:n3}");
                 table.Cell().Element(CellStyle).AlignRight().Text($"{(item.UnitPrice * item.Quantity):c}");
+                table.Cell().Element(CellStyle).AlignRight().Text($"{item.TaxRate:n0}%");
 
                 static IContainer CellStyle(IContainer container)
                 {
