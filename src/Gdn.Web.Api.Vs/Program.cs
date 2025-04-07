@@ -26,9 +26,9 @@ builder.Services.AddEndpoints();
 
 builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);
 
-builder.Services.AddOptions<CompanyData>()
-    .Bind(builder.Configuration.GetSection("CompanyData"))
-    .ValidateOnStart();
+builder.Services
+    .AddOptions()
+    .AddReports();
 
 var app = builder.Build();
 
