@@ -14,6 +14,7 @@
         <PropertyColumn Property="@(p => p.CustomerName)" Sortable="true" />
         <TemplateColumn Title="Azioni" Align="@Align.End">
             <FluentButton aria-label="Stampa" IconEnd="@(new Icons.Regular.Size16.Print())" OnClick="@(() => PrintButtonClick(context))" />
+            <FluentButton aria-label="Xml" IconEnd="@(new Icons.Regular.Size16.ArrowDownload())" OnClick="@(() => DownloadButtonClick(context))" />
             <FluentButton aria-label="Modifica" IconEnd="@(new Icons.Regular.Size16.Edit())" OnClick="@(() => EditButtonClick(context))" />
             <FluentButton aria-label="Elimina" IconEnd="@(new Icons.Regular.Size16.Delete())" OnClick="@(() => DeleteButtonClick(context))" />
         </TemplateColumn>
@@ -59,6 +60,12 @@
     private async Task PrintButtonClick(InvoiceViewModel context)
     {
         string uri = $"invoices/pdf/{context.Id}";
+        await HttpClient.GetAsync(uri);
+    }
+
+    private async Task DownloadButtonClick(InvoiceViewModel context)
+    {
+        string uri = $"invoices/xml/{context.Id}";
         await HttpClient.GetAsync(uri);
     }
 

@@ -28,7 +28,8 @@ builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);
 
 builder.Services
     .AddConfigOptions(builder.Configuration)
-    .AddReports();
+    .AddReports()
+    .AddFatturaElettronica();
 
 var app = builder.Build();
 

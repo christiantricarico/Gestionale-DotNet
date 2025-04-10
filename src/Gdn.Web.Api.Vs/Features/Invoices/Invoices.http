@@ -12,6 +12,10 @@ GET {{BaseUrl}}/pdf/1
 
 ###
 
+GET {{BaseUrl}}/xml/1
+
+###
+
 POST {{BaseUrl}}
 Content-Type: application/json
 {
