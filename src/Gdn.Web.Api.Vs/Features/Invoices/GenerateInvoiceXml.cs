@@ -1,5 +1,6 @@
 ﻿using Gdn.Web.Api.Vs.Endpoints;
 using Gdn.Web.Api.Vs.Features.Invoices.Xml;
+using System.Net.Mime;
 
 namespace Gdn.Web.Api.Vs.Features.Invoices;
 
@@ -17,6 +18,8 @@ public class GenerateInvoiceXml
     {
         var stream = await xmlGenerator.GenerateXmlStream(id);
         stream.Position = 0; // Reset the stream position to the beginning
-        return TypedResults.File(stream, "application/xml", "invoice.xml");
+        return TypedResults.File(stream,
+            contentType: MediaTypeNames.Application.Octet,
+            fileDownloadName: "invoice.xml");
     }
 }
