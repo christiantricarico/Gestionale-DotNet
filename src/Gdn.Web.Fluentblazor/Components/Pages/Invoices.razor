@@ -2,6 +2,7 @@
 
 @inject IHttpClientFactory HttpClientFactory
 @inject IDialogService DialogService
+@inject IJSRuntime JS
 
 <h3>Fatture</h3>
 
@@ -46,7 +47,7 @@
                 Title = $"Creazione Fattura",
                 PreventDismissOnOverlayClick = true,
                 PreventScroll = true,
-                Width = "80%", 
+                Width = "80%",
                 TrapFocus = false // avoid not working focus when multiple dialogs are opened
             };
 
@@ -66,7 +67,18 @@
     private async Task DownloadButtonClick(InvoiceViewModel context)
     {
         string uri = $"invoices/xml/{context.Id}";
-        await HttpClient.GetAsync(uri);
+        HttpResponseMessage responseMessage = await HttpClient.GetAsync(uri);
+        if (responseMessage.IsSuccessStatusCode)
+        {
+            var fileName = responseMessage.Content.Headers.ContentDisposition?.FileName?.Trim('"');
+            var fileStream = await responseMessage.Content.ReadAsStreamAsync();
+            using var streamRef = new DotNetStreamReference(stream: fileStream);
+            await JS.InvokeVoidAsync("downloadFileFromStream", fileName, streamRef);
+        }
+        else
+        {
+            await DialogService.ShowErrorAsync("Errore durante il download del file XML", "Errore generazione xml");
+        }
     }
 
     private async Task EditButtonClick(InvoiceViewModel context)
