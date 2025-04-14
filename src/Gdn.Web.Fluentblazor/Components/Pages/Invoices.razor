@@ -77,7 +77,9 @@
         }
         else
         {
-            await DialogService.ShowErrorAsync("Errore durante il download del file XML", "Errore generazione xml");
+            var problemDetails = await responseMessage.Content.ReadFromJsonAsync<ProblemDetails>();
+            string errorMessage = problemDetails?.Detail ?? "Errore durante il download del file XML";
+            await DialogService.ShowErrorAsync(errorMessage, "Errore generazione xml");
         }
     }
 

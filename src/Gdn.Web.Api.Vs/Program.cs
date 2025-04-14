@@ -31,6 +31,8 @@ builder.Services
     .AddReports()
     .AddFatturaElettronica();
 
+builder.Services.AddProblemDetails();
+
 var app = builder.Build();
 
 app.MapDefaultEndpoints();
@@ -38,6 +40,9 @@ app.MapDefaultEndpoints();
 app.UseHttpsRedirection();
 
 app.MapEndpoints();
+
+//app.UseExceptionHandler(); // Converts unhandled exceptions into Problem Details responses
+//app.UseStatusCodePages(); // Returns the Problem Details response for (empty) non-successful responses
 
 QuestPDF.Settings.License = LicenseType.Community;
 
