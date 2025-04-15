@@ -18,6 +18,7 @@ public class GenerateInvoiceXml
     {
         var stream = await xmlGenerator.GenerateXmlStream(id);
         stream.Position = 0; // Reset the stream position to the beginning
+
         return TypedResults.File(stream,
             contentType: MediaTypeNames.Application.Octet,
             fileDownloadName: "invoice.xml");

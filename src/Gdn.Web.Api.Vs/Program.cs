@@ -4,6 +4,7 @@ using Gdn.Web.Api.Vs;
 using Gdn.Web.Api.Vs.Endpoints;
 using Microsoft.EntityFrameworkCore;
 using QuestPDF.Infrastructure;
+using TinyHelpers.AspNetCore.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,7 +32,10 @@ builder.Services
     .AddReports()
     .AddFatturaElettronica();
 
-builder.Services.AddProblemDetails();
+// from tinyhelpers lib -> by default add detail, instance, traceid, stacktrace to problem details response
+// https://www.youtube.com/watch?v=anqV3zkeyrM
+builder.Services.AddDefaultProblemDetails();
+builder.Services.AddDefaultExceptionHandler();
 
 var app = builder.Build();
 
@@ -39,10 +43,10 @@ app.MapDefaultEndpoints();
 
 app.UseHttpsRedirection();
 
-app.MapEndpoints();
+app.UseExceptionHandler(); // Converts unhandled exceptions into Problem Details responses in production environment
+app.UseStatusCodePages(); // Returns the Problem Details response for (empty) non-successful responses
 
-//app.UseExceptionHandler(); // Converts unhandled exceptions into Problem Details responses
-//app.UseStatusCodePages(); // Returns the Problem Details response for (empty) non-successful responses
+app.MapEndpoints();
 
 QuestPDF.Settings.License = LicenseType.Community;
 
