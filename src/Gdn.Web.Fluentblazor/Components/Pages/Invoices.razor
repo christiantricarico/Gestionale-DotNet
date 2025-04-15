@@ -61,7 +61,9 @@
     private async Task PrintButtonClick(InvoiceViewModel context)
     {
         string uri = $"invoices/pdf/{context.Id}";
-        await HttpClient.GetAsync(uri);
+        var response = await HttpClient.GetAsync(uri);
+        if (!response.IsSuccessStatusCode)
+            await DialogService.ShowResponseErrorAsync(response);
     }
 
     private async Task DownloadButtonClick(InvoiceViewModel context)
@@ -76,11 +78,7 @@
             await JS.InvokeVoidAsync("downloadFileFromStream", fileName, streamRef);
         }
         else
-        {
-            var problemDetails = await responseMessage.Content.ReadFromJsonAsync<ProblemDetails>();
-            string errorMessage = problemDetails?.Detail ?? "Errore durante il download del file XML";
-            await DialogService.ShowErrorAsync(errorMessage, "Errore generazione xml");
-        }
+            await DialogService.ShowResponseErrorAsync(responseMessage);
     }
 
     private async Task EditButtonClick(InvoiceViewModel context)
@@ -110,7 +108,13 @@
             return;
 
         string uri = $"invoices/{context.Id}";
-        await HttpClient.DeleteAsync(uri);
+        var response = await HttpClient.DeleteAsync(uri);
+        if (!response.IsSuccessStatusCode)
+        {
+            await DialogService.ShowResponseErrorAsync(response);
+            return;
+        }
+
         await ReloadGrid();
     }
 }

@@ -80,7 +80,13 @@
             return;
 
         string uri = $"measurementunits/{context.Id}";
-        await HttpClient.DeleteAsync(uri);
+        var response = await HttpClient.DeleteAsync(uri);
+        if (!response.IsSuccessStatusCode)
+        {
+            await DialogService.ShowResponseErrorAsync(response);
+            return;
+        }
+
         await ReloadGrid();
     }
 }
