@@ -23,6 +23,7 @@ public static class DependencyInjection
     public static IServiceCollection AddFatturaElettronica(this IServiceCollection services)
     {
         services.AddScoped<InvoiceXmlGenerator>();
+        services.AddScoped<InvoiceXmlFileNameGenerator>();
         return services;
     }
 }

@@ -14,13 +14,18 @@ public class GenerateInvoiceXml
         }
     }
 
-    private static async Task<IResult> Handler(int id, InvoiceXmlGenerator xmlGenerator)
+    private static async Task<IResult> Handler(
+        int id,
+        InvoiceXmlGenerator xmlGenerator,
+        InvoiceXmlFileNameGenerator xmlFileNameGenerator)
     {
         var stream = await xmlGenerator.GenerateXmlStream(id);
         stream.Position = 0; // Reset the stream position to the beginning
 
+        string xmlFileName = await xmlFileNameGenerator.GenerateAsync(id);
+
         return TypedResults.File(stream,
             contentType: MediaTypeNames.Application.Octet,
-            fileDownloadName: "invoice.xml");
+            fileDownloadName: xmlFileName);
     }
 }
