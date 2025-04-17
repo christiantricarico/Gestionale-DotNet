@@ -18,20 +18,20 @@ internal sealed class InvoiceDocument : IDocument
 
     public void Compose(IDocumentContainer container)
     {
-        container
-            .Page(page =>
-            {
-                page.Margin(50);
+        container.Page(page =>
+        {
+            page.Size(PageSizes.A4);
+            page.Margin(50);
 
-                page.Header().Element(ComposeHeader);
-                page.Content().Element(ComposeContent);
-                page.Footer().AlignCenter().Text(x =>
-                {
-                    x.CurrentPageNumber();
-                    x.Span(" / ");
-                    x.TotalPages();
-                });
+            page.Header().Element(ComposeHeader);
+            page.Content().Element(ComposeContent);
+            page.Footer().AlignCenter().Text(x =>
+            {
+                x.CurrentPageNumber();
+                x.Span(" / ");
+                x.TotalPages();
             });
+        });
     }
 
     private void ComposeHeader(IContainer container)
