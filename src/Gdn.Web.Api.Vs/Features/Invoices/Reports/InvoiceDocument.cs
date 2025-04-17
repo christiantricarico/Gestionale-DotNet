@@ -124,6 +124,21 @@ internal sealed class InvoiceDocument : IDocument
                     return container.BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingVertical(5);
                 }
             }
+
+            table.Footer(footer =>
+            {
+                footer.Cell().Element(CellStyle);
+                footer.Cell().Element(CellStyle);
+                footer.Cell().Element(CellStyle);
+                footer.Cell().Element(CellStyle);
+                footer.Cell().Element(CellStyle).PaddingBottom(5).AlignRight().Text($"{Model.Rows.Sum(x => x.UnitPrice * x.Quantity):c}");
+                footer.Cell().Element(CellStyle);
+
+                static IContainer CellStyle(IContainer container)
+                {
+                    return container.DefaultTextStyle(x => x.SemiBold()).PaddingVertical(5).BorderBottom(1).BorderColor(Colors.Black);
+                }
+            });
         });
     }
 
