@@ -65,7 +65,7 @@ internal sealed class InvoiceDocument : IDocument
     {
         container.PaddingVertical(40).Column(column =>
         {
-            column.Spacing(5);
+            column.Spacing(15);
 
             column.Item().Row(row =>
             {
@@ -75,9 +75,7 @@ internal sealed class InvoiceDocument : IDocument
             });
 
             column.Item().Element(ComposeTable);
-
-            if (!string.IsNullOrWhiteSpace(Model.Notes))
-                column.Item().PaddingTop(25).Element(ComposeComments);
+            column.Item().Element(ComposeSummary);
         });
     }
 
@@ -124,31 +122,71 @@ internal sealed class InvoiceDocument : IDocument
                     return container.BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingVertical(5);
                 }
             }
-
-            table.Footer(footer =>
-            {
-                footer.Cell().Element(CellStyle);
-                footer.Cell().Element(CellStyle);
-                footer.Cell().Element(CellStyle);
-                footer.Cell().Element(CellStyle);
-                footer.Cell().Element(CellStyle).PaddingBottom(5).AlignRight().Text($"{Model.Rows.Sum(x => x.UnitPrice * x.Quantity):c}");
-                footer.Cell().Element(CellStyle);
-
-                static IContainer CellStyle(IContainer container)
-                {
-                    return container.DefaultTextStyle(x => x.SemiBold()).PaddingVertical(5).BorderBottom(1).BorderColor(Colors.Black);
-                }
-            });
         });
     }
 
-    private void ComposeComments(IContainer container)
+    private void ComposeSummary(IContainer container)
     {
         container.Background(Colors.Grey.Lighten3).Padding(10).Column(column =>
         {
             column.Spacing(5);
-            column.Item().Text("Note").FontSize(14);
-            column.Item().Text(Model.Notes);
+
+            column.Item().Text("Riepilogo").FontSize(14).SemiBold().FontColor(Colors.Blue.Medium);
+
+            column.Item().Row(row =>
+            {
+                row.RelativeItem().Text("Imponibile");
+                row.RelativeItem().AlignRight().Text($"{CalculateNetAmount():c}").SemiBold();
+            });
+
+            column.Item().Row(row =>
+            {
+                row.RelativeItem().Text("Imposte");
+                row.RelativeItem().AlignRight().Text($"{CalculateTaxAmount():c}").SemiBold();
+            });
+
+            column.Item().Row(row =>
+            {
+                row.RelativeItem().Text("Totale");
+                row.RelativeItem().AlignRight().Text($"{CalculateTotalAmount():c}").SemiBold();
+            });
+
+            decimal CalculateNetAmount()
+            {
+                decimal netAmount = 0;
+                foreach (var row in Model.Rows)
+                {
+                    var rowNetAmount = Math.Round((row.UnitPrice * row.Quantity) ?? 0, 2, MidpointRounding.AwayFromZero);
+                    netAmount += rowNetAmount;
+                }
+
+                return netAmount;
+            }
+
+            decimal CalculateTaxAmount()
+            {
+                decimal taxAmount = 0;
+
+                var rowsGroupedByTaxRate = Model.Rows
+                    .Where(r => r.TaxRate.HasValue)
+                    .GroupBy(x => x.TaxRate);
+
+                foreach (var taxGroup in rowsGroupedByTaxRate)
+                {
+                    decimal groupNetAmount = taxGroup.Sum(x => Math.Round((x.UnitPrice * x.Quantity) ?? 0, 2, MidpointRounding.AwayFromZero));
+
+                    decimal taxRate = taxGroup.Key ?? 0;
+                    decimal groupTaxAmount = groupNetAmount * taxRate / 100;
+                    taxAmount += Math.Round(groupTaxAmount, 2, MidpointRounding.AwayFromZero);
+                }
+
+                return taxAmount;
+            }
+
+            decimal CalculateTotalAmount()
+            {
+                return CalculateNetAmount() + CalculateTaxAmount();
+            }
         });
     }
 }
