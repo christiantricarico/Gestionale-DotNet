@@ -14,7 +14,7 @@ Ma tenete sempre presente che:
 ## Funzioni
 ### Fatturazione
 Nelle prime versioni l'obiettivo è quello di costruire un modulo di fatturazione di base che dia la possibilità di:
-- Compilare intestazione e corpo fattura.
+- Compilare intestazione e corpo fattura con selezione da tabelle di lookup di cliente, unità di misura e aliquota iva.
 - Generare un report di stampa fattura in PDF.
 - Generare ed esportare il file xml di fatturazione elettronica per la trasmissione al sistema di interscambio.
 
