@@ -1,0 +1,59 @@
+@BaseUrl = https://localhost:7256/api/invoices
+
+GET {{BaseUrl}}
+
+###
+
+GET {{BaseUrl}}/3
+
+###
+
+GET {{BaseUrl}}/pdf/1
+
+###
+
+GET {{BaseUrl}}/xml/1
+
+###
+
+POST {{BaseUrl}}
+Content-Type: application/json
+{
+    "number": "1",
+    "date": "2025-03-07",
+    "customerId": 1,
+    "rows": [
+        {
+            "rowType": "DES",
+            "description": "row 1",
+            "quantity": 1,
+            "unitPrice": 10
+        }
+    ]
+}
+
+###
+
+PUT {{BaseUrl}}
+Content-Type: application/json
+{
+    "id": 1,
+    "number": "1",
+    "date": "2025-03-10",
+    "customerId": 1,
+    "rows": [
+        {
+            "id": 1,
+            "rowType": "DES",
+            "description": "row 1",
+            "quantity": 1,
+            "unitPrice": 10
+        }
+    ]
+}
+
+###
+
+DELETE {{BaseUrl}}/1
+
+###

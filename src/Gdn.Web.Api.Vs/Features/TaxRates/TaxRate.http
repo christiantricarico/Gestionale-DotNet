@@ -1,0 +1,52 @@
+@BaseUrl = https://localhost:7256/api/taxrates
+
+GET {{BaseUrl}}
+
+###
+
+GET {{BaseUrl}}/15
+
+###
+
+POST {{BaseUrl}}
+Content-Type: application/json
+
+{
+    "code": "TR02",
+    "name": "Tax rate name 2",
+    "description": "Tax rate description 2",
+    "rate": 10,
+    "taxRateNatureId": null
+}
+
+###
+
+POST {{BaseUrl}}
+Content-Type: application/json
+
+{
+    "code": "TR02",
+    "name": "Tax rate name 2",
+    "description": "Tax rate description 2",
+    "rate": 0,
+    "taxRateNatureId": 1
+}
+
+###
+
+PUT {{BaseUrl}}
+Content-Type: application/json
+
+{
+    "id": 1,
+    "code": "TR01",
+    "name": "Tax rate name 1 - updated",
+    "description": "Tax rate description 1 - updated",
+    "rate": 22
+}
+
+###
+
+DELETE {{BaseUrl}}/1
+
+###

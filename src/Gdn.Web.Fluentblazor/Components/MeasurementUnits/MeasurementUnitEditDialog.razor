@@ -1,0 +1,101 @@
+﻿@implements IDialogContentComponent<DialogContent>
+@implements IDisposable
+
+<FluentDialogHeader ShowDismiss="true">
+    <FluentStack VerticalAlignment="VerticalAlignment.Center">
+        <FluentIcon Value="@(new Icons.Regular.Size24.WindowApps())" />
+        <FluentLabel Typo="Typography.PaneHeader">
+            @Dialog.Instance.Parameters.Title
+        </FluentLabel>
+    </FluentStack>
+</FluentDialogHeader>
+
+<FluentDialogBody>
+    @if (Model is not null)
+    {
+        <EditForm EditContext="EditContext" FormName="edit-measurementunit-form">
+            <DataAnnotationsValidator />
+            <FluentValidationSummary />
+
+            <FluentGrid Spacing="1">
+                <FluentGridItem xs="12">
+                    <FluentTextField Name="@nameof(MeasurementUnitInputModel.Code)" @bind-Value="Model.Code" Label="Codice" Autofocus="true" Required="true" />
+                </FluentGridItem>
+                <FluentGridItem xs="12">
+                    <FluentTextField Name="@nameof(MeasurementUnitInputModel.Name)" @bind-Value="Model.Name" Label="Nome" Style="width: 100%" />
+                </FluentGridItem>
+                <FluentGridItem xs="12">
+                    <FluentTextArea Name="@nameof(MeasurementUnitInputModel.Description)" Rows="3" Cols="60" @bind-Value="Model.Description" Label="Descrizione" Style="width: 100%" />
+                </FluentGridItem>
+            </FluentGrid>
+        </EditForm>
+    }
+
+</FluentDialogBody>
+
+<FluentDialogFooter>
+    <FluentButton Appearance="Appearance.Accent"
+    OnClick="@SaveAsync">
+        Salva
+    </FluentButton>
+</FluentDialogFooter>
+
+@code {
+
+    [Inject]
+    private IHttpClientFactory HttpClientFactory { get; set; } = default!;
+
+    [CascadingParameter]
+    public FluentDialog Dialog { get; set; } = default!;
+
+    [Parameter]
+    public DialogContent Content { get; set; } = default!;
+
+    private HttpClient HttpClient => HttpClientFactory.CreateApiClientVs();
+    private MeasurementUnitInputModel Model { get; set; } = default!;
+    private EditContext EditContext { get; set; } = default!;
+
+    private ValidationMessageStore? _messageStore;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Content.Id == 0)
+            Model = new MeasurementUnitInputModel();
+        else
+        {
+            string customerUri = $"measurementunits/{Content.Id}";
+            Model = await HttpClient.GetFromJsonAsync<MeasurementUnitInputModel>(customerUri) ?? new();
+        }
+
+        EditContext = new EditContext(Model);
+        EditContext.OnValidationRequested += HandleValidationRequested;
+        _messageStore = new(EditContext);
+    }
+
+    private async Task SaveAsync()
+    {
+        if (!EditContext.Validate())
+            return;
+
+        string uri = "measurementunits";
+        if (!Model.Id.HasValue)
+            await HttpClient.PostAsJsonAsync<MeasurementUnitInputModel>(uri, Model);
+        else
+            await HttpClient.PutAsJsonAsync<MeasurementUnitInputModel>(uri, Model);
+
+        await Dialog.CloseAsync(Model);
+    }
+
+    private void HandleValidationRequested(object? sender, ValidationRequestedEventArgs args)
+    {
+        _messageStore?.Clear();
+
+        // Custom validation logic
+    }
+
+    public void Dispose()
+    {
+        if (EditContext is not null)
+            EditContext.OnValidationRequested -= HandleValidationRequested;
+    }
+}

@@ -1,0 +1,81 @@
+@BaseUrl = https://localhost:7256/api/customers
+
+GET {{BaseUrl}}
+
+###
+
+GET {{BaseUrl}}/2
+
+###
+
+POST {{BaseUrl}}
+Content-Type: application/json
+
+{
+    "code": "CUS001",
+    "name": "Customer 1",
+    "description": "Customer description 1",
+    "fiscalCode": null,
+    "vatNumber": "04429150750",
+    "phone": "+39 06 12345678",
+    "email": "customer@gdn.it",
+    "website": "https://www.gdn.it",
+    "sdi": "1234567",
+    "notes": "Customer notes",
+    "street": "Via Roma",
+    "postalCode": "00100",
+    "city": "Rome",
+    "province": "RM",
+    "country": "Italy"
+}
+
+###
+
+POST {{BaseUrl}}
+Content-Type: application/json
+
+{
+    "code": "CUS002",
+    "name": "Customer 2",
+    "description": "Customer description 2",
+    "phone": "+39 06 12345678",
+    "email": "customer@gdn.it",
+    "website": "https://www.gdn.it",
+    "sdi": "1234567",
+    "notes": "Customer notes",
+    "street": "Via Roma",
+    "postalCode": "00100",
+    "city": "Rome",
+    "province": "RM",
+    "country": "Italy"
+}
+
+###
+
+PUT {{BaseUrl}}
+Content-Type: application/json
+
+{
+    "id": 1,
+    "code": "CUS001",
+    "name": "Customer 1 - updated",
+    "description": "Customer description 1 - updated",
+    "fiscalCode": "TRCCRS83L08D883Q",
+    "vatNumber": "04429150750",
+    "phone": "+39 06 12345678",
+    "email": "customer@gdn.it",
+    "website": "https://www.gdn.it",
+    "sdi": "1234567",
+    "notes": "Customer notes",
+    "street": "Via Roma - updated",
+    "postalCode": "00100",
+    "city": "Rome",
+    "province": "RM",
+    "country": "Italy"
+}
+
+###
+
+DELETE {{BaseUrl}}/1
+
+###

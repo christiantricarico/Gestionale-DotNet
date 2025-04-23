@@ -1,0 +1,128 @@
+﻿@implements IDialogContentComponent<DialogContent>
+
+<FluentDialogHeader ShowDismiss="true">
+    <FluentStack VerticalAlignment="VerticalAlignment.Center">
+        <FluentIcon Value="@(new Icons.Regular.Size24.WindowApps())" />
+        <FluentLabel Typo="Typography.PaneHeader">
+            @Dialog.Instance.Parameters.Title
+        </FluentLabel>
+    </FluentStack>
+</FluentDialogHeader>
+
+<FluentDialogBody>
+    @if (Model is not null)
+    {
+        <EditForm EditContext="EditContext" FormName="edit-customer-form">
+            <DataAnnotationsValidator />
+            <FluentValidationSummary />
+            <FluentAccordion>
+                <FluentAccordionItem Heading="Dati generali" Expanded="true">
+                    <FluentIcon Value="@(new Icons.Regular.Size20.Globe())" Color="@Color.Neutral" Slot="start" />
+                    <FluentGrid Spacing="1">
+                        <FluentGridItem xs="12">
+                            <FluentTextField Name="@nameof(CustomerEditModel.Code)" @bind-Value="Model.Code" Label="Codice" Autofocus="true" Required="true" />
+                        </FluentGridItem>
+                        <FluentGridItem xs="12">
+                            <FluentTextField Name="@nameof(CustomerEditModel.Name)" @bind-Value="Model.Name" Label="Nome" Style="width: 100%" />
+                        </FluentGridItem>
+                        <FluentGridItem xs="12">
+                            <FluentTextArea Name="@nameof(CustomerEditModel.Description)" Rows="3" Cols="60" @bind-Value="Model.Description" Label="Descrizione" Style="width: 100%" />
+                        </FluentGridItem>
+                        <FluentGridItem xs="12" sm="6">
+                            <FluentTextField Name="@nameof(CustomerEditModel.FiscalCode)" @bind-Value="Model.FiscalCode" Label="Codice fiscale" Style="width: 100%" />
+                        </FluentGridItem>
+                        <FluentGridItem xs="12" sm="6">
+                            <FluentTextField Name="@nameof(CustomerEditModel.VatNumber)" @bind-Value="Model.VatNumber" Label="Partita Iva" Style="width: 100%" />
+                        </FluentGridItem>
+                        <FluentGridItem xs="12" sm="6">
+                            <FluentTextField Name="@nameof(CustomerEditModel.Phone)" @bind-Value="Model.Phone" Label="Telefono" Style="width: 100%" />
+                        </FluentGridItem>
+                        <FluentGridItem xs="12" sm="6">
+                            <FluentTextField Name="@nameof(CustomerEditModel.Email)" @bind-Value="Model.Email" Label="Email" Style="width: 100%" />
+                        </FluentGridItem>
+                        <FluentGridItem xs="12" sm="6">
+                            <FluentTextField Name="@nameof(CustomerEditModel.Website)" @bind-Value="Model.Website" Label="Sito web" Style="width: 100%" />
+                        </FluentGridItem>
+                        <FluentGridItem xs="12" sm="6">
+                            <FluentTextField Name="@nameof(CustomerEditModel.Sdi)" @bind-Value="Model.Sdi" Label="Codice Sdi" Style="width: 100%" />
+                        </FluentGridItem>
+                        <FluentGridItem xs="12">
+                            <FluentTextArea Name="@nameof(CustomerEditModel.Notes)" Rows="3" Cols="60" @bind-Value="Model.Notes" Label="Note" Style="width: 100%" />
+                        </FluentGridItem>
+                    </FluentGrid>
+                </FluentAccordionItem>
+                <FluentAccordionItem Heading="Indirizzo">
+                    <FluentIcon Value="@(new Icons.Regular.Size20.Globe())" Color="@Color.Neutral" Slot="start" />
+                    <FluentGrid Spacing="1">
+                        <FluentGridItem xs="12">
+                            <FluentTextField Name="@nameof(CustomerEditModel.Street)" @bind-Value="Model.Street" Label="Indirizzo/Via" Style="width: 100%" />
+                        </FluentGridItem>
+                        <FluentGridItem xs="12" sm="6">
+                            <FluentTextField Name="@nameof(CustomerEditModel.PostalCode)" @bind-Value="Model.PostalCode" Label="Cap" Style="width: 100%" />
+                        </FluentGridItem>
+                        <FluentGridItem xs="12" sm="6">
+                            <FluentTextField Name="@nameof(CustomerEditModel.City)" @bind-Value="Model.City" Label="Città" Style="width: 100%" />
+                        </FluentGridItem>
+                        <FluentGridItem xs="12" sm="6">
+                            <FluentTextField Name="@nameof(CustomerEditModel.Province)" @bind-Value="Model.Province" Label="Provincia" Style="width: 100%" />
+                        </FluentGridItem>
+                        <FluentGridItem xs="12" sm="6">
+                            <FluentTextField Name="@nameof(CustomerEditModel.Country)" @bind-Value="Model.Country" Label="Nazione" Style="width: 100%" />
+                        </FluentGridItem>
+                    </FluentGrid>
+                </FluentAccordionItem>
+            </FluentAccordion>
+        </EditForm>
+    }
+
+</FluentDialogBody>
+
+<FluentDialogFooter>
+    <FluentButton Appearance="Appearance.Accent"
+                  OnClick="@SaveAsync">
+        Salva
+    </FluentButton>
+</FluentDialogFooter>
+
+@code {
+
+    [Inject]
+    private IHttpClientFactory HttpClientFactory { get; set; } = default!;
+
+    [CascadingParameter]
+    public FluentDialog Dialog { get; set; } = default!;
+
+    [Parameter]
+    public DialogContent Content { get; set; } = default!;
+
+    private HttpClient HttpClient => HttpClientFactory.CreateApiClientVs();
+    private CustomerEditModel Model { get; set; } = default!;
+    private EditContext EditContext { get; set; } = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Content.Id == 0)
+            Model = new CustomerEditModel();
+        else
+        {
+            string customerUri = $"customers/{Content.Id}";
+            Model = await HttpClient.GetFromJsonAsync<CustomerEditModel>(customerUri) ?? new();
+        }
+
+        EditContext = new EditContext(Model);
+    }
+
+    private async Task SaveAsync()
+    {
+        if (EditContext.Validate())
+        {
+            string uri = "customers";
+            if (!Model.Id.HasValue)
+                await HttpClient.PostAsJsonAsync<CustomerEditModel>(uri, Model);
+            else
+                await HttpClient.PutAsJsonAsync<CustomerEditModel>(uri, Model);
+
+            await Dialog.CloseAsync(Model);
+        }
+    }
+}
