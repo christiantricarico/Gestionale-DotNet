@@ -3,13 +3,13 @@ GDN è un progetto pilota creato con l'obiettivo di utilizzare le ultime tecnolo
 Quante volte ci è capitato di dover ridefinire i processi più comuni? 
 Con GDN abbiamo la possibilità come community di modellare questi processi ed averli pronti all'uso.
 
-Ma tenete sempre presente che:
+Ma tenete sempre presente che GDN:
 
 - ✅ E' un progetto dove si sperimenta e si apprende.
 - ✅ E' un progetto dove si utilizzano le ultime novità, senza paura.
 - ✅ E' un progetto dove ci si confronta e si cercano le migliori soluzioni possibili.
 - ✅ E' un progetto dove ci si diverte.
-- ⛔ Non è un gestionale che vuole competere nel mercato dei gestionali commerciali e che non si pone l'obiettivo di provare a sostituire soluzioni gestionali esistenti.
+- ⛔ Non è un gestionale che vuole competere nel mercato dei gestionali commerciali.
 
 ## Funzioni
 ### Fatturazione
