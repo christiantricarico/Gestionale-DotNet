@@ -362,3 +362,6 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 /src/Gdn.Web.Api.Vs/appsettings.Development.json
+/src/Gdn.Web.Api.Vs/Properties/ServiceDependencies/GdnWebApiVs20250426100427 - Zip Deploy/profile.arm.json
+/src/Gdn.Web.Fluentblazor/Properties/ServiceDependencies/gdnwebdemo - Zip Deploy/profile.arm.json
+/src/Gdn.Web.Api.Vs/Properties/ServiceDependencies/gdnwebapidemo - Zip Deploy/profile.arm.json
