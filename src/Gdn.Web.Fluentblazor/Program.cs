@@ -9,15 +9,8 @@ builder.AddServiceDefaults();
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
-builder.Services.AddHttpClient("GdnWebApi", config =>
-{
-    config.BaseAddress = new Uri("https://localhost:7282/api/");
-});
-
-builder.Services.AddHttpClient("GdnWebApiVs", config =>
-{
-    config.BaseAddress = new Uri("https://localhost:7256/api/");
-});
+builder.Services.AddHttpClient("GdnWebApiVs", client =>
+    client.BaseAddress = new Uri(builder.Configuration["BackendUrl"] ?? string.Empty));
 
 builder.Services.AddFluentUIComponents();
 
