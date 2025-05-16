@@ -7,11 +7,12 @@ namespace Gdn.Web.Api.Vs.Features.Invoices.Reports;
 
 public class InvoiceReportGenerator(IOptions<CompanyData> companyData, IInvoiceRepository invoiceRepository)
 {
-    public async Task GeneratePdfAndShowAsync(int invoiceId)
+    public async Task<byte[]> GeneratePdfBytesAsync(int invoiceId)
     {
         InvoiceReportModel model = await GetReportDataAsync(invoiceId);
         var document = new InvoiceDocument(model);
-        document.GeneratePdfAndShow();
+        var pdfBytes = document.GeneratePdf();
+        return pdfBytes;
     }
 
     private async Task<InvoiceReportModel> GetReportDataAsync(int invoiceId)

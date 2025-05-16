@@ -15,7 +15,11 @@ public class GenerateInvoicePdf
 
     private static async Task<IResult> Handler(int id, InvoiceReportGenerator reportGenerator)
     {
-        await reportGenerator.GeneratePdfAndShowAsync(id);
-        return ResultHelper.Ok("PDF invoice generated.");
+        //await reportGenerator.GeneratePdfAndShowAsync(id);
+        //return ResultHelper.Ok("PDF invoice generated.");
+
+        var pdfBytes = await reportGenerator.GeneratePdfBytesAsync(id);
+        var pdfStream = new MemoryStream(pdfBytes);
+        return TypedResults.Stream(pdfStream, contentType: "application/octet-stream", fileDownloadName: "invoice.pdf");
     }
 }

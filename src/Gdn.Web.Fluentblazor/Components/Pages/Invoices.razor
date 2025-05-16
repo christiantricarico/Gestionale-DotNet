@@ -43,13 +43,13 @@
     {
         DialogContent content = new();
         DialogParameters parameters = new()
-            {
-                Title = $"Creazione Fattura",
-                PreventDismissOnOverlayClick = true,
-                PreventScroll = true,
-                Width = "80%",
-                TrapFocus = false // avoid not working focus when multiple dialogs are opened
-            };
+        {
+            Title = $"Creazione Fattura",
+            PreventDismissOnOverlayClick = true,
+            PreventScroll = true,
+            Width = "80%",
+            TrapFocus = false // avoid not working focus when multiple dialogs are opened
+        };
 
         var dialog = await DialogService.ShowDialogAsync<InvoiceEditDialog>(content, parameters);
 
@@ -63,7 +63,14 @@
         string uri = $"invoices/pdf/{context.Id}";
         var response = await HttpClient.GetAsync(uri);
         if (!response.IsSuccessStatusCode)
+        {
             await DialogService.ShowResponseErrorAsync(response);
+            return;
+        }
+
+        var fileStream = await response.Content.ReadAsStreamAsync();
+        using var streamRef = new DotNetStreamReference(fileStream);
+        await JS.InvokeVoidAsync("openPdfFromStream", streamRef);
     }
 
     private async Task DownloadButtonClick(InvoiceViewModel context)
@@ -85,13 +92,13 @@
     {
         DialogContent content = new() { Id = context.Id };
         DialogParameters parameters = new()
-            {
-                Title = $"Modifica Fattura",
-                PreventDismissOnOverlayClick = true,
-                PreventScroll = true,
-                Width = "80%",
-                TrapFocus = false // avoid not working focus when multiple dialogs are opened
-            };
+        {
+            Title = $"Modifica Fattura",
+            PreventDismissOnOverlayClick = true,
+            PreventScroll = true,
+            Width = "80%",
+            TrapFocus = false // avoid not working focus when multiple dialogs are opened
+        };
 
         var dialog = await DialogService.ShowDialogAsync<InvoiceEditDialog>(content, parameters);
 

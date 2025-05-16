@@ -12,7 +12,7 @@
 </head>
 
 <body>
-    <Routes @rendermode="new InteractiveServerRenderMode(prerender:false)" />
+    <Routes @rendermode="new InteractiveServerRenderMode(prerender: false)" />
     <script src="_framework/blazor.web.js"></script>
 
     <script>
@@ -27,7 +27,22 @@
           anchorElement.remove();
           URL.revokeObjectURL(url);
         }
+
+        function openPdfFromStream(streamRef) {
+            streamRef.arrayBuffer().then(function (buffer) {
+                var blob = new Blob([buffer], { type: "application/pdf" });
+                var url = URL.createObjectURL(blob);
+                window.open(url, '_blank');
+
+                // The browser's built-in PDF viewer will handle the download button,
+                // and the file will be downloaded as a PDF with the correct extension.
+
+                // Revoking the URL will not allow to download the file with the correct extension.
+                //setTimeout(() => URL.revokeObjectURL(url), 10000);
+            });
+        }
     </script>
+
 </body>
 
 </html>
