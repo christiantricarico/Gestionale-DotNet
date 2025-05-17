@@ -4,6 +4,7 @@ using Gdn.Web.Api.Vs;
 using Gdn.Web.Api.Vs.Endpoints;
 using Microsoft.EntityFrameworkCore;
 using QuestPDF.Infrastructure;
+using System.Globalization;
 using TinyHelpers.AspNetCore.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -36,6 +37,11 @@ builder.Services
 // https://www.youtube.com/watch?v=anqV3zkeyrM
 builder.Services.AddDefaultProblemDetails();
 builder.Services.AddDefaultExceptionHandler();
+
+// Set fixed culture for the application
+var defaultCulture = new CultureInfo("it-IT");
+CultureInfo.DefaultThreadCurrentCulture = defaultCulture;
+CultureInfo.DefaultThreadCurrentUICulture = defaultCulture;
 
 var app = builder.Build();
 
