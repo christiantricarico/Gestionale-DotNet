@@ -6,8 +6,9 @@ public class InvoiceEditModel
 {
     public int? Id { get; set; }
 
+    [Required(ErrorMessage = "Numero è richiesto.")]
     [Display(Name = "Numero")]
-    public string Number { get; set; } = default!;
+    public int Number { get; set; }
 
     [Display(Name = "Data")]
     public DateOnly Date { get; set; }
