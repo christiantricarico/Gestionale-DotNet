@@ -15,7 +15,6 @@ public class GetLastInvoiceNumber
 
     private static async Task<IResult> Handler(IInvoiceRepository invoiceRepository)
     {
-        // Recupera tutte le fatture, ordina per numero decrescente (convertito a int), prendi la prima
         var invoices = await invoiceRepository.GetAllAsync();
         var lastNumber = invoices
             .Select(i => int.TryParse(i.Number, out var n) ? n : 0)

@@ -10,10 +10,10 @@ namespace Gdn.Web.Api.Vs.Features.Invoices;
 public class CreateInvoice
 {
     public record RequestRow(string? Description, decimal? Quantity, decimal? UnitPrice, int? MeasurementUnitId, int? TaxRateId);
-    public record Request(string Number, DateOnly Date, int CustomerId, IEnumerable<RequestRow> Rows);
+    public record Request(int Number, DateOnly Date, int CustomerId, IEnumerable<RequestRow> Rows);
 
     public record ResponseRow(long Id, string RowType, string? Description, decimal? Quantity, decimal? UnitPrice, int? MeasurementUnitId, int? TaxRateId);
-    public record Response(int Id, string Number, DateOnly Date, int CustomerId, IEnumerable<ResponseRow> Rows);
+    public record Response(int Id, int Number, DateOnly Date, int CustomerId, IEnumerable<ResponseRow> Rows);
 
     public sealed class Endpoint : IEndpoint
     {
@@ -27,7 +27,7 @@ public class CreateInvoice
     {
         public Validator()
         {
-            RuleFor(e => e.Number).NotEmpty().MaximumLength(50);
+            RuleFor(e => e.Number).NotEmpty();
         }
     }
 
@@ -49,7 +49,7 @@ public class CreateInvoice
 
     private static Invoice MapInvoice(Request request) => new()
     {
-        Number = request.Number,
+        Number = request.Number.ToString(),
         Date = request.Date,
         CustomerId = request.CustomerId,
         Rows = request.Rows.Select(r => MapInvoiceRow(r)).ToList()
@@ -66,7 +66,7 @@ public class CreateInvoice
     };
 
     private static Response MapResponse(Invoice invoice)
-        => new(invoice.Id, invoice.Number, invoice.Date, invoice.CustomerId, invoice.Rows.Select(r => MapResponseRow(r)));
+        => new(invoice.Id, int.Parse(invoice.Number), invoice.Date, invoice.CustomerId, invoice.Rows.Select(r => MapResponseRow(r)));
 
     private static ResponseRow MapResponseRow(InvoiceRow row)
         => new(row.Id, row.RowType, row.Description, row.Quantity, row.UnitPrice, row.MeasurementUnitId, row.TaxRateId);
