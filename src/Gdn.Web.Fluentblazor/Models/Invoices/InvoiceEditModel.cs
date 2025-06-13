@@ -8,7 +8,7 @@ public class InvoiceEditModel
 
     [Required(ErrorMessage = "Numero è richiesto.")]
     [Display(Name = "Numero")]
-    public int Number { get; set; }
+    public int? Number { get; set; }
 
     [Display(Name = "Data")]
     public DateOnly Date { get; set; }
