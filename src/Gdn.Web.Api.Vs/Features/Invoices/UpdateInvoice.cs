@@ -11,10 +11,10 @@ public class UpdateInvoice
     public record RequestRow(InputStatus InputStatus, long? Id, string RowType, string? Description,
         decimal? Quantity, decimal? UnitPrice,
         int? MeasurementUnitId, int? TaxRateId);
-    public record Request(int Id, string Number, DateOnly Date, int CustomerId, IEnumerable<RequestRow> Rows);
+    public record Request(int Id, int Number, DateOnly Date, int CustomerId, IEnumerable<RequestRow> Rows);
 
     public record ResponseRow(long Id, string RowType, string? Description, decimal? Quantity, decimal? UnitPrice, int? MeasurementUnitId, int? TaxRateId);
-    public record Response(int Id, string Number, DateOnly Date, int CustomerId, IEnumerable<ResponseRow> Rows);
+    public record Response(int Id, int Number, DateOnly Date, int CustomerId, IEnumerable<ResponseRow> Rows);
 
     public sealed class Endpoint : IEndpoint
     {
@@ -28,7 +28,7 @@ public class UpdateInvoice
     {
         public Validator()
         {
-            RuleFor(e => e.Number).NotEmpty().MaximumLength(50);
+            RuleFor(e => e.Number).NotEmpty();
         }
     }
 
@@ -53,7 +53,7 @@ public class UpdateInvoice
 
     private static void MapInvoice(Invoice invoice, Request request)
     {
-        invoice.Number = request.Number;
+        invoice.Number = request.Number.ToString();
         invoice.Date = request.Date;
         invoice.CustomerId = request.CustomerId;
 
@@ -92,7 +92,7 @@ public class UpdateInvoice
     }
 
     private static Response MapResponse(Invoice invoice)
-        => new(invoice.Id, invoice.Number, invoice.Date, invoice.CustomerId, invoice.Rows.Select(r => MapResponseRow(r)));
+        => new(invoice.Id, int.Parse(invoice.Number), invoice.Date, invoice.CustomerId, invoice.Rows.Select(r => MapResponseRow(r)));
 
     private static ResponseRow MapResponseRow(InvoiceRow row)
         => new(row.Id, row.RowType, row.Description, row.Quantity, row.UnitPrice, row.MeasurementUnitId, row.TaxRateId);

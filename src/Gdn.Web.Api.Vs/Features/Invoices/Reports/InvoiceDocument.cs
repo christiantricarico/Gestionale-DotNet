@@ -56,8 +56,6 @@ internal sealed class InvoiceDocument : IDocument
                     text.Span($"{Model.Date:d}");
                 });
             });
-
-            row.ConstantItem(100).Height(50).Placeholder();
         });
     }
 

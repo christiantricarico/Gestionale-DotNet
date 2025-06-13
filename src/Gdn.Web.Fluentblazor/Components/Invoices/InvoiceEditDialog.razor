@@ -18,12 +18,12 @@
             <DataAnnotationsValidator />
             <FluentGrid Spacing="1">
                 <FluentGridItem xs="12" sm="3">
-                    <FluentTextField Name="@nameof(InvoiceEditModel.Number)" @bind-Value="Model.Number" Label="Numero"
-                                     Autofocus="true" Required="true" Style="width: 100%" />
+                    <FluentNumberField @bind-Value="Model.Number" Name="@nameof(InvoiceEditModel.Number)" Label="Numero"
+                                       Autofocus="true" Required="true" Style="width: 100%" HideStep="true" Min="1" />
                     <FluentValidationMessage For="@(() => Model.Number)" />
                 </FluentGridItem>
                 <FluentGridItem xs="12" sm="3">
-                    <FluentDatePicker Name="@nameof(InvoiceEditModel.DateWithTime)" @bind-Value="Model.DateWithTime" Label="Data"
+                    <FluentDatePicker @bind-Value="Model.DateWithTime" Name="@nameof(InvoiceEditModel.DateWithTime)" Label="Data"
                                       Required="true" Style="width: 100%" />
                     <FluentValidationMessage For="@(() => Model.DateWithTime)" />
                 </FluentGridItem>
@@ -91,7 +91,10 @@
     protected override async Task OnInitializedAsync()
     {
         if (Content.Id == 0)
-            Model = new InvoiceEditModel();
+        {
+            var lastNumber = await HttpClient.GetFromJsonAsync<int>("invoices/last-number");
+            Model = new InvoiceEditModel() { Number = lastNumber + 1 };
+        }
         else
         {
             string invoiceUri = $"invoices/{Content.Id}";
@@ -135,13 +138,13 @@
     {
         InvoiceRowEditModel content = new();
         DialogParameters parameters = new()
-            {
-                Title = $"Creazione riga fattura",
-                PreventDismissOnOverlayClick = true,
-                PreventScroll = true,
-                TrapFocus = false,
-                Width = "700px"
-            };
+        {
+            Title = $"Creazione riga fattura",
+            PreventDismissOnOverlayClick = true,
+            PreventScroll = true,
+            TrapFocus = false,
+            Width = "700px"
+        };
 
         var dialog = await DialogService.ShowDialogAsync<InvoiceRowEditDialog>(content, parameters);
         var result = await dialog.Result;
@@ -155,13 +158,13 @@
     private async Task EditRowClick(InvoiceRowEditModel context)
     {
         DialogParameters parameters = new()
-            {
-                Title = $"Modifica riga fattura",
-                PreventDismissOnOverlayClick = true,
-                PreventScroll = true,
-                TrapFocus = false,
-                Width = "700px"
-            };
+        {
+            Title = $"Modifica riga fattura",
+            PreventDismissOnOverlayClick = true,
+            PreventScroll = true,
+            TrapFocus = false,
+            Width = "700px"
+        };
 
         var dialog = await DialogService.ShowDialogAsync<InvoiceRowEditDialog>(context, parameters);
         var result = await dialog.Result;
