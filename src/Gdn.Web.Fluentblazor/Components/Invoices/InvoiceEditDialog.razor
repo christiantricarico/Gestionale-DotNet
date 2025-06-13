@@ -91,7 +91,10 @@
     protected override async Task OnInitializedAsync()
     {
         if (Content.Id == 0)
-            Model = new InvoiceEditModel() { Number = 2 };
+        {
+            var lastNumber = await HttpClient.GetFromJsonAsync<int>("invoices/last-number");
+            Model = new InvoiceEditModel() { Number = lastNumber + 1 };
+        }
         else
         {
             string invoiceUri = $"invoices/{Content.Id}";
