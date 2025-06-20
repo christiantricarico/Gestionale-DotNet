@@ -21,7 +21,6 @@ public class GetInvoices
     {
         var data = await invoiceRepository.GetAllAsync(["Customer", "Rows"]);
         var responseData = data.Select(e => MapResponse(e));
-        throw new Exception("This is a test exception to demonstrate error handling in the API.");
         return ResultHelper.Ok(responseData);
     }
 

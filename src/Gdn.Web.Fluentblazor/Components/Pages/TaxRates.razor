@@ -33,11 +33,22 @@ else if (taxRates != null)
 
     private async Task ReloadGrid()
     {
-        isLoading = true;
-        StateHasChanged();
-        string uri = "taxrates";
-        taxRates = await HttpClient.GetFromJsonAsync<IEnumerable<TaxRateViewModel>>(uri);
-        isLoading = false;
+        try
+        {
+            isLoading = true;
+            StateHasChanged();
+            string uri = "taxrates";
+            taxRates = await HttpClient.GetFromJsonAsync<IEnumerable<TaxRateViewModel>>(uri);
+        }
+        catch (HttpRequestException)
+        {
+            await DialogService.ShowErrorAsync("Errore durante il caricamento dei dati. Riprova.");
+            taxRates = Array.Empty<TaxRateViewModel>();
+        }
+        finally
+        {
+            isLoading = false;
+        }
     }
 
     protected override async Task OnInitializedAsync()
