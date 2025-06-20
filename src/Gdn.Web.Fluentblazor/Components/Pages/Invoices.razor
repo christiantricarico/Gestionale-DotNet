@@ -6,7 +6,11 @@
 
 <h3>Fatture</h3>
 
-@if (invoices != null)
+@if (isLoading)
+{
+    <FluentProgressRing />
+}
+else if (invoices != null)
 {
     <FluentButton OnClick="@CreateButtonClick">Nuova fattura</FluentButton>
     <FluentDataGrid Items="@invoices.AsQueryable()" AutoFit="true" RowSize="DataGridRowSize.Medium" ShowHover="true">
@@ -25,13 +29,27 @@
 @code {
 
     private HttpClient HttpClient => HttpClientFactory.CreateApiClientVs();
-
+    private bool isLoading = true;
     IEnumerable<InvoiceViewModel>? invoices;
 
     private async Task ReloadGrid()
     {
-        string uri = "invoices";
-        invoices = await HttpClient.GetFromJsonAsync<IEnumerable<InvoiceViewModel>>(uri);
+        try
+        {
+            isLoading = true;
+            StateHasChanged();
+            string uri = "invoices";
+            invoices = await HttpClient.GetFromJsonAsync<IEnumerable<InvoiceViewModel>>(uri);
+        }
+        catch (HttpRequestException)
+        {
+            await DialogService.ShowErrorAsync("Errore durante il caricamento dei dati. Riprova.");
+            invoices = Array.Empty<InvoiceViewModel>();
+        }
+        finally
+        {
+            isLoading = false;
+        }
     }
 
     protected override async Task OnInitializedAsync()

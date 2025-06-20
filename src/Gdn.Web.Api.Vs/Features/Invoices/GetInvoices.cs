@@ -21,7 +21,6 @@ public class GetInvoices
     {
         var data = await invoiceRepository.GetAllAsync(["Customer", "Rows"]);
         var responseData = data.Select(e => MapResponse(e));
-
         return ResultHelper.Ok(responseData);
     }
 

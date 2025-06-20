@@ -1,0 +1,55 @@
+@hostname=localhost
+@port=7256
+@baseUrl=https://{{hostname}}:{{port}}/api
+
+### Get all invoices
+GET {{baseUrl}}/invoices
+Accept: application/json
+
+###
+
+### Get a single invoice by ID
+@invoiceId=1
+GET {{baseUrl}}/invoices/{{invoiceId}}
+Accept: application/json
+
+###
+
+### Create a new invoice
+POST {{baseUrl}}/invoices
+Content-Type: application/json
+
+{
+  "number": "INV-2025-001",
+  "date": "2025-06-20T00:00:00Z",
+  "customerName": "Sample Customer"
+}
+
+###
+
+### Update an existing invoice
+PUT {{baseUrl}}/invoices/{{invoiceId}}
+Content-Type: application/json
+
+{
+  "number": "INV-2025-001",
+  "date": "2025-06-20T00:00:00Z",
+  "customerName": "Updated Customer"
+}
+
+###
+
+### Delete an invoice
+DELETE {{baseUrl}}/invoices/{{invoiceId}}
+
+###
+
+### Download invoice PDF
+GET {{baseUrl}}/invoices/pdf/{{invoiceId}}
+Accept: application/pdf
+
+###
+
+### Download invoice XML
+GET {{baseUrl}}/invoices/xml/{{invoiceId}}
+Accept: application/xml

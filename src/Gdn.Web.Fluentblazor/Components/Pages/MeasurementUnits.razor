@@ -5,7 +5,11 @@
 
 <h3>Unità di misura</h3>
 
-@if (measurementUnits != null)
+@if (isLoading)
+{
+    <FluentProgressRing />
+}
+else if (measurementUnits != null)
 {
     <FluentButton OnClick="@CreateButtonClick">Nuova Unità di misura</FluentButton>
     <FluentDataGrid Items="@measurementUnits.AsQueryable()" AutoFit="true" RowSize="DataGridRowSize.Medium" ShowHover="true">
@@ -22,13 +26,27 @@
 @code {
 
     private HttpClient HttpClient => HttpClientFactory.CreateApiClientVs();
-
+    private bool isLoading = true;
     IEnumerable<MeasurementUnitViewModel>? measurementUnits;
 
     private async Task ReloadGrid()
     {
-        string uri = "measurementunits";
-        measurementUnits = await HttpClient.GetFromJsonAsync<IEnumerable<MeasurementUnitViewModel>>(uri);
+        try
+        {
+            isLoading = true;
+            StateHasChanged();
+            string uri = "measurementunits";
+            measurementUnits = await HttpClient.GetFromJsonAsync<IEnumerable<MeasurementUnitViewModel>>(uri);
+        }
+        catch (HttpRequestException)
+        {
+            await DialogService.ShowErrorAsync("Errore durante il caricamento dei dati. Riprova.");
+            measurementUnits = Array.Empty<MeasurementUnitViewModel>();
+        }
+        finally
+        {
+            isLoading = false;
+        }
     }
 
     protected override async Task OnInitializedAsync()
