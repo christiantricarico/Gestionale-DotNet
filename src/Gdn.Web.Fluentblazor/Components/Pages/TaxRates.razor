@@ -5,7 +5,11 @@
 
 <h3>Aliquote Iva</h3>
 
-@if (taxRates != null)
+@if (isLoading)
+{
+    <FluentProgressRing />
+}
+else if (taxRates != null)
 {
     <FluentButton OnClick="@CreateButtonClick">Nuova Aliquota Iva</FluentButton>
     <FluentDataGrid Items="@taxRates.AsQueryable()" AutoFit="true" RowSize="DataGridRowSize.Medium" ShowHover="true">
@@ -24,13 +28,16 @@
 @code {
 
     private HttpClient HttpClient => HttpClientFactory.CreateApiClientVs();
-
+    private bool isLoading = true;
     IEnumerable<TaxRateViewModel>? taxRates;
 
     private async Task ReloadGrid()
     {
+        isLoading = true;
+        StateHasChanged();
         string uri = "taxrates";
         taxRates = await HttpClient.GetFromJsonAsync<IEnumerable<TaxRateViewModel>>(uri);
+        isLoading = false;
     }
 
     protected override async Task OnInitializedAsync()

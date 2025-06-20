@@ -5,7 +5,11 @@
 
 <h3>Clienti</h3>
 
-@if (customers != null)
+@if (isLoading)
+{
+    <FluentProgressRing />
+}
+else if (customers != null)
 {
     <FluentButton OnClick="@CreateButtonClick">Nuovo cliente</FluentButton>
     <FluentDataGrid Items="@customers.AsQueryable()" AutoFit="true" RowSize="DataGridRowSize.Medium" ShowHover="true">
@@ -24,13 +28,16 @@
 @code {
 
     private HttpClient HttpClient => HttpClientFactory.CreateApiClientVs();
-
+    private bool isLoading = true;
     IEnumerable<CustomerViewModel>? customers;
 
     private async Task ReloadGrid()
     {
+        isLoading = true;
+        StateHasChanged();
         string uri = "customers";
         customers = await HttpClient.GetFromJsonAsync<IEnumerable<CustomerViewModel>>(uri);
+        isLoading = false;
     }
 
     protected override async Task OnInitializedAsync()
