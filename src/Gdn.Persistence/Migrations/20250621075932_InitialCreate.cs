@@ -251,7 +251,7 @@ namespace Gdn.Persistence.Migrations
                     { 2, "N2", false, "N2 : Non soggette" },
                     { 3, "N2.1", false, "N2.1 : Non soggette artt. Da 7 a 7-septies" },
                     { 4, "N2.2", false, "N2.2 : Non soggette - altri casi" },
-                    { 5, "N3", false, "N2.2 : Non soggette - altri casi" },
+                    { 5, "N3", false, "N3 : Non imponibili" },
                     { 6, "N3.1", false, "N3.1 : Non imponibili - esportazioni" },
                     { 7, "N3.2", false, "N3.2 : Non imponibili - cessioni intracomunitarie" },
                     { 8, "N3.3", false, "N3.3 : Non imponibili - cessioni verso San Marino" },

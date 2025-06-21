@@ -16,7 +16,7 @@ internal class TaxRateNatureConfiguration : IEntityTypeConfiguration<TaxRateNatu
             new() { Id = 2, Code = "N2", Name = "N2 : Non soggette" },
             new() { Id = 3, Code = "N2.1", Name = "N2.1 : Non soggette artt. Da 7 a 7-septies" },
             new() { Id = 4, Code = "N2.2", Name = "N2.2 : Non soggette - altri casi" },
-            new() { Id = 5, Code = "N3", Name = "N2.2 : Non soggette - altri casi" },
+            new() { Id = 5, Code = "N3", Name = "N3 : Non imponibili" },
             new() { Id = 6, Code = "N3.1", Name = "N3.1 : Non imponibili - esportazioni" },
             new() { Id = 7, Code = "N3.2", Name = "N3.2 : Non imponibili - cessioni intracomunitarie" },
             new() { Id = 8, Code = "N3.3", Name = "N3.3 : Non imponibili - cessioni verso San Marino" },

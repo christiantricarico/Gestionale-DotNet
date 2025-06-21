@@ -45,6 +45,8 @@ CultureInfo.DefaultThreadCurrentUICulture = defaultCulture;
 
 var app = builder.Build();
 
+await UpdateDatabaseAsync(app.Services);
+
 app.MapDefaultEndpoints();
 
 app.UseHttpsRedirection();
@@ -57,3 +59,10 @@ app.MapEndpoints();
 QuestPDF.Settings.License = LicenseType.Community;
 
 app.Run();
+
+static async Task UpdateDatabaseAsync(IServiceProvider serviceProvider)
+{
+    await using var scope = serviceProvider.CreateAsyncScope();
+    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await dbContext.Database.MigrateAsync();
+}

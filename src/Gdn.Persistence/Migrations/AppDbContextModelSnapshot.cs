@@ -17,7 +17,7 @@ namespace Gdn.Persistence.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.3")
+                .HasAnnotation("ProductVersion", "9.0.6")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -448,7 +448,7 @@ namespace Gdn.Persistence.Migrations
                             Id = 5,
                             Code = "N3",
                             IsDeleted = false,
-                            Name = "N2.2 : Non soggette - altri casi"
+                            Name = "N3 : Non imponibili"
                         },
                         new
                         {
@@ -588,7 +588,7 @@ namespace Gdn.Persistence.Migrations
             modelBuilder.Entity("Gdn.Domain.Models.Address", b =>
                 {
                     b.HasOne("Gdn.Domain.Models.Customer", "Customer")
-                        .WithMany()
+                        .WithMany("Addresses")
                         .HasForeignKey("CustomerId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -661,6 +661,11 @@ namespace Gdn.Persistence.Migrations
                         .HasForeignKey("TaxRateNatureId");
 
                     b.Navigation("TaxRateNature");
+                });
+
+            modelBuilder.Entity("Gdn.Domain.Models.Customer", b =>
+                {
+                    b.Navigation("Addresses");
                 });
 
             modelBuilder.Entity("Gdn.Domain.Models.Invoice", b =>
