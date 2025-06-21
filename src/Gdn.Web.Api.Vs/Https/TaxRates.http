@@ -1,0 +1,16 @@
+@hostname=localhost
+@port=7256
+@baseUrl=https://{{hostname}}:{{port}}/api
+
+### Get all
+GET {{baseUrl}}/taxrates
+Accept: application/json
+
+###
+
+### Get a single by ID
+@id=1
+GET {{baseUrl}}/taxrates/{{id}}
+Accept: application/json
+
+###

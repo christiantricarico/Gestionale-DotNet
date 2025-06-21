@@ -34,5 +34,6 @@ public class GetInvoiceById
     private static ResponseRow MapResponseRow(InvoiceRow row)
         => new(row.Id, row.RowType, row.Description, row.Quantity, row.UnitPrice,
             row.MeasurementUnitId, row.MeasurementUnit?.Code, row.MeasurementUnit?.Name,
-            row.TaxRateId, row.TaxRate?.Name);
+            row.TaxRateId,
+            string.IsNullOrWhiteSpace(row.TaxRate?.Name) ? row.TaxRate?.Code : row.TaxRate.Name);
 }
