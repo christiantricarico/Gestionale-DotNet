@@ -18,34 +18,34 @@ jobs:
         with:
           dotnet-version: '9.0.x'
 
-      - name: Restore dependencies (api)
+      - name: Restore dependencies (Web Api)
         run: dotnet restore src/Gdn.Web.Api.Vs/Gdn.Web.Api.Vs.csproj
 
-      - name: Build
+      - name: Build (Web Api)
         run: dotnet build src/Gdn.Web.Api.Vs/Gdn.Web.Api.Vs.csproj --configuration Release --no-restore
 
-      - name: Publish
+      - name: Publish (Web Api)
         run: dotnet publish src/Gdn.Web.Api.Vs/Gdn.Web.Api.Vs.csproj --configuration Release --output ./publish
 
-      - name: Deploy to Azure Web App (api)
+      - name: Deploy to Azure Web App (Web Api)
         uses: azure/webapps-deploy@v3
         with:
           app-name: gdnwebapiwindemo
           publish-profile: ${{ secrets.AZURE_WEBAPI_PUBLISH_PROFILE }}
           package: ./publish
 
-      - name: Restore dependencies (Blazor)
+      - name: Restore dependencies (Blazor App)
         run: dotnet restore src/Gdn.Web.Fluentblazor/Gdn.Web.Fluentblazor.csproj
 
-      - name: Build (Blazor)
+      - name: Build (Blazor App)
         run: dotnet build src/Gdn.Web.Fluentblazor/Gdn.Web.Fluentblazor.csproj --configuration Release --no-restore
 
-      - name: Publish (Blazor)
+      - name: Publish (Blazor App)
         run: dotnet publish src/Gdn.Web.Fluentblazor/Gdn.Web.Fluentblazor.csproj --configuration Release --output ./publish-blazor
 
-      - name: Deploy to Azure Web App (Blazor)
+      - name: Deploy to Azure Web App (Blazor App)
         uses: azure/webapps-deploy@v3
         with:
           app-name: gdnwebwindemo
-          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_BLAZOR }}
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
           package: ./publish-blazor
