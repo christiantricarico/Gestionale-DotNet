@@ -25,7 +25,7 @@
                                     TOption="TaxRateViewModel"
                                     SelectedOption="SelectedTaxRate"
                                     SelectedOptionChanged="o => SelectedTaxRateChanged(o)"
-                                    OptionText="@(e => e?.Name)"
+                                    OptionText="@(e => string.IsNullOrWhiteSpace(e.Name) ? e.Code : e.Name)"
                                     Label="Aliquota Iva" Height="200px" Width="100%"
                                     Autocomplete="ComboboxAutocomplete.Both" />
                     <FluentValidationMessage For="@(() => Model.TaxRateId)" />
@@ -111,7 +111,7 @@
     {
         SelectedTaxRate = taxRate;
         Model.TaxRateId = taxRate?.Id;
-        Model.TaxRateName = taxRate?.Name;
+        Model.TaxRateName = string.IsNullOrWhiteSpace(taxRate?.Name) ? taxRate?.Code : taxRate.Name;
     }
 
     private async Task SaveAsync()
