@@ -19,13 +19,13 @@ jobs:
           dotnet-version: '9.0.x'
 
       - name: Restore dependencies
-        run: dotnet restore
+        run: dotnet restore src/Gdn.Web.Api.Vs
 
       - name: Build
-        run: dotnet build --configuration Release --no-restore
+        run: dotnet build src/Gdn.Web.Api.Vs --configuration Release --no-restore
 
       - name: Publish
-        run: dotnet publish --configuration Release --output ./publish
+        run: dotnet publish src/Gdn.Web.Api.Vs --configuration Release --output ./publish
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
