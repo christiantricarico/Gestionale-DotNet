@@ -13,18 +13,57 @@
 else if (invoices != null)
 {
     <FluentButton OnClick="@CreateButtonClick">Nuova fattura</FluentButton>
-    <FluentDataGrid Items="@invoices.AsQueryable()" AutoFit="true" RowSize="DataGridRowSize.Medium" ShowHover="true">
-        <PropertyColumn Property="@(p => p.Number)" Sortable="true" />
-        <PropertyColumn Property="@(p => p.Date)" Sortable="true" />
-        <PropertyColumn Property="@(p => p.CustomerName)" Sortable="true" />
-        <TemplateColumn Title="Azioni" Align="@Align.End">
-            <FluentButton aria-label="Stampa" IconEnd="@(new Icons.Regular.Size16.Print())" OnClick="@(() => PrintButtonClick(context))" />
-            <FluentButton aria-label="Xml" IconEnd="@(new Icons.Regular.Size16.ArrowDownload())" OnClick="@(() => DownloadButtonClick(context))" />
-            <FluentButton aria-label="Modifica" IconEnd="@(new Icons.Regular.Size16.Edit())" OnClick="@(() => EditButtonClick(context))" />
-            <FluentButton aria-label="Elimina" IconEnd="@(new Icons.Regular.Size16.Delete())" OnClick="@(() => DeleteButtonClick(context))" />
-        </TemplateColumn>
-    </FluentDataGrid>
+    <FluentStack Orientation="Orientation.Vertical" Style="margin-top: 10px; width: 100%;">
+        @foreach (var invoice in invoices)
+        {
+            <FluentCard MinimalStyle="true" Style="width: 100%;">
+                <FluentGrid Spacing="1" Style="padding: 8px;">
+                    <FluentGridItem xs="6" lg="2">
+                        <div class="invoice-row-field">
+                            <strong>Numero:</strong>
+                            <span>@invoice.Number</span>
+                        </div>
+                    </FluentGridItem>
+                    <FluentGridItem xs="6" lg="2">
+                        <div class="invoice-row-field">
+                            <strong>Data:</strong>
+                            <span>@invoice.Date.ToString("d")</span>
+                        </div>
+                    </FluentGridItem>
+                    <FluentGridItem xs="12" lg="6">
+                        <div class="invoice-row-field">
+                            <strong>Cliente:</strong>
+                            <span>@invoice.CustomerName</span>
+                        </div>
+                    </FluentGridItem>
+                    <FluentGridItem xs="12" lg="2" Style="display: flex; justify-content: flex-end; align-items: center; gap: 2px;">
+                        <FluentButton aria-label="Stampa" IconEnd="@(new Icons.Regular.Size16.Print())" OnClick="@(() => PrintButtonClick(invoice))" />
+                        <FluentButton aria-label="Xml" IconEnd="@(new Icons.Regular.Size16.ArrowDownload())" OnClick="@(() => DownloadButtonClick(invoice))" />
+                        <FluentButton aria-label="Modifica" IconEnd="@(new Icons.Regular.Size16.Edit())" OnClick="@(() => EditButtonClick(invoice))" />
+                        <FluentButton aria-label="Elimina" IconEnd="@(new Icons.Regular.Size16.Delete())" OnClick="@(() => DeleteButtonClick(invoice))" />
+                    </FluentGridItem>
+                </FluentGrid>
+            </FluentCard>
+        }
+    </FluentStack>
 }
+
+<style>
+    .invoice-row-field {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .invoice-row-field strong {
+        font-size: 0.875rem;
+        color: var(--neutral-foreground-rest);
+    }
+
+    .invoice-row-field span {
+        font-size: 1rem;
+    }
+</style>
 
 @code {
 

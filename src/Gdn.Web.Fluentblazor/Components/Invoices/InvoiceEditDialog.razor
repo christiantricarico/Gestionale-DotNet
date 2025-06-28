@@ -85,7 +85,7 @@
                                     <span>@row.TotalAmount.ToString("C")</span>
                                 </div>
                             </FluentGridItem>
-                            <FluentGridItem xs="6" lg="1" Style="display: flex; justify-content: flex-end; align-items: center;">
+                            <FluentGridItem xs="12" lg="1" Style="display: flex; justify-content: flex-end; align-items: center; gap: 2px;">
                                 <FluentButton aria-label="Modifica" IconEnd="@(new Icons.Regular.Size16.Edit())" OnClick="@(() => EditRowClick(row))" />
                                 <FluentButton aria-label="Elimina" IconEnd="@(new Icons.Regular.Size16.Delete())" OnClick="@(() => DeleteRowClick(row))" />
                             </FluentGridItem>
