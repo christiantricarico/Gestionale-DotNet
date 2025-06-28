@@ -39,37 +39,35 @@
                     <FluentValidationMessage For="@(() => Model.CustomerId)" />
                 </FluentGridItem>
                 <FluentGridItem xs="12">
-                    <FluentButton IconStart="@(new Icons.Regular.Size24.Add())" OnClick="AddRowClick" />
+                    <FluentButton IconStart="@(new Icons.Regular.Size24.Add())" OnClick="AddRowClick">
+                        Aggiungi riga
+                    </FluentButton>
                 </FluentGridItem>
                 <FluentStack Orientation="Orientation.Vertical">
                     @foreach (var row in Model.Rows.Where(r => r.InputStatus != 3))
                     {
                         <FluentCard MinimalStyle="true">
-                            <div style="display: flex; align-items: baseline; margin-bottom: 4px;">
-                                <strong>Id:</strong>
-                                <span style="margin-left: 8px;">@row.Id</span>
-                            </div>
-                            <div style="display: flex; align-items: baseline; margin-bottom: 4px;">
+                            <div style="display: flex; margin-bottom: 4px;">
                                 <strong>Descrizione:</strong>
                                 <span style="margin-left: 8px;">@row.Description</span>
                             </div>
-                            <div style="display: flex; align-items: baseline; margin-bottom: 4px;">
+                            <div style="display: flex; margin-bottom: 4px;">
                                 <strong>Aliq.Iva:</strong>
                                 <span style="margin-left: 8px;">@row.TaxRateName</span>
                             </div>
-                            <div style="display: flex; align-items: baseline; margin-bottom: 4px;">
+                            <div style="display: flex; margin-bottom: 4px;">
                                 <strong>Um:</strong>
                                 <span style="margin-left: 8px;">@row.MeasurementUnitName</span>
                             </div>
-                            <div style="display: flex; align-items: baseline; margin-bottom: 4px;">
+                            <div style="display: flex; margin-bottom: 4px;">
                                 <strong>Quantità:</strong>
                                 <span style="margin-left: 8px;">@row.Quantity.ToString("N2")</span>
                             </div>
-                            <div style="display: flex; align-items: baseline; margin-bottom: 4px;">
+                            <div style="display: flex; margin-bottom: 4px;">
                                 <strong>Prezzo:</strong>
                                 <span style="margin-left: 8px;">@row.UnitPrice.ToString("C")</span>
                             </div>
-                            <div style="display: flex; align-items: baseline; margin-bottom: 4px;">
+                            <div style="display: flex; margin-bottom: 4px;">
                                 <strong>Totale:</strong>
                                 <span style="margin-left: 8px;">@row.TotalAmount.ToString("C")</span>
                             </div>
@@ -163,8 +161,7 @@
             Title = $"Creazione riga fattura",
             PreventDismissOnOverlayClick = true,
             PreventScroll = true,
-            TrapFocus = false,
-            Width = "700px"
+            TrapFocus = false
         };
 
         var dialog = await DialogService.ShowDialogAsync<InvoiceRowEditDialog>(content, parameters);
@@ -183,8 +180,7 @@
             Title = $"Modifica riga fattura",
             PreventDismissOnOverlayClick = true,
             PreventScroll = true,
-            TrapFocus = false,
-            Width = "700px"
+            TrapFocus = false
         };
 
         var dialog = await DialogService.ShowDialogAsync<InvoiceRowEditDialog>(context, parameters);
