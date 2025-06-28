@@ -43,42 +43,57 @@
                         Aggiungi riga
                     </FluentButton>
                 </FluentGridItem>
-                <FluentStack Orientation="Orientation.Vertical">
-                    @foreach (var row in Model.Rows.Where(r => r.InputStatus != 3))
-                    {
-                        <FluentCard MinimalStyle="true">
-                            <div style="display: flex; margin-bottom: 4px;">
-                                <strong>Descrizione:</strong>
-                                <span style="margin-left: 8px;">@row.Description</span>
-                            </div>
-                            <div style="display: flex; margin-bottom: 4px;">
-                                <strong>Aliq.Iva:</strong>
-                                <span style="margin-left: 8px;">@row.TaxRateName</span>
-                            </div>
-                            <div style="display: flex; margin-bottom: 4px;">
-                                <strong>Um:</strong>
-                                <span style="margin-left: 8px;">@row.MeasurementUnitName</span>
-                            </div>
-                            <div style="display: flex; margin-bottom: 4px;">
-                                <strong>Quantità:</strong>
-                                <span style="margin-left: 8px;">@row.Quantity.ToString("N2")</span>
-                            </div>
-                            <div style="display: flex; margin-bottom: 4px;">
-                                <strong>Prezzo:</strong>
-                                <span style="margin-left: 8px;">@row.UnitPrice.ToString("C")</span>
-                            </div>
-                            <div style="display: flex; margin-bottom: 4px;">
-                                <strong>Totale:</strong>
-                                <span style="margin-left: 8px;">@row.TotalAmount.ToString("C")</span>
-                            </div>
-                            <div style="display: flex; align-items: center; margin-top: 8px;">
+            </FluentGrid>
+            <FluentStack Orientation="Orientation.Vertical" Style="margin-top: 10px; width: 100%;">
+                @foreach (var row in Model.Rows.Where(r => r.InputStatus != 3))
+                {
+                    <FluentCard MinimalStyle="true" Style="width: 100%;">
+                        <FluentGrid Spacing="1" Style="padding: 8px;">
+                            <FluentGridItem xs="12" lg="4">
+                                <div class="invoice-row-field">
+                                    <strong>Descrizione:</strong>
+                                    <span>@row.Description</span>
+                                </div>
+                            </FluentGridItem>
+                            <FluentGridItem xs="6" lg="2">
+                                <div class="invoice-row-field">
+                                    <strong>Aliq.Iva:</strong>
+                                    <span>@row.TaxRateName</span>
+                                </div>
+                            </FluentGridItem>
+                            <FluentGridItem xs="6" lg="2">
+                                <div class="invoice-row-field">
+                                    <strong>Um:</strong>
+                                    <span>@row.MeasurementUnitName</span>
+                                </div>
+                            </FluentGridItem>
+                            <FluentGridItem xs="6" lg="1">
+                                <div class="invoice-row-field">
+                                    <strong>Quantità:</strong>
+                                    <span>@row.Quantity.ToString("N2")</span>
+                                </div>
+                            </FluentGridItem>
+                            <FluentGridItem xs="6" lg="1">
+                                <div class="invoice-row-field">
+                                    <strong>Prezzo:</strong>
+                                    <span>@row.UnitPrice.ToString("C")</span>
+                                </div>
+                            </FluentGridItem>
+                            <FluentGridItem xs="6" lg="1">
+                                <div class="invoice-row-field">
+                                    <strong>Totale:</strong>
+                                    <span>@row.TotalAmount.ToString("C")</span>
+                                </div>
+                            </FluentGridItem>
+                            <FluentGridItem xs="6" lg="1" Style="display: flex; justify-content: flex-end; align-items: center;">
                                 <FluentButton aria-label="Modifica" IconEnd="@(new Icons.Regular.Size16.Edit())" OnClick="@(() => EditRowClick(row))" />
                                 <FluentButton aria-label="Elimina" IconEnd="@(new Icons.Regular.Size16.Delete())" OnClick="@(() => DeleteRowClick(row))" />
-                            </div>
-                        </FluentCard>
-                    }
-                </FluentStack>
-            </FluentGrid>
+                            </FluentGridItem>
+                        </FluentGrid>
+                    </FluentCard>
+                }
+            </FluentStack>
+
         </EditForm>
     }
 </FluentDialogBody>
@@ -88,6 +103,23 @@
         Salva
     </FluentButton>
 </FluentDialogFooter>
+
+<style>
+    .invoice-row-field {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+        .invoice-row-field strong {
+            font-size: 0.875rem;
+            color: var(--neutral-foreground-rest);
+        }
+
+        .invoice-row-field span {
+            font-size: 1rem;
+        }
+</style>
 
 @code {
 
