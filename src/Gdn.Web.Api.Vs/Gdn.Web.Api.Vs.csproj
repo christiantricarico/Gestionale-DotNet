@@ -5,14 +5,14 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="FatturaElettronica" Version="3.6.3" />
+    <PackageReference Include="FatturaElettronica" Version="4.0.3" />
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.0.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.6">
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.8">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="QuestPDF" Version="2025.5.1" />
-    <PackageReference Include="TinyHelpers.AspNetCore" Version="4.0.27" />
+    <PackageReference Include="QuestPDF" Version="2025.7.1" />
+    <PackageReference Include="TinyHelpers.AspNetCore" Version="4.1.4" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Gdn.Persistence\Gdn.Persistence.csproj" />
