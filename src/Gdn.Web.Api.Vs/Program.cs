@@ -11,6 +11,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
 
+builder.Services.AddOpenApi();
+
 builder.Services.AddPersistence(options =>
 {
     string? connectionString = builder.Configuration.GetConnectionString("SqlServerDefault");
@@ -44,6 +46,15 @@ CultureInfo.DefaultThreadCurrentCulture = defaultCulture;
 CultureInfo.DefaultThreadCurrentUICulture = defaultCulture;
 
 var app = builder.Build();
+
+if (app.Environment.IsDevelopment())
+{
+    app.MapOpenApi();
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint("/openapi/v1.json", "v1");
+    });
+}
 
 await UpdateDatabaseAsync(app.Services);
 
