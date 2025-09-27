@@ -7,8 +7,6 @@
   </Folder>
   <Folder Name="/Presentation/">
     <Project Path="src/Gdn.Web.Api.Vs/Gdn.Web.Api.Vs.csproj" />
-  </Folder>
-  <Folder Name="/Presentation/Frontend/">
     <Project Path="src/Gdn.Web.Fluentblazor/Gdn.Web.Fluentblazor.csproj" />
   </Folder>
   <Folder Name="/Solution Items/">
