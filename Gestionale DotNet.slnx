@@ -11,6 +11,11 @@
   <Folder Name="/Presentation/Frontend/">
     <Project Path="src/Gdn.Web.Fluentblazor/Gdn.Web.Fluentblazor.csproj" />
   </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path=".github/copilot-instructions.md" />
+    <File Path="Directory.Build.props" />
+  </Folder>
   <Project Path="src/Gdn.AppHost/Gdn.AppHost.csproj" />
   <Project Path="src/Gdn.ServiceDefaults/Gdn.ServiceDefaults.csproj" />
 </Solution>
