@@ -5,14 +5,6 @@ namespace Gdn.Web.Api.Vs;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddConfigOptions(this IServiceCollection services, IConfiguration configuration)
-    {
-        IConfigurationSection companyDataSection = configuration.GetSection("CompanyData");
-        services.Configure<CompanyData>(companyDataSection);
-
-        return services;
-    }
-
     public static IServiceCollection AddReports(this IServiceCollection services)
     {
         services.AddScoped<InvoiceReportGenerator>();

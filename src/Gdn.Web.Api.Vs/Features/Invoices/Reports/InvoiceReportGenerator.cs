@@ -1,16 +1,20 @@
-﻿using Gdn.Domain.Data.Repositories;
+﻿using System.Globalization;
+using Gdn.Domain.Data.Repositories;
 using Gdn.Domain.Models;
 using Microsoft.Extensions.Options;
 using QuestPDF.Fluent;
 
 namespace Gdn.Web.Api.Vs.Features.Invoices.Reports;
 
-public class InvoiceReportGenerator(IOptions<CompanyData> companyData, IInvoiceRepository invoiceRepository)
+public class InvoiceReportGenerator(IOptions<AppSettings> appSettings, IInvoiceRepository invoiceRepository)
 {
     public async Task<byte[]> GeneratePdfBytesAsync(int invoiceId)
     {
         InvoiceReportModel model = await GetReportDataAsync(invoiceId);
         var document = new InvoiceDocument(model);
+
+        var language = CultureInfo.CurrentCulture;
+
         var pdfBytes = document.GeneratePdf();
         return pdfBytes;
     }
@@ -22,7 +26,7 @@ public class InvoiceReportGenerator(IOptions<CompanyData> companyData, IInvoiceR
         if (data is null)
             throw new Exception("Invoice not found");
 
-        var company = companyData.Value;
+        var company = appSettings.Value.CompanyData;
         var customer = data.Customer;
         var customerAddress = customer.Addresses.FirstOrDefault();
 

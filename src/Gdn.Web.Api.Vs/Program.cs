@@ -1,17 +1,15 @@
+using System.Globalization;
 using FluentValidation;
 using Gdn.Persistence;
 using Gdn.Web.Api.Vs;
 using Gdn.Web.Api.Vs.Endpoints;
 using Microsoft.EntityFrameworkCore;
 using QuestPDF.Infrastructure;
-using System.Globalization;
 using TinyHelpers.AspNetCore.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
-
-builder.Services.AddOpenApi();
 
 builder.Services.AddPersistence(options =>
 {
@@ -31,19 +29,26 @@ builder.Services.AddEndpoints();
 builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);
 
 builder.Services
-    .AddConfigOptions(builder.Configuration)
     .AddReports()
     .AddFatturaElettronica();
+
+var appSettings = builder.Services.ConfigureAndGet<AppSettings>(builder.Configuration, nameof(AppSettings)) ?? new();
 
 // from tinyhelpers lib -> by default add detail, instance, traceid, stacktrace to problem details response
 // https://www.youtube.com/watch?v=anqV3zkeyrM
 builder.Services.AddDefaultProblemDetails();
 builder.Services.AddDefaultExceptionHandler();
+builder.Services.AddRequestLocalization(appSettings.SupportedCultures.Distinct().ToArray());
 
-// Set fixed culture for the application
-var defaultCulture = new CultureInfo("it-IT");
-CultureInfo.DefaultThreadCurrentCulture = defaultCulture;
-CultureInfo.DefaultThreadCurrentUICulture = defaultCulture;
+builder.Services.AddOpenApi(options =>
+{
+    //options.AddAcceptLanguageHeader();
+});
+
+//Set fixed culture for the application
+//var defaultCulture = new CultureInfo("it-IT");
+//CultureInfo.DefaultThreadCurrentCulture = defaultCulture;
+//CultureInfo.DefaultThreadCurrentUICulture = defaultCulture;
 
 var app = builder.Build();
 
@@ -58,13 +63,18 @@ if (app.Environment.IsDevelopment())
 
 await UpdateDatabaseAsync(app.Services);
 
-app.MapDefaultEndpoints();
+// Configure the HTTP request pipeline explicitly
+app.UseRouting();
+app.UseRequestLocalization();
+//app.UseAuthentication();
+//app.UseAuthorization();
 
 app.UseHttpsRedirection();
 
 app.UseExceptionHandler(); // Converts unhandled exceptions into Problem Details responses in production environment
 app.UseStatusCodePages(); // Returns the Problem Details response for (empty) non-successful responses
 
+app.MapDefaultEndpoints();
 app.MapEndpoints();
 
 QuestPDF.Settings.License = LicenseType.Community;
