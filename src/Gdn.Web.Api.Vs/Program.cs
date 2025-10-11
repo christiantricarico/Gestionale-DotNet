@@ -15,7 +15,7 @@ builder.Services.AddOpenApi();
 
 builder.Services.AddPersistence(options =>
 {
-    string? connectionString = builder.Configuration.GetConnectionString("SqlServerDefault");
+    string? connectionString = builder.Configuration.GetConnectionString("SqlConnection");
     options.UseAzureSql(connectionString);
 
     if (builder.Environment.IsDevelopment())
