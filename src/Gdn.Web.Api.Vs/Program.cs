@@ -1,4 +1,3 @@
-using System.Globalization;
 using FluentValidation;
 using Gdn.Persistence;
 using Gdn.Web.Api.Vs;
@@ -6,6 +5,7 @@ using Gdn.Web.Api.Vs.Endpoints;
 using Microsoft.EntityFrameworkCore;
 using QuestPDF.Infrastructure;
 using TinyHelpers.AspNetCore.Extensions;
+using TinyHelpers.AspNetCore.OpenApi;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -42,7 +42,7 @@ builder.Services.AddRequestLocalization(appSettings.SupportedCultures.Distinct()
 
 builder.Services.AddOpenApi(options =>
 {
-    //options.AddAcceptLanguageHeader();
+    options.AddAcceptLanguageHeader();
 });
 
 //Set fixed culture for the application
