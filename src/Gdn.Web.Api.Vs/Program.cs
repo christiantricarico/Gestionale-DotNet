@@ -38,17 +38,12 @@ var appSettings = builder.Services.ConfigureAndGet<AppSettings>(builder.Configur
 // https://www.youtube.com/watch?v=anqV3zkeyrM
 builder.Services.AddDefaultProblemDetails();
 builder.Services.AddDefaultExceptionHandler();
-builder.Services.AddRequestLocalization(appSettings.SupportedCultures.Distinct().ToArray());
+builder.Services.AddRequestLocalization(appSettings.SupportedCultures ?? ["it-IT"]);
 
 builder.Services.AddOpenApi(options =>
 {
     options.AddAcceptLanguageHeader();
 });
-
-//Set fixed culture for the application
-//var defaultCulture = new CultureInfo("it-IT");
-//CultureInfo.DefaultThreadCurrentCulture = defaultCulture;
-//CultureInfo.DefaultThreadCurrentUICulture = defaultCulture;
 
 var app = builder.Build();
 

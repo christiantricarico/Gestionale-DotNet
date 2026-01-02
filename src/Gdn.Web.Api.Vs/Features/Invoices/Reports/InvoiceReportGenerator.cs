@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using Gdn.Domain.Data.Repositories;
+﻿using Gdn.Domain.Data.Repositories;
 using Gdn.Domain.Models;
 using Microsoft.Extensions.Options;
 using QuestPDF.Fluent;
@@ -12,9 +11,6 @@ public class InvoiceReportGenerator(IOptions<AppSettings> appSettings, IInvoiceR
     {
         InvoiceReportModel model = await GetReportDataAsync(invoiceId);
         var document = new InvoiceDocument(model);
-
-        var language = CultureInfo.CurrentCulture;
-
         var pdfBytes = document.GeneratePdf();
         return pdfBytes;
     }

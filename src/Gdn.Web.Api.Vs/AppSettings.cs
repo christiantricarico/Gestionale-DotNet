@@ -2,7 +2,7 @@
 
 public class AppSettings
 {
-    public string[] SupportedCultures { get; set; } = ["it"];
+    public string[]? SupportedCultures { get; set; }
     public CompanyData CompanyData { get; set; } = new();
 }
 
