@@ -12,11 +12,11 @@ public class GetTaxRateById
     {
         public void MapEndpoint(IEndpointRouteBuilder app)
         {
-            app.MapGet("api/taxrates/{id}", Handler).WithTags(Tags.TaxRates);
+            app.MapGet("api/taxrates/{id:int}", Handler).WithTags(Tags.TaxRates);
         }
     }
 
-    private static async Task<IResult> Handler(ITaxRateRepository taxRateRepository, int id)
+    private static async Task<IResult> Handler(int id, ITaxRateRepository taxRateRepository)
     {
         var data = await taxRateRepository.GetAsync(id);
 

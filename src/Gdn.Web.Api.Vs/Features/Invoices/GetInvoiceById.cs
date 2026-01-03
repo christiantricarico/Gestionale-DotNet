@@ -15,11 +15,11 @@ public class GetInvoiceById
     {
         public void MapEndpoint(IEndpointRouteBuilder app)
         {
-            app.MapGet("api/invoices/{id}", Handler).WithTags(Tags.Invoices);
+            app.MapGet("api/invoices/{id:int}", Handler).WithTags(Tags.Invoices);
         }
     }
 
-    private static async Task<IResult> Handler(IInvoiceRepository invoiceRepository, int id)
+    private static async Task<IResult> Handler(int id, IInvoiceRepository invoiceRepository)
     {
         var data = await invoiceRepository.GetAsync(id, ["Rows.TaxRate", "Rows.MeasurementUnit"]);
 

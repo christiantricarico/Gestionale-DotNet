@@ -14,11 +14,11 @@ public class GetCustomerById
     {
         public void MapEndpoint(IEndpointRouteBuilder app)
         {
-            app.MapGet("api/customers/{id}", Handler).WithTags(Tags.Customers);
+            app.MapGet("api/customers/{id:int}", Handler).WithTags(Tags.Customers);
         }
     }
 
-    private static async Task<IResult> Handler(ICustomerRepository customerRepository, int id)
+    private static async Task<IResult> Handler(int id, ICustomerRepository customerRepository)
     {
         var data = await customerRepository.GetAsync(id, ["Addresses"]);
 

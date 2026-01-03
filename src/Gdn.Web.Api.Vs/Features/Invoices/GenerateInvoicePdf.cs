@@ -9,7 +9,7 @@ public class GenerateInvoicePdf
     {
         public void MapEndpoint(IEndpointRouteBuilder app)
         {
-            app.MapGet("api/invoices/pdf/{id}", Handler).WithTags(Tags.Invoices);
+            app.MapGet("api/invoices/pdf/{id:int}", Handler).WithTags(Tags.Invoices);
         }
     }
 

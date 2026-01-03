@@ -10,7 +10,7 @@ public class GenerateInvoiceXml
     {
         public void MapEndpoint(IEndpointRouteBuilder app)
         {
-            app.MapGet("api/invoices/xml/{id}", Handler).WithTags(Tags.Invoices);
+            app.MapGet("api/invoices/xml/{id:int}", Handler).WithTags(Tags.Invoices);
         }
     }
 

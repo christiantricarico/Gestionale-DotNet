@@ -12,11 +12,11 @@ public class GetMeasurementUnitById
     {
         public void MapEndpoint(IEndpointRouteBuilder app)
         {
-            app.MapGet("api/measurementunits/{id}", Handler).WithTags(Tags.MeasurementUnits);
+            app.MapGet("api/measurementunits/{id:int}", Handler).WithTags(Tags.MeasurementUnits);
         }
     }
 
-    private static async Task<IResult> Handler(IMeasurementUnitRepository measurementUnitRepository, int id)
+    private static async Task<IResult> Handler(int id, IMeasurementUnitRepository measurementUnitRepository)
     {
         var data = await measurementUnitRepository.GetAsync(id);
 
