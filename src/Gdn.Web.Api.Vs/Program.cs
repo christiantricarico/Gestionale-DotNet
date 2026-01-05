@@ -59,15 +59,11 @@ if (app.Environment.IsDevelopment())
 await UpdateDatabaseAsync(app.Services);
 
 // Configure the HTTP request pipeline explicitly
-app.UseRouting();
-app.UseRequestLocalization();
-//app.UseAuthentication();
-//app.UseAuthorization();
-
-app.UseHttpsRedirection();
-
 app.UseExceptionHandler(); // Converts unhandled exceptions into Problem Details responses in production environment
 app.UseStatusCodePages(); // Returns the Problem Details response for (empty) non-successful responses
+app.UseHttpsRedirection();
+app.UseRequestLocalization();
+app.UseRouting();
 
 app.MapDefaultEndpoints();
 app.MapEndpoints();
