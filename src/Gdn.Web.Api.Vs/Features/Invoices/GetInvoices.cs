@@ -6,8 +6,8 @@ namespace Gdn.Web.Api.Vs.Features.Invoices;
 
 public class GetInvoices
 {
-    public record ResponseRow(long Id, string RowType, string? Description, decimal? Quantity, decimal? UnitPrice, int? MeasurementUnitId, int? TaxRateId);
-    public record Response(int Id, string Number, DateOnly Date, int CustomerId, string? CustomerName, IEnumerable<ResponseRow> Rows);
+    public record GetInvoicesResponseRow(long Id, string RowType, string? Description, decimal? Quantity, decimal? UnitPrice, int? MeasurementUnitId, int? TaxRateId);
+    public record GetInvoicesResponse(int Id, string Number, DateOnly Date, int CustomerId, string? CustomerName, IEnumerable<GetInvoicesResponseRow> Rows);
 
     public sealed class Endpoint : IEndpoint
     {
@@ -24,9 +24,9 @@ public class GetInvoices
         return ResultHelper.Ok(responseData);
     }
 
-    private static Response MapResponse(Invoice invoice)
+    private static GetInvoicesResponse MapResponse(Invoice invoice)
         => new(invoice.Id, invoice.Number, invoice.Date, invoice.CustomerId, invoice.Customer.Name, invoice.Rows.Select(r => MapResponseRow(r)));
 
-    private static ResponseRow MapResponseRow(InvoiceRow row)
+    private static GetInvoicesResponseRow MapResponseRow(InvoiceRow row)
         => new(row.Id, row.RowType, row.Description, row.Quantity, row.UnitPrice, row.MeasurementUnitId, row.TaxRateId);
 }

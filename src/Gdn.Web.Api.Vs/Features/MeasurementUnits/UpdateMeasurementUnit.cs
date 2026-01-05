@@ -8,8 +8,8 @@ namespace Gdn.Web.Api.Vs.Features.MeasurementUnits;
 
 public class UpdateMeasurementUnit
 {
-    public record Request(int Id, string Code, string? Name, string? Description);
-    public record Response(int Id, string Code, string? Name, string? Description);
+    public record UpdateMeasurementUnitRequest(int Id, string Code, string? Name, string? Description);
+    public record UpdateMeasurementUnitResponse(int Id, string Code, string? Name, string? Description);
 
     public sealed class Endpoint : IEndpoint
     {
@@ -19,7 +19,7 @@ public class UpdateMeasurementUnit
         }
     }
 
-    public sealed class Validator : AbstractValidator<Request>
+    public sealed class Validator : AbstractValidator<UpdateMeasurementUnitRequest>
     {
         public Validator()
         {
@@ -28,7 +28,7 @@ public class UpdateMeasurementUnit
         }
     }
 
-    private static async Task<IResult> Handler(Request request, IValidator<Request> validator, IUnitOfWork unitOfWork)
+    private static async Task<IResult> Handler(UpdateMeasurementUnitRequest request, IValidator<UpdateMeasurementUnitRequest> validator, IUnitOfWork unitOfWork)
     {
         var validationResult = await validator.ValidateAsync(request);
         if (!validationResult.IsValid)
@@ -47,13 +47,13 @@ public class UpdateMeasurementUnit
         return ResultHelper.Ok(MapResponse(measurementUnit));
     }
 
-    private static void MapMeasurementUnit(MeasurementUnit measurementUnit, Request request)
+    private static void MapMeasurementUnit(MeasurementUnit measurementUnit, UpdateMeasurementUnitRequest request)
     {
         measurementUnit.Code = request.Code;
         measurementUnit.Name = request.Name;
         measurementUnit.Description = request.Description;
     }
 
-    private static Response MapResponse(MeasurementUnit entity) =>
+    private static UpdateMeasurementUnitResponse MapResponse(MeasurementUnit entity) =>
         new(entity.Id, entity.Code, entity.Name, entity.Description);
 }

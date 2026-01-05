@@ -14,7 +14,7 @@ using System.Xml;
 namespace Gdn.Web.Api.Vs.Features.Invoices.Xml;
 
 public class InvoiceXmlGenerator(
-    IOptions<CompanyData> companyData,
+    IOptions<AppSettings> appSettings,
     IInvoiceRepository invoiceRepository,
     ITaxRateNatureRepository taxRateNatureRepository)
 {
@@ -38,16 +38,17 @@ public class InvoiceXmlGenerator(
 
         #region FatturaElettronicaHeader
 
+        var companyData = appSettings.Value.CompanyData;
         var header = fattura.FatturaElettronicaHeader;
 
-        header.DatiTrasmissione.IdTrasmittente.IdPaese = companyData.Value.FatturaElettronicaData?.IdPaeseTrasmittente;
-        header.DatiTrasmissione.IdTrasmittente.IdCodice = companyData.Value.FatturaElettronicaData?.IdCodiceTrasmittente;
+        header.DatiTrasmissione.IdTrasmittente.IdPaese = companyData.FatturaElettronicaData?.IdPaeseTrasmittente;
+        header.DatiTrasmissione.IdTrasmittente.IdCodice = companyData.FatturaElettronicaData?.IdCodiceTrasmittente;
         header.DatiTrasmissione.ProgressivoInvio = $"FA{invoice.Date.Year.ToString().Substring(2, 2)}{invoice.Number.PadLeft(6, '0')}";
 
         header.DatiTrasmissione.CodiceDestinatario = invoice.Customer.Sdi;
 
-        header.DatiTrasmissione.ContattiTrasmittente.Telefono = companyData.Value.FatturaElettronicaData?.TelefonoTrasmittente;
-        header.DatiTrasmissione.ContattiTrasmittente.Email = companyData.Value.FatturaElettronicaData?.EmailTrasmittente;
+        header.DatiTrasmissione.ContattiTrasmittente.Telefono = companyData.FatturaElettronicaData?.TelefonoTrasmittente;
+        header.DatiTrasmissione.ContattiTrasmittente.Email = companyData.FatturaElettronicaData?.EmailTrasmittente;
 
         header.DatiTrasmissione.PECDestinatario = invoice.Customer.Pec;
 
@@ -156,14 +157,15 @@ public class InvoiceXmlGenerator(
 
     private void SetCedentePrestatore(FatturaElettronicaHeader header)
     {
-        header.CedentePrestatore.DatiAnagrafici.Anagrafica.Denominazione = companyData.Value.Name;
-        header.CedentePrestatore.DatiAnagrafici.IdFiscaleIVA.IdPaese = companyData.Value.FatturaElettronicaData?.NazioneSedeCedente;
-        header.CedentePrestatore.DatiAnagrafici.IdFiscaleIVA.IdCodice = companyData.Value.VatNumber;
-        header.CedentePrestatore.DatiAnagrafici.RegimeFiscale = companyData.Value.FatturaElettronicaData?.RegimeFiscaleCedente;
-        header.CedentePrestatore.Sede.Indirizzo = companyData.Value.FatturaElettronicaData?.IndirizzoSedeCedente;
-        header.CedentePrestatore.Sede.CAP = companyData.Value.FatturaElettronicaData?.CapSedeCedente;
-        header.CedentePrestatore.Sede.Comune = companyData.Value.FatturaElettronicaData?.ComuneSedeCedente;
-        header.CedentePrestatore.Sede.Nazione = companyData.Value.FatturaElettronicaData?.NazioneSedeCedente;
+        var companyData = appSettings.Value.CompanyData;
+        header.CedentePrestatore.DatiAnagrafici.Anagrafica.Denominazione = companyData.Name;
+        header.CedentePrestatore.DatiAnagrafici.IdFiscaleIVA.IdPaese = companyData.FatturaElettronicaData?.NazioneSedeCedente;
+        header.CedentePrestatore.DatiAnagrafici.IdFiscaleIVA.IdCodice = companyData.VatNumber;
+        header.CedentePrestatore.DatiAnagrafici.RegimeFiscale = companyData.FatturaElettronicaData?.RegimeFiscaleCedente;
+        header.CedentePrestatore.Sede.Indirizzo = companyData.FatturaElettronicaData?.IndirizzoSedeCedente;
+        header.CedentePrestatore.Sede.CAP = companyData.FatturaElettronicaData?.CapSedeCedente;
+        header.CedentePrestatore.Sede.Comune = companyData.FatturaElettronicaData?.ComuneSedeCedente;
+        header.CedentePrestatore.Sede.Nazione = companyData.FatturaElettronicaData?.NazioneSedeCedente;
     }
 
     private void SetCessionarioCommittente(FatturaElettronicaHeader header, Customer customer)
@@ -198,7 +200,6 @@ public class InvoiceXmlGenerator(
         var dettaglioPagamento = new FatturaElettronica.Ordinaria.FatturaElettronicaBody.DatiPagamento.DettaglioPagamento();
         dettaglioPagamento.ImportoPagamento = paymentAmount;
         dettaglioPagamento.ModalitaPagamento = "MP02";//Assegno, il più simile a rimessa diretta
-
 
         datiPagamento.DettaglioPagamento.Add(dettaglioPagamento);
         body.DatiPagamento.Add(datiPagamento);

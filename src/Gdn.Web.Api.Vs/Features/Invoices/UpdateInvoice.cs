@@ -8,10 +8,10 @@ namespace Gdn.Web.Api.Vs.Features.Invoices;
 
 public class UpdateInvoice
 {
-    public record RequestRow(InputStatus InputStatus, long? Id, string RowType, string? Description,
+    public record UpdateInvoiceRowRequest(InputStatus InputStatus, long? Id, string RowType, string? Description,
         decimal? Quantity, decimal? UnitPrice,
         int? MeasurementUnitId, int? TaxRateId);
-    public record Request(int Id, int Number, DateOnly Date, int CustomerId, IEnumerable<RequestRow> Rows);
+    public record UpdateInvoiceRequest(int Id, int Number, DateOnly Date, int CustomerId, IEnumerable<UpdateInvoiceRowRequest> Rows);
 
     public record ResponseRow(long Id, string RowType, string? Description, decimal? Quantity, decimal? UnitPrice, int? MeasurementUnitId, int? TaxRateId);
     public record Response(int Id, int Number, DateOnly Date, int CustomerId, IEnumerable<ResponseRow> Rows);
@@ -24,7 +24,7 @@ public class UpdateInvoice
         }
     }
 
-    public sealed class Validator : AbstractValidator<Request>
+    public sealed class Validator : AbstractValidator<UpdateInvoiceRequest>
     {
         public Validator()
         {
@@ -32,7 +32,7 @@ public class UpdateInvoice
         }
     }
 
-    private static async Task<IResult> Handler(Request request, IValidator<Request> validator, IUnitOfWork unitOfWork)
+    private static async Task<IResult> Handler(UpdateInvoiceRequest request, IValidator<UpdateInvoiceRequest> validator, IUnitOfWork unitOfWork)
     {
         var validationResult = await validator.ValidateAsync(request);
         if (!validationResult.IsValid)
@@ -51,7 +51,7 @@ public class UpdateInvoice
         return ResultHelper.Ok(MapResponse(invoice));
     }
 
-    private static void MapInvoice(Invoice invoice, Request request)
+    private static void MapInvoice(Invoice invoice, UpdateInvoiceRequest request)
     {
         invoice.Number = request.Number.ToString();
         invoice.Date = request.Date;
@@ -80,7 +80,7 @@ public class UpdateInvoice
         }
     }
 
-    private static InvoiceRow MapInvoiceRow(InvoiceRow row, RequestRow request)
+    private static InvoiceRow MapInvoiceRow(InvoiceRow row, UpdateInvoiceRowRequest request)
     {
         row.Description = request.Description;
         row.Quantity = request.Quantity;

@@ -6,17 +6,17 @@ namespace Gdn.Web.Api.Vs.Features.MeasurementUnits;
 
 public class GetMeasurementUnitById
 {
-    public record Response(int Id, string Code, string? Name, string? Description);
+    public record GetMeasurementUnitByIdResponse(int Id, string Code, string? Name, string? Description);
 
     public sealed class Endpoint : IEndpoint
     {
         public void MapEndpoint(IEndpointRouteBuilder app)
         {
-            app.MapGet("api/measurementunits/{id}", Handler).WithTags(Tags.MeasurementUnits);
+            app.MapGet("api/measurementunits/{id:int}", Handler).WithTags(Tags.MeasurementUnits);
         }
     }
 
-    private static async Task<IResult> Handler(IMeasurementUnitRepository measurementUnitRepository, int id)
+    private static async Task<IResult> Handler(int id, IMeasurementUnitRepository measurementUnitRepository)
     {
         var data = await measurementUnitRepository.GetAsync(id);
 
@@ -25,7 +25,7 @@ public class GetMeasurementUnitById
             : ResultHelper.NotFound();
     }
 
-    private static Response MapResponse(MeasurementUnit entity)
+    private static GetMeasurementUnitByIdResponse MapResponse(MeasurementUnit entity)
     {
         return new(entity.Id, entity.Code, entity.Name, entity.Description);
     }

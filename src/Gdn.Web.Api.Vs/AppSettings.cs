@@ -1,5 +1,11 @@
 ﻿namespace Gdn.Web.Api.Vs;
 
+public class AppSettings
+{
+    public string[]? SupportedCultures { get; set; }
+    public CompanyData CompanyData { get; set; } = new();
+}
+
 public class CompanyData
 {
     public string? Name { get; set; }

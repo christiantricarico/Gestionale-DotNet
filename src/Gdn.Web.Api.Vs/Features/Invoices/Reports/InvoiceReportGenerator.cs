@@ -1,11 +1,10 @@
 ﻿using Gdn.Domain.Data.Repositories;
-using Gdn.Domain.Models;
 using Microsoft.Extensions.Options;
 using QuestPDF.Fluent;
 
 namespace Gdn.Web.Api.Vs.Features.Invoices.Reports;
 
-public class InvoiceReportGenerator(IOptions<CompanyData> companyData, IInvoiceRepository invoiceRepository)
+public class InvoiceReportGenerator(IOptions<AppSettings> appSettings, IInvoiceRepository invoiceRepository)
 {
     public async Task<byte[]> GeneratePdfBytesAsync(int invoiceId)
     {
@@ -17,20 +16,18 @@ public class InvoiceReportGenerator(IOptions<CompanyData> companyData, IInvoiceR
 
     private async Task<InvoiceReportModel> GetReportDataAsync(int invoiceId)
     {
-        Invoice? data = await invoiceRepository.GetAsync(invoiceId, ["Customer.Addresses", "Rows.TaxRate", "Rows.MeasurementUnit"]);
+        var invoice = await invoiceRepository.GetAsync(invoiceId, ["Customer.Addresses", "Rows.TaxRate", "Rows.MeasurementUnit"])
+            ?? throw new InvalidOperationException("Invoice not found");
 
-        if (data is null)
-            throw new Exception("Invoice not found");
-
-        var company = companyData.Value;
-        var customer = data.Customer;
+        var company = appSettings.Value.CompanyData;
+        var customer = invoice.Customer;
         var customerAddress = customer.Addresses.FirstOrDefault();
 
         var reportModel = new InvoiceReportModel
         {
-            Number = data.Number,
-            Date = data.Date,
-            CustomerName = data.Customer?.Name,
+            Number = invoice.Number,
+            Date = invoice.Date,
+            CustomerName = invoice.Customer?.Name,
             Notes = "Test di generazione report fattura con QuestPDF",
             SellerAddress = new AddressModel()
             {
@@ -52,7 +49,7 @@ public class InvoiceReportGenerator(IOptions<CompanyData> companyData, IInvoiceR
                 Email = customer?.Email,
                 Phone = customer?.Phone
             },
-            Rows = data.Rows.Select(row => new InvoiceRowReportModel
+            Rows = invoice.Rows.Select(row => new InvoiceRowReportModel
             {
                 Description = row.Description,
                 Quantity = row.Quantity,

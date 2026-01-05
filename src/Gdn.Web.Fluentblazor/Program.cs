@@ -16,9 +16,9 @@ builder.Services.AddHttpClient("GdnWebApiVs", client =>
 builder.Services.AddFluentUIComponents();
 
 // Set fixed culture for the application
-var defaultCulture = new CultureInfo("it-IT");
-CultureInfo.DefaultThreadCurrentCulture = defaultCulture;
-CultureInfo.DefaultThreadCurrentUICulture = defaultCulture;
+//var defaultCulture = new CultureInfo("it-IT");
+//CultureInfo.DefaultThreadCurrentCulture = defaultCulture;
+//CultureInfo.DefaultThreadCurrentUICulture = defaultCulture;
 
 var app = builder.Build();
 
