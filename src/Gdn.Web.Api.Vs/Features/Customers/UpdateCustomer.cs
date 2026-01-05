@@ -8,10 +8,10 @@ namespace Gdn.Web.Api.Vs.Features.Customers;
 
 public class UpdateCustomer
 {
-    public record Request(int Id, string Code, string? Name, string? Description, string? FiscalCode, string? VatNumber,
+    public record UpdateCustomerRequest(int Id, string Code, string? Name, string? Description, string? FiscalCode, string? VatNumber,
         string? Phone, string? Email, string? Website, string? Pec, string? Sdi, string? Notes,
         string? Street, string? PostalCode, string? City, string? Province, string? Country);
-    public record Response(int Id, string Code, string? Name, string? Description, string? FiscalCode, string? VatNumber);
+    public record UpdateCustomerResponse(int Id, string Code, string? Name, string? Description, string? FiscalCode, string? VatNumber);
 
     public sealed class Endpoint : IEndpoint
     {
@@ -21,7 +21,7 @@ public class UpdateCustomer
         }
     }
 
-    public sealed class Validator : AbstractValidator<Request>
+    public sealed class Validator : AbstractValidator<UpdateCustomerRequest>
     {
         public Validator()
         {
@@ -42,7 +42,7 @@ public class UpdateCustomer
         }
     }
 
-    private static async Task<IResult> Handler(Request request, IValidator<Request> validator, IUnitOfWork unitOfWork)
+    private static async Task<IResult> Handler(UpdateCustomerRequest request, IValidator<UpdateCustomerRequest> validator, IUnitOfWork unitOfWork)
     {
         var validationResult = await validator.ValidateAsync(request);
         if (!validationResult.IsValid)
@@ -62,7 +62,7 @@ public class UpdateCustomer
         return ResultHelper.Ok(MapResponse(customer));
     }
 
-    private static void MapCustomer(Customer customer, Request request)
+    private static void MapCustomer(Customer customer, UpdateCustomerRequest request)
     {
         customer.Code = request.Code;
         customer.Name = request.Name;
@@ -79,7 +79,7 @@ public class UpdateCustomer
         MapAddress(customer, request);
     }
 
-    private static void MapAddress(Customer customer, Request request)
+    private static void MapAddress(Customer customer, UpdateCustomerRequest request)
     {
         var address = customer.Addresses.FirstOrDefault();
         if (address is null)
@@ -95,6 +95,6 @@ public class UpdateCustomer
         address.Country = request.Country;
     }
 
-    private static Response MapResponse(Customer entity) =>
+    private static UpdateCustomerResponse MapResponse(Customer entity) =>
         new(entity.Id, entity.Code, entity.Name, entity.Description, entity.FiscalCode, entity.VatNumber);
 }

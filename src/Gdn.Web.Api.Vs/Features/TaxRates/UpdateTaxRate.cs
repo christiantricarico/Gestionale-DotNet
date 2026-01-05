@@ -8,8 +8,8 @@ namespace Gdn.Web.Api.Vs.Features.TaxRates;
 
 public class UpdateTaxRate
 {
-    public record Request(int Id, string Code, string? Name, string? Description, decimal Rate, int? TaxRateNatureId);
-    public record Response(int Id, string Code, string? Name, string? Description, decimal Rate, int? TaxRateNatureId);
+    public record UpdateTaxRateRequest(int Id, string Code, string? Name, string? Description, decimal Rate, int? TaxRateNatureId);
+    public record UpdateTaxRateResponse(int Id, string Code, string? Name, string? Description, decimal Rate, int? TaxRateNatureId);
 
     public sealed class Endpoint : IEndpoint
     {
@@ -19,7 +19,7 @@ public class UpdateTaxRate
         }
     }
 
-    public sealed class Validator : AbstractValidator<Request>
+    public sealed class Validator : AbstractValidator<UpdateTaxRateRequest>
     {
         public Validator()
         {
@@ -28,7 +28,7 @@ public class UpdateTaxRate
         }
     }
 
-    private static async Task<IResult> Handler(Request request, IValidator<Request> validator, IUnitOfWork unitOfWork)
+    private static async Task<IResult> Handler(UpdateTaxRateRequest request, IValidator<UpdateTaxRateRequest> validator, IUnitOfWork unitOfWork)
     {
         var validationResult = await validator.ValidateAsync(request);
         if (!validationResult.IsValid)
@@ -47,7 +47,7 @@ public class UpdateTaxRate
         return ResultHelper.Ok(MapResponse(taxRate));
     }
 
-    private static void MapTaxRate(TaxRate taxRate, Request request)
+    private static void MapTaxRate(TaxRate taxRate, UpdateTaxRateRequest request)
     {
         taxRate.Code = request.Code;
         taxRate.Name = request.Name;
@@ -56,6 +56,6 @@ public class UpdateTaxRate
         taxRate.TaxRateNatureId = request.TaxRateNatureId;
     }
 
-    private static Response MapResponse(TaxRate taxRate) =>
+    private static UpdateTaxRateResponse MapResponse(TaxRate taxRate) =>
         new(taxRate.Id, taxRate.Code, taxRate.Name, taxRate.Description, taxRate.Rate, taxRate.TaxRateNatureId);
 }

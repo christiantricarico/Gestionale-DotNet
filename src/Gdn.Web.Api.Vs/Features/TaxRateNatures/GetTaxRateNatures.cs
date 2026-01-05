@@ -5,7 +5,7 @@ namespace Gdn.Web.Api.Vs.Features.TaxRateNatures;
 
 public class GetTaxRateNatures
 {
-    public record Response(int Id, string Code, string? Name);
+    public record GetTaxRateNaturesResponse(int Id, string Code, string? Name);
 
     public sealed class Endpoint : IEndpoint
     {
@@ -18,7 +18,7 @@ public class GetTaxRateNatures
     private static async Task<IResult> Handler(ITaxRateNatureRepository taxRateNatureRepository)
     {
         var data = await taxRateNatureRepository.GetAllAsync();
-        var responseData = data.Select(e => new Response(e.Id, e.Code, e.Name));
+        var responseData = data.Select(e => new GetTaxRateNaturesResponse(e.Id, e.Code, e.Name));
 
         return ResultHelper.Ok(responseData);
     }

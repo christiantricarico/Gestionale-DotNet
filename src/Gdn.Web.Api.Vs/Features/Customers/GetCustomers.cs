@@ -6,7 +6,7 @@ namespace Gdn.Web.Api.Vs.Features.Customers;
 
 public class GetCustomers
 {
-    public record Response(int Id, string Code, string? Name, string? Description, string? FiscalCode, string? VatNumber,
+    public record GetCustomersResponse(int Id, string Code, string? Name, string? Description, string? FiscalCode, string? VatNumber,
         string? Phone, string? Email, string? Website, string? Pec, string? Sdi, string? Notes,
         string? Street, string? PostalCode, string? City, string? Province, string? Country);
 
@@ -26,7 +26,7 @@ public class GetCustomers
         return ResultHelper.Ok(responseData);
     }
 
-    private static Response MapResponse(Customer entity)
+    private static GetCustomersResponse MapResponse(Customer entity)
     {
         var address = entity.Addresses.FirstOrDefault();
 

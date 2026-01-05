@@ -6,7 +6,7 @@ namespace Gdn.Web.Api.Vs.Features.Invoices;
 
 public class GetInvoiceRowById
 {
-    public record Response(long Id, string RowType, string? Description, decimal? Quantity, decimal? UnitPrice,
+    public record GetInvoiceRowByIdResponse(long Id, string RowType, string? Description, decimal? Quantity, decimal? UnitPrice,
         int? MeasurementUnitId, string? MeasurementUnitCode, string? MeasurementUnitName,
         int? TaxRateId, string? TaxRateName);
 
@@ -27,7 +27,7 @@ public class GetInvoiceRowById
             : ResultHelper.NotFound();
     }
 
-    private static Response MapResponse(InvoiceRow row)
+    private static GetInvoiceRowByIdResponse MapResponse(InvoiceRow row)
         => new(row.Id, row.RowType, row.Description, row.Quantity, row.UnitPrice,
             row.MeasurementUnitId, row.MeasurementUnit?.Code, row.MeasurementUnit?.Name,
             row.TaxRateId, row.TaxRate?.Name);

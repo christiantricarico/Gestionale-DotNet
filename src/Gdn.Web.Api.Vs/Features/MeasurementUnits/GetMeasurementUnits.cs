@@ -6,7 +6,7 @@ namespace Gdn.Web.Api.Vs.Features.MeasurementUnits;
 
 public class GetMeasurementUnits
 {
-    public record Response(int Id, string Code, string? Name, string? Description);
+    public record GetMeasurementUnitsResponse(int Id, string Code, string? Name, string? Description);
 
     public sealed class Endpoint : IEndpoint
     {
@@ -24,7 +24,7 @@ public class GetMeasurementUnits
         return ResultHelper.Ok(responseData);
     }
 
-    private static Response MapResponse(MeasurementUnit entity)
+    private static GetMeasurementUnitsResponse MapResponse(MeasurementUnit entity)
     {
         return new(entity.Id, entity.Code, entity.Name, entity.Description);
     }

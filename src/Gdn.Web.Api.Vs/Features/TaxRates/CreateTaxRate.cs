@@ -8,8 +8,8 @@ namespace Gdn.Web.Api.Vs.Features.TaxRates;
 
 public class CreateTaxRate
 {
-    public record Request(string Code, string? Name, string? Description, decimal Rate, int? TaxRateNatureId);
-    public record Response(int Id, string Code, string? Name, string? Description, decimal Rate);
+    public record CreateTaxRateRequest(string Code, string? Name, string? Description, decimal Rate, int? TaxRateNatureId);
+    public record CreateTaxRateResponse(int Id, string Code, string? Name, string? Description, decimal Rate);
 
     public sealed class Endpoint : IEndpoint
     {
@@ -19,7 +19,7 @@ public class CreateTaxRate
         }
     }
 
-    public sealed class Validator : AbstractValidator<Request>
+    public sealed class Validator : AbstractValidator<CreateTaxRateRequest>
     {
         public Validator()
         {
@@ -28,7 +28,7 @@ public class CreateTaxRate
         }
     }
 
-    private static async Task<IResult> Handler(Request request, IValidator<Request> validator, IUnitOfWork unitOfWork)
+    private static async Task<IResult> Handler(CreateTaxRateRequest request, IValidator<CreateTaxRateRequest> validator, IUnitOfWork unitOfWork)
     {
         var validationResult = await validator.ValidateAsync(request);
         if (!validationResult.IsValid)
@@ -41,10 +41,10 @@ public class CreateTaxRate
 
         await unitOfWork.SaveChangesAsync();
 
-        return ResultHelper.Created(new Response(taxRate.Id, taxRate.Code, taxRate.Name, taxRate.Description, taxRate.Rate));
+        return ResultHelper.Created(new CreateTaxRateResponse(taxRate.Id, taxRate.Code, taxRate.Name, taxRate.Description, taxRate.Rate));
     }
 
-    private static TaxRate MapTaxRate(Request request) => new()
+    private static TaxRate MapTaxRate(CreateTaxRateRequest request) => new()
     {
         Code = request.Code,
         Name = request.Name,

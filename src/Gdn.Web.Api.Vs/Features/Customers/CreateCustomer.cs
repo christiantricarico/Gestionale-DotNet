@@ -8,10 +8,10 @@ namespace Gdn.Web.Api.Vs.Features.Customers;
 
 public class CreateCustomer
 {
-    public record Request(string Code, string? Name, string? Description, string? FiscalCode, string? VatNumber,
+    public record CreateCustomerRequest(string Code, string? Name, string? Description, string? FiscalCode, string? VatNumber,
         string? Phone, string? Email, string? Website, string? Pec, string? Sdi, string? Notes,
         string? Street, string? PostalCode, string? City, string? Province, string? Country);
-    public record Response(int Id, string Code, string? Name, string? Description, string? FiscalCode, string? VatNumber);
+    public record CreateCustomerResponse(int Id, string Code, string? Name, string? Description, string? FiscalCode, string? VatNumber);
 
     public sealed class Endpoint : IEndpoint
     {
@@ -21,7 +21,7 @@ public class CreateCustomer
         }
     }
 
-    public sealed class Validator : AbstractValidator<Request>
+    public sealed class Validator : AbstractValidator<CreateCustomerRequest>
     {
         public Validator()
         {
@@ -42,7 +42,7 @@ public class CreateCustomer
         }
     }
 
-    private static async Task<IResult> Handler(Request request, IValidator<Request> validator, IUnitOfWork unitOfWork)
+    private static async Task<IResult> Handler(CreateCustomerRequest request, IValidator<CreateCustomerRequest> validator, IUnitOfWork unitOfWork)
     {
         var validationResult = await validator.ValidateAsync(request);
         if (!validationResult.IsValid)
@@ -58,11 +58,11 @@ public class CreateCustomer
 
         await unitOfWork.SaveChangesAsync();
 
-        return ResultHelper.Created(new Response(customer.Id, customer.Code, customer.Name, customer.Description,
+        return ResultHelper.Created(new CreateCustomerResponse(customer.Id, customer.Code, customer.Name, customer.Description,
             customer.FiscalCode, customer.VatNumber));
     }
 
-    private static Customer MapCustomer(Request request) => new()
+    private static Customer MapCustomer(CreateCustomerRequest request) => new()
     {
         Code = request.Code,
         Name = request.Name,
@@ -77,7 +77,7 @@ public class CreateCustomer
         Notes = request.Notes
     };
 
-    private static Address MapAddress(Request request) => new()
+    private static Address MapAddress(CreateCustomerRequest request) => new()
     {
         Street = request.Street,
         PostalCode = request.PostalCode,

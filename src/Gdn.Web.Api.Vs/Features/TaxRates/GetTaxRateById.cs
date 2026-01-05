@@ -6,7 +6,7 @@ namespace Gdn.Web.Api.Vs.Features.TaxRates;
 
 public class GetTaxRateById
 {
-    public record Response(int Id, string Code, string? Name, string? Description, decimal Rate, int? TaxRateNatureId);
+    public record GetTaxRateByIdResponse(int Id, string Code, string? Name, string? Description, decimal Rate, int? TaxRateNatureId);
 
     public sealed class Endpoint : IEndpoint
     {
@@ -25,7 +25,7 @@ public class GetTaxRateById
             : ResultHelper.NotFound();
     }
 
-    private static Response MapResponse(TaxRate entity)
+    private static GetTaxRateByIdResponse MapResponse(TaxRate entity)
     {
         return new(entity.Id, entity.Code, entity.Name, entity.Description, entity.Rate, entity.TaxRateNatureId);
     }

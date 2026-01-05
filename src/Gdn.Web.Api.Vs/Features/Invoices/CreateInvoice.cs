@@ -9,8 +9,8 @@ namespace Gdn.Web.Api.Vs.Features.Invoices;
 
 public class CreateInvoice
 {
-    public record RequestRow(string? Description, decimal? Quantity, decimal? UnitPrice, int? MeasurementUnitId, int? TaxRateId);
-    public record Request(int Number, DateOnly Date, int CustomerId, IEnumerable<RequestRow> Rows);
+    public record CreateInvoiceRowRequest(string? Description, decimal? Quantity, decimal? UnitPrice, int? MeasurementUnitId, int? TaxRateId);
+    public record CreateInvoiceRequest(int Number, DateOnly Date, int CustomerId, IEnumerable<CreateInvoiceRowRequest> Rows);
 
     public record ResponseRow(long Id, string RowType, string? Description, decimal? Quantity, decimal? UnitPrice, int? MeasurementUnitId, int? TaxRateId);
     public record Response(int Id, int Number, DateOnly Date, int CustomerId, IEnumerable<ResponseRow> Rows);
@@ -23,7 +23,7 @@ public class CreateInvoice
         }
     }
 
-    public sealed class Validator : AbstractValidator<Request>
+    public sealed class Validator : AbstractValidator<CreateInvoiceRequest>
     {
         public Validator()
         {
@@ -31,7 +31,7 @@ public class CreateInvoice
         }
     }
 
-    private static async Task<IResult> Handler(Request request, IValidator<Request> validator, IUnitOfWork unitOfWork)
+    private static async Task<IResult> Handler(CreateInvoiceRequest request, IValidator<CreateInvoiceRequest> validator, IUnitOfWork unitOfWork)
     {
         var validationResult = await validator.ValidateAsync(request);
         if (!validationResult.IsValid)
@@ -47,7 +47,7 @@ public class CreateInvoice
         return ResultHelper.Created(MapResponse(invoice));
     }
 
-    private static Invoice MapInvoice(Request request) => new()
+    private static Invoice MapInvoice(CreateInvoiceRequest request) => new()
     {
         Number = request.Number.ToString(),
         Date = request.Date,
@@ -55,7 +55,7 @@ public class CreateInvoice
         Rows = request.Rows.Select(r => MapInvoiceRow(r)).ToList()
     };
 
-    private static InvoiceRow MapInvoiceRow(RequestRow request) => new()
+    private static InvoiceRow MapInvoiceRow(CreateInvoiceRowRequest request) => new()
     {
         RowType = DocumentRowType.DESCRIPTIVE,
         Description = request.Description,
