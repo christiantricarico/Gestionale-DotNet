@@ -21,6 +21,10 @@ public class InvoiceEditModel
     [Display(Name = "Cliente")]
     public string? CustomerName { get; set; }
 
+    public decimal? StampDutyAmount { get; set; }
+
+    public bool StampDutyChargedToCustomer { get; set; }
+
     public ICollection<InvoiceRowEditModel> Rows { get; set; } = [];
 }
 
@@ -50,6 +54,8 @@ public class InvoiceRowEditModel
 
     [Display(Name = "Aliquota IVA")]
     public string? TaxRateName { get; set; }
+
+    public decimal? TaxRateValue { get; set; }
 
     [Display(Name = "Totale")]
     public decimal TotalAmount => Quantity * UnitPrice;

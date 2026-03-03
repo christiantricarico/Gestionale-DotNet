@@ -11,10 +11,10 @@ public class UpdateInvoice
     public record UpdateInvoiceRowRequest(InputStatus InputStatus, long? Id, string RowType, string? Description,
         decimal? Quantity, decimal? UnitPrice,
         int? MeasurementUnitId, int? TaxRateId);
-    public record UpdateInvoiceRequest(int Id, int Number, DateOnly Date, int CustomerId, IEnumerable<UpdateInvoiceRowRequest> Rows);
+    public record UpdateInvoiceRequest(int Id, int Number, DateOnly Date, int CustomerId, decimal? StampDutyAmount, bool StampDutyChargedToCustomer, IEnumerable<UpdateInvoiceRowRequest> Rows);
 
     public record ResponseRow(long Id, string RowType, string? Description, decimal? Quantity, decimal? UnitPrice, int? MeasurementUnitId, int? TaxRateId);
-    public record Response(int Id, int Number, DateOnly Date, int CustomerId, IEnumerable<ResponseRow> Rows);
+    public record Response(int Id, int Number, DateOnly Date, int CustomerId, decimal? StampDutyAmount, bool StampDutyChargedToCustomer, IEnumerable<ResponseRow> Rows);
 
     public sealed class Endpoint : IEndpoint
     {
@@ -29,6 +29,7 @@ public class UpdateInvoice
         public Validator()
         {
             RuleFor(e => e.Number).NotEmpty();
+            RuleFor(e => e.StampDutyAmount).Equal(2.00m).When(e => e.StampDutyAmount.HasValue);
         }
     }
 
@@ -56,6 +57,8 @@ public class UpdateInvoice
         invoice.Number = request.Number.ToString();
         invoice.Date = request.Date;
         invoice.CustomerId = request.CustomerId;
+        invoice.StampDutyAmount = request.StampDutyAmount;
+        invoice.StampDutyChargedToCustomer = request.StampDutyChargedToCustomer;
 
         foreach (var requestRow in request.Rows)
         {
@@ -92,7 +95,7 @@ public class UpdateInvoice
     }
 
     private static Response MapResponse(Invoice invoice)
-        => new(invoice.Id, int.Parse(invoice.Number), invoice.Date, invoice.CustomerId, invoice.Rows.Select(r => MapResponseRow(r)));
+        => new(invoice.Id, int.Parse(invoice.Number), invoice.Date, invoice.CustomerId, invoice.StampDutyAmount, invoice.StampDutyChargedToCustomer, invoice.Rows.Select(r => MapResponseRow(r)));
 
     private static ResponseRow MapResponseRow(InvoiceRow row)
         => new(row.Id, row.RowType, row.Description, row.Quantity, row.UnitPrice, row.MeasurementUnitId, row.TaxRateId);

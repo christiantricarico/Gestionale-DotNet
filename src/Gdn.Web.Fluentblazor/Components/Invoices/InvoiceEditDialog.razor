@@ -94,6 +94,31 @@
                 }
             </FluentStack>
 
+            @if (ExemptVatTotal > StampDutyThreshold)
+            {
+                <FluentDivider Style="margin-top: 10px;" />
+                <FluentStack Orientation="Orientation.Vertical" Style="margin-top: 10px; padding: 8px; background: var(--neutral-layer-2); border-radius: 4px;">
+                    <FluentLabel Typo="Typography.Subject">
+                        Imposta di bollo (€2,00)
+                    </FluentLabel>
+                    <FluentLabel>
+                        La fattura contiene importi esenti IVA superiori a €77,47. È necessario applicare l'imposta di bollo virtuale di €2,00.
+                    </FluentLabel>
+                    <FluentStack Orientation="Orientation.Horizontal">
+                        <FluentCheckbox @bind-Value="StampDutyEnabled" Label="Applica imposta di bollo" />
+                    </FluentStack>
+                    @if (StampDutyEnabled)
+                    {
+                        <FluentStack Orientation="Orientation.Horizontal" Style="gap: 12px;">
+                            <FluentRadioGroup @bind-Value="Model.StampDutyChargedToCustomer" Name="stampDutyCharge" Label="A carico di:">
+                                <FluentRadio Value="false">Emittente</FluentRadio>
+                                <FluentRadio Value="true">Cliente</FluentRadio>
+                            </FluentRadioGroup>
+                        </FluentStack>
+                    }
+                </FluentStack>
+            }
+
         </EditForm>
     }
 </FluentDialogBody>
@@ -139,6 +164,28 @@
     IEnumerable<CustomerViewModel>? Customers;
     CustomerViewModel? SelectedCustomer;
 
+    private const decimal StampDutyValue = 2.00m;
+    private const decimal StampDutyThreshold = 77.47m;
+
+    private decimal ExemptVatTotal =>
+        Model?.Rows
+            .Where(r => r.InputStatus != 3 && r.TaxRateValue == 0)
+            .Sum(r => r.TotalAmount) ?? 0m;
+
+    private bool StampDutyEnabled
+    {
+        get => Model?.StampDutyAmount.HasValue ?? false;
+        set
+        {
+            if (Model is null)
+                return;
+
+            Model.StampDutyAmount = value ? StampDutyValue : null;
+            if (!value)
+                Model.StampDutyChargedToCustomer = false;
+        }
+    }
+
     protected override async Task OnInitializedAsync()
     {
         if (Content.Id == 0)
@@ -172,6 +219,12 @@
     private async Task SaveAsync()
     {
         Model.Date = DateOnly.FromDateTime(Model.DateWithTime ?? DateTime.MinValue);
+
+        if (ExemptVatTotal <= StampDutyThreshold)
+        {
+            Model.StampDutyAmount = null;
+            Model.StampDutyChargedToCustomer = false;
+        }
 
         if (EditContext.Validate())
         {

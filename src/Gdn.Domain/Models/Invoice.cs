@@ -12,6 +12,9 @@ public class Invoice : TrackedEntity<int>
     public Customer Customer { get; set; } = default!;
 
     public ICollection<InvoiceRow> Rows { get; set; } = new List<InvoiceRow>();
+
+    public decimal? StampDutyAmount { get; set; }
+    public bool StampDutyChargedToCustomer { get; set; }
 }
 
 public class InvoiceRow : TrackedEntity<long>

@@ -9,6 +9,8 @@ internal sealed class InvoiceReportModel
     public AddressModel SellerAddress { get; set; } = default!;
     public AddressModel CustomerAddress { get; set; } = default!;
     public List<InvoiceRowReportModel> Rows { get; set; } = new();
+    public decimal? StampDutyAmount { get; set; }
+    public bool StampDutyChargedToCustomer { get; set; }
 }
 
 internal sealed class InvoiceRowReportModel
