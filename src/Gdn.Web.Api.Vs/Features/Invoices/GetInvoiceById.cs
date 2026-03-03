@@ -8,8 +8,8 @@ public class GetInvoiceById
 {
     public record GetInvoiceByIdResponseRow(long Id, string RowType, string? Description, decimal? Quantity, decimal? UnitPrice,
         int? MeasurementUnitId, string? MeasurementUnitCode, string? MeasurementUnitName,
-        int? TaxRateId, string? TaxRateName);
-    public record GetInvoiceByIdResponse(int Id, string Number, DateOnly Date, int CustomerId, IEnumerable<GetInvoiceByIdResponseRow> Rows);
+        int? TaxRateId, string? TaxRateName, decimal? TaxRateValue);
+    public record GetInvoiceByIdResponse(int Id, string Number, DateOnly Date, int CustomerId, decimal? StampDutyAmount, bool StampDutyChargedToCustomer, IEnumerable<GetInvoiceByIdResponseRow> Rows);
 
     public sealed class Endpoint : IEndpoint
     {
@@ -29,11 +29,12 @@ public class GetInvoiceById
     }
 
     private static GetInvoiceByIdResponse MapResponse(Invoice invoice)
-        => new(invoice.Id, invoice.Number, invoice.Date, invoice.CustomerId, invoice.Rows.Select(r => MapResponseRow(r)));
+        => new(invoice.Id, invoice.Number, invoice.Date, invoice.CustomerId, invoice.StampDutyAmount, invoice.StampDutyChargedToCustomer, invoice.Rows.Select(r => MapResponseRow(r)));
 
     private static GetInvoiceByIdResponseRow MapResponseRow(InvoiceRow row)
         => new(row.Id, row.RowType, row.Description, row.Quantity, row.UnitPrice,
             row.MeasurementUnitId, row.MeasurementUnit?.Code, row.MeasurementUnit?.Name,
             row.TaxRateId,
-            string.IsNullOrWhiteSpace(row.TaxRate?.Name) ? row.TaxRate?.Code : row.TaxRate.Name);
+            string.IsNullOrWhiteSpace(row.TaxRate?.Name) ? row.TaxRate?.Code : row.TaxRate.Name,
+            row.TaxRate?.Rate);
 }

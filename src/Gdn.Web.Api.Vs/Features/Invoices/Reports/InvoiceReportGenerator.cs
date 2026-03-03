@@ -29,6 +29,8 @@ public class InvoiceReportGenerator(IOptions<AppSettings> appSettings, IInvoiceR
             Date = invoice.Date,
             CustomerName = invoice.Customer?.Name,
             Notes = "Test di generazione report fattura con QuestPDF",
+            StampDutyAmount = invoice.StampDutyAmount,
+            StampDutyChargedToCustomer = invoice.StampDutyChargedToCustomer,
             SellerAddress = new AddressModel()
             {
                 CompanyName = company.Name,

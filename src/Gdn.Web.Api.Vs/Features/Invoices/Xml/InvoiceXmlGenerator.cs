@@ -146,6 +146,18 @@ public class InvoiceXmlGenerator(
 
         body.DatiGenerali.DatiGeneraliDocumento.ImportoTotaleDocumento = documentTotalAmount;
 
+        if (invoice.StampDutyAmount.HasValue)
+        {
+            body.DatiGenerali.DatiGeneraliDocumento.DatiBollo.BolloVirtuale = "SI";
+            body.DatiGenerali.DatiGeneraliDocumento.DatiBollo.ImportoBollo = invoice.StampDutyAmount;
+
+            if (invoice.StampDutyChargedToCustomer)
+            {
+                body.DatiGenerali.DatiGeneraliDocumento.ImportoTotaleDocumento = documentTotalAmount + invoice.StampDutyAmount;
+                paymentAmount += invoice.StampDutyAmount.Value;
+            }
+        }
+
         SetDatiPagamento(invoice, paymentAmount, body);
 
         fattura.FatturaElettronicaBody.Add(body);

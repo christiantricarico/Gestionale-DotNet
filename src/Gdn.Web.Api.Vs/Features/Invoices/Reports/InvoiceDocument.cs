@@ -149,6 +149,28 @@ internal sealed class InvoiceDocument : IDocument
                 row.RelativeItem().AlignRight().Text($"{CalculateTotalAmount():c}").SemiBold();
             });
 
+            if (Model.StampDutyAmount.HasValue)
+            {
+                var stampDutyLabel = Model.StampDutyChargedToCustomer
+                    ? "Imposta di bollo (a carico cliente)"
+                    : "Imposta di bollo (a carico emittente)";
+
+                column.Item().Row(row =>
+                {
+                    row.RelativeItem().Text(stampDutyLabel);
+                    row.RelativeItem().AlignRight().Text($"{Model.StampDutyAmount:c}").SemiBold();
+                });
+
+                if (Model.StampDutyChargedToCustomer)
+                {
+                    column.Item().Row(row =>
+                    {
+                        row.RelativeItem().Text("Totale da pagare");
+                        row.RelativeItem().AlignRight().Text($"{CalculateTotalAmount() + Model.StampDutyAmount:c}").SemiBold();
+                    });
+                }
+            }
+
             decimal CalculateNetAmount()
             {
                 decimal netAmount = 0;

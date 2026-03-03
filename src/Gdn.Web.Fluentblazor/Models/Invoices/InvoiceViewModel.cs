@@ -17,6 +17,10 @@ public class InvoiceViewModel
     [Display(Name = "Cliente")]
     public string? CustomerName { get; set; }
 
+    public decimal? StampDutyAmount { get; set; }
+
+    public bool StampDutyChargedToCustomer { get; set; }
+
     public IEnumerable<InvoiceRowViewModel> Rows { get; set; } = [];
 }
 

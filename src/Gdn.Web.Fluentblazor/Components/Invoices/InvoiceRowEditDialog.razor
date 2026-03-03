@@ -112,6 +112,7 @@
         SelectedTaxRate = taxRate;
         Model.TaxRateId = taxRate?.Id;
         Model.TaxRateName = string.IsNullOrWhiteSpace(taxRate?.Name) ? taxRate?.Code : taxRate.Name;
+        Model.TaxRateValue = taxRate?.Rate;
     }
 
     private async Task SaveAsync()
