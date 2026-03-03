@@ -28,6 +28,7 @@ public class CreateInvoice
         public Validator()
         {
             RuleFor(e => e.Number).NotEmpty();
+            RuleFor(e => e.StampDutyAmount).Equal(2.00m).When(e => e.StampDutyAmount.HasValue);
         }
     }
 
