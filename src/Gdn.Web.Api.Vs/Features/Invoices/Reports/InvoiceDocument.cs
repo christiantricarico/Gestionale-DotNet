@@ -50,11 +50,22 @@ internal sealed class InvoiceDocument : IDocument
                     text.Span($"{Model.Date:d}");
                 });
 
-                column.Item().Text(text =>
+                if (Model.Dues.Count == 1)
                 {
-                    text.Span("Data scadenza: ").SemiBold();
-                    text.Span($"{Model.Date:d}");
-                });
+                    column.Item().Text(text =>
+                    {
+                        text.Span("Data scadenza: ").SemiBold();
+                        text.Span($"{Model.Dues[0].Date:d}");
+                    });
+                }
+                else if (Model.Dues.Count > 1)
+                {
+                    column.Item().Text(text =>
+                    {
+                        text.Span("Scadenze: ").SemiBold();
+                        text.Span($"{Model.Dues.Count} rate (vedi dettaglio)");
+                    });
+                }
             });
         });
     }
@@ -74,6 +85,9 @@ internal sealed class InvoiceDocument : IDocument
 
             column.Item().Element(ComposeTable);
             column.Item().Element(ComposeSummary);
+
+            if (Model.Dues.Count > 0)
+                column.Item().Element(ComposeDues);
         });
     }
 
@@ -120,6 +134,43 @@ internal sealed class InvoiceDocument : IDocument
                     return container.BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingVertical(5);
                 }
             }
+        });
+    }
+
+    private void ComposeDues(IContainer container)
+    {
+        container.Column(column =>
+        {
+            column.Spacing(5);
+
+            column.Item().Text("Scadenze").FontSize(14).SemiBold().FontColor(Colors.Blue.Medium);
+
+            column.Item().Table(table =>
+            {
+                table.ColumnsDefinition(columns =>
+                {
+                    columns.RelativeColumn(2);
+                    columns.RelativeColumn();
+                });
+
+                table.Header(header =>
+                {
+                    header.Cell().Element(HeaderCellStyle).Text("Data");
+                    header.Cell().Element(HeaderCellStyle).AlignRight().Text("Importo");
+
+                    static IContainer HeaderCellStyle(IContainer c) =>
+                        c.DefaultTextStyle(x => x.SemiBold()).PaddingVertical(5).BorderBottom(1).BorderColor(Colors.Black);
+                });
+
+                foreach (var due in Model.Dues)
+                {
+                    table.Cell().Element(RowCellStyle).Text($"{due.Date:d}");
+                    table.Cell().Element(RowCellStyle).AlignRight().Text($"{due.Amount:c}");
+
+                    static IContainer RowCellStyle(IContainer c) =>
+                        c.BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingVertical(5);
+                }
+            });
         });
     }
 
