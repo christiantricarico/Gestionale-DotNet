@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace Gdn.Web.Fluentblazor.Models.Invoices;
 
@@ -22,10 +22,10 @@ public class InvoiceEditModel
     public string? CustomerName { get; set; }
 
     public decimal? StampDutyAmount { get; set; }
-
     public bool StampDutyChargedToCustomer { get; set; }
 
     public ICollection<InvoiceRowEditModel> Rows { get; set; } = [];
+    public ICollection<InvoiceDueEditModel> Dues { get; set; } = [];
 }
 
 public class InvoiceRowEditModel
@@ -59,4 +59,29 @@ public class InvoiceRowEditModel
 
     [Display(Name = "Totale")]
     public decimal TotalAmount => Quantity * UnitPrice;
+}
+
+public class InvoiceDueEditModel
+{
+    public int InputStatus { get; set; }
+    public int? Id { get; set; }
+
+    [Required(ErrorMessage = "Data scadenza richiesta.")]
+    [Display(Name = "Data scadenza")]
+    public DateOnly Date { get; set; }
+
+    [Required(ErrorMessage = "Importo richiesto.")]
+    [Range(0.01, double.MaxValue, ErrorMessage = "Importo deve essere maggiore di zero.")]
+    [Display(Name = "Importo")]
+    public decimal Amount { get; set; }
+
+    [Display(Name = "Pagato")]
+    public decimal PaidAmount { get; set; }
+
+    public bool IsPaid { get; set; }
+
+    [Display(Name = "Stato")]
+    public string Status => IsPaid ? "Pagata" : PaidAmount > 0 ? "Parzialmente pagata" : "Non pagata";
+
+    public bool HasPayments => PaidAmount > 0;
 }

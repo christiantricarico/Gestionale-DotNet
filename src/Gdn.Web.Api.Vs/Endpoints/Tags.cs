@@ -1,4 +1,4 @@
-﻿namespace Gdn.Web.Api.Vs.Endpoints;
+namespace Gdn.Web.Api.Vs.Endpoints;
 
 public static class Tags
 {
@@ -8,4 +8,6 @@ public static class Tags
     public const string Customers = "Customers";
     public const string MeasurementUnits = "MeasurementUnits";
     public const string Invoices = "Invoices";
+    public const string PaymentMethods = "PaymentMethods";
+    public const string Payments = "Payments";
 }

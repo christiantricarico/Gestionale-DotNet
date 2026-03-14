@@ -119,6 +119,58 @@
                 </FluentStack>
             }
 
+            @if (Model.Id.HasValue)
+            {
+                <FluentDivider Style="margin-top: 10px;" />
+                <FluentStack Orientation="Orientation.Vertical" Style="margin-top: 10px;">
+                    <FluentStack Orientation="Orientation.Horizontal" VerticalAlignment="VerticalAlignment.Center" Style="gap: 8px;">
+                        <FluentLabel Typo="Typography.Subject">Scadenze</FluentLabel>
+                        <FluentButton IconStart="@(new Icons.Regular.Size24.Add())" OnClick="AddDueClick">
+                            Aggiungi scadenza
+                        </FluentButton>
+                    </FluentStack>
+                    <FluentStack Orientation="Orientation.Vertical" Style="width: 100%;">
+                        @foreach (var due in Model.Dues.Where(d => d.InputStatus != 3))
+                        {
+                            <FluentCard MinimalStyle="true" Style="width: 100%;">
+                                <FluentGrid Spacing="1" Style="padding: 8px;">
+                                    <FluentGridItem xs="6" lg="3">
+                                        <div class="invoice-row-field">
+                                            <strong>Data scadenza:</strong>
+                                            <span>@due.Date.ToString("d")</span>
+                                        </div>
+                                    </FluentGridItem>
+                                    <FluentGridItem xs="6" lg="2">
+                                        <div class="invoice-row-field">
+                                            <strong>Importo:</strong>
+                                            <span>@due.Amount.ToString("C")</span>
+                                        </div>
+                                    </FluentGridItem>
+                                    <FluentGridItem xs="6" lg="2">
+                                        <div class="invoice-row-field">
+                                            <strong>Pagato:</strong>
+                                            <span>@due.PaidAmount.ToString("C")</span>
+                                        </div>
+                                    </FluentGridItem>
+                                    <FluentGridItem xs="6" lg="3">
+                                        <div class="invoice-row-field">
+                                            <strong>Stato:</strong>
+                                            <span>@due.Status</span>
+                                        </div>
+                                    </FluentGridItem>
+                                    <FluentGridItem xs="12" lg="2" Style="display: flex; justify-content: flex-end; align-items: center; gap: 2px;">
+                                        <FluentButton aria-label="Modifica" IconEnd="@(new Icons.Regular.Size16.Edit())" OnClick="@(() => EditDueClick(due))" />
+                                        <FluentButton aria-label="Elimina" IconEnd="@(new Icons.Regular.Size16.Delete())"
+                                                      Disabled="@due.HasPayments"
+                                                      OnClick="@(() => DeleteDueClick(due))" />
+                                    </FluentGridItem>
+                                </FluentGrid>
+                            </FluentCard>
+                        }
+                    </FluentStack>
+                </FluentStack>
+            }
+
         </EditForm>
     }
 </FluentDialogBody>
@@ -208,6 +260,15 @@
 
         if (Model.CustomerId.HasValue)
             SelectedCustomer = Customers.SingleOrDefault(c => c.Id == Model.CustomerId);
+
+    }
+    private async Task ReloadDuesAsync()
+    {
+        var updated = await HttpClient.GetFromJsonAsync<InvoiceEditModel>($"invoices/{Model.Id}");
+        if (updated is not null)
+        {
+            Model.Dues = updated.Dues;
+        }
     }
 
     private void SelectedCustomerChanged(CustomerViewModel? customer)
@@ -286,4 +347,51 @@
 
         context.InputStatus = 3; // deleted
     }
+
+    private async Task AddDueClick()
+    {
+        var content = new InvoiceDueEditModel { Date = Model.Date };
+        var parameters = new DialogParameters
+        {
+            Title = "Aggiungi scadenza",
+            PreventDismissOnOverlayClick = true,
+            PreventScroll = true,
+            TrapFocus = false
+        };
+
+        var dialog = await DialogService.ShowDialogAsync<InvoiceDueEditDialog>(content, parameters);
+        var result = await dialog.Result;
+        if (!result.Cancelled)
+        {
+            content.InputStatus = 1; // added
+            Model.Dues.Add(content);
+        }
+    }
+
+    private async Task EditDueClick(InvoiceDueEditModel context)
+    {
+        var parameters = new DialogParameters
+        {
+            Title = "Modifica scadenza",
+            PreventDismissOnOverlayClick = true,
+            PreventScroll = true,
+            TrapFocus = false
+        };
+
+        var dialog = await DialogService.ShowDialogAsync<InvoiceDueEditDialog>(context, parameters);
+        var result = await dialog.Result;
+        if (!result.Cancelled && context.InputStatus == 0)
+            context.InputStatus = 2; // updated
+    }
+
+    private async Task DeleteDueClick(InvoiceDueEditModel context)
+    {
+        var dialog = await DialogService.ShowConfirmationAsync("Sei sicuro di voler eliminare questa scadenza?", "Sì", "No", "Eliminazione");
+        var result = await dialog.Result;
+        if (result.Cancelled)
+            return;
+
+        context.InputStatus = 3; // deleted
+    }
+
 }

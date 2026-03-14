@@ -1,0 +1,93 @@
+@page "/paymentmethods"
+
+@inject IHttpClientFactory HttpClientFactory
+@inject IDialogService DialogService
+
+<h3>Metodi di Pagamento</h3>
+
+@if (isLoading)
+{
+    <FluentProgressRing />
+}
+else if (paymentMethods != null)
+{
+    <FluentButton OnClick="@CreateButtonClick">Nuovo metodo di pagamento</FluentButton>
+    <FluentStack Orientation="Orientation.Vertical" Style="margin-top: 10px; width: 100%;">
+        @foreach (var pm in paymentMethods)
+        {
+            <FluentCard MinimalStyle="true" Style="width: 100%;">
+                <FluentGrid Spacing="1" Style="padding: 8px;">
+                    <FluentGridItem xs="6" lg="2">
+                        <div class="row-field"><strong>Codice:</strong><span>@pm.Code</span></div>
+                    </FluentGridItem>
+                    <FluentGridItem xs="6" lg="3">
+                        <div class="row-field"><strong>Nome:</strong><span>@pm.Name</span></div>
+                    </FluentGridItem>
+                    <FluentGridItem xs="12" lg="3">
+                        <div class="row-field"><strong>Descrizione:</strong><span>@pm.Description</span></div>
+                    </FluentGridItem>
+                    <FluentGridItem xs="6" lg="2">
+                        <div class="row-field"><strong>Cod. Fatt. El.:</strong><span>@pm.DigitalInvoiceCode</span></div>
+                    </FluentGridItem>
+                    <FluentGridItem xs="6" lg="2" Style="display: flex; justify-content: flex-end; align-items: center; gap: 2px;">
+                        <FluentButton aria-label="Modifica" IconEnd="@(new Icons.Regular.Size16.Edit())" OnClick="@(() => EditButtonClick(pm))" />
+                        <FluentButton aria-label="Elimina" IconEnd="@(new Icons.Regular.Size16.Delete())" OnClick="@(() => DeleteButtonClick(pm))" />
+                    </FluentGridItem>
+                </FluentGrid>
+            </FluentCard>
+        }
+    </FluentStack>
+}
+
+<style>
+    .row-field { display: flex; flex-direction: column; gap: 4px; }
+    .row-field strong { font-size: 0.875rem; color: var(--neutral-foreground-rest); }
+    .row-field span { font-size: 1rem; }
+</style>
+
+@code {
+    private HttpClient HttpClient => HttpClientFactory.CreateApiClientVs();
+    private bool isLoading = true;
+    IEnumerable<PaymentMethodViewModel>? paymentMethods;
+
+    private async Task ReloadGrid()
+    {
+        try
+        {
+            isLoading = true;
+            StateHasChanged();
+            paymentMethods = await HttpClient.GetFromJsonAsync<IEnumerable<PaymentMethodViewModel>>("paymentmethods");
+        }
+        catch (HttpRequestException)
+        {
+            await DialogService.ShowErrorAsync("Errore durante il caricamento dei dati. Riprova.");
+            paymentMethods = [];
+        }
+        finally { isLoading = false; }
+    }
+
+    protected override async Task OnInitializedAsync() => await ReloadGrid();
+
+    private async Task CreateButtonClick()
+    {
+        var dialog = await DialogService.ShowDialogAsync<PaymentMethodEditDialog>(new DialogContent(),
+            new DialogParameters { Title = "Creazione metodo di pagamento", PreventDismissOnOverlayClick = true, PreventScroll = true });
+        if (!(await dialog.Result).Cancelled) await ReloadGrid();
+    }
+
+    private async Task EditButtonClick(PaymentMethodViewModel context)
+    {
+        var dialog = await DialogService.ShowDialogAsync<PaymentMethodEditDialog>(new DialogContent { Id = context.Id },
+            new DialogParameters { Title = "Modifica metodo di pagamento", PreventDismissOnOverlayClick = true, PreventScroll = true });
+        if (!(await dialog.Result).Cancelled) await ReloadGrid();
+    }
+
+    private async Task DeleteButtonClick(PaymentMethodViewModel context)
+    {
+        var dialog = await DialogService.ShowConfirmationAsync("Sei sicuro di voler eliminare questo elemento?", "Sì", "No", "Eliminazione");
+        if ((await dialog.Result).Cancelled) return;
+        var response = await HttpClient.DeleteAsync($"paymentmethods/{context.Id}");
+        if (!response.IsSuccessStatusCode) { await DialogService.ShowResponseErrorAsync(response); return; }
+        await ReloadGrid();
+    }
+}

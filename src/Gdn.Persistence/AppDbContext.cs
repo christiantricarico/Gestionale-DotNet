@@ -1,4 +1,4 @@
-﻿using Gdn.Domain.Models;
+using Gdn.Domain.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace Gdn.Persistence;
@@ -9,9 +9,13 @@ public class AppDbContext : DbContext
 
     public DbSet<Address> Addresses { get; set; }
     public DbSet<Customer> Customers { get; set; }
+    public DbSet<Due> Dues { get; set; }
     public DbSet<Invoice> Invoices { get; set; }
     public DbSet<InvoiceRow> InvoiceRows { get; set; }
     public DbSet<MeasurementUnit> MeasurementUnits { get; set; }
+    public DbSet<Payment> Payments { get; set; }
+    public DbSet<PaymentDue> PaymentDues { get; set; }
+    public DbSet<PaymentMethod> PaymentMethods { get; set; }
     public DbSet<Product> Products { get; set; }
     public DbSet<ProductCategory> ProductCategories { get; set; }
     public DbSet<TaxRate> TaxRates { get; set; }

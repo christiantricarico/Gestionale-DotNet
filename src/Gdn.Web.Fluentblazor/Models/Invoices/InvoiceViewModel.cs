@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace Gdn.Web.Fluentblazor.Models.Invoices;
 
@@ -18,10 +18,13 @@ public class InvoiceViewModel
     public string? CustomerName { get; set; }
 
     public decimal? StampDutyAmount { get; set; }
-
     public bool StampDutyChargedToCustomer { get; set; }
 
+    [Display(Name = "Stato pagamento")]
+    public string PaymentStatus { get; set; } = "Non pagata";
+
     public IEnumerable<InvoiceRowViewModel> Rows { get; set; } = [];
+    public IEnumerable<InvoiceDueViewModel> Dues { get; set; } = [];
 }
 
 public class InvoiceRowViewModel
@@ -52,4 +55,23 @@ public class InvoiceRowViewModel
 
     [Display(Name = "Totale")]
     public decimal TotalAmount => (Quantity ?? 0) * (UnitPrice ?? 0);
+}
+
+public class InvoiceDueViewModel
+{
+    public int Id { get; set; }
+
+    [Display(Name = "Scadenza")]
+    public DateOnly Date { get; set; }
+
+    [Display(Name = "Importo")]
+    public decimal Amount { get; set; }
+
+    [Display(Name = "Pagato")]
+    public decimal PaidAmount { get; set; }
+
+    public bool IsPaid { get; set; }
+
+    [Display(Name = "Stato")]
+    public string Status => IsPaid ? "Pagata" : PaidAmount > 0 ? "Parzialmente pagata" : "Non pagata";
 }
