@@ -1,6 +1,6 @@
 {
-  "name": "Gdn.Web.MudBlazor",
-  "short_name": "Gdn.Web.MudBlazor",
+  "name": "GDN - Gestionale DotNet",
+  "short_name": "GDN",
   "id": "./",
   "start_url": "./",
   "display": "standalone",

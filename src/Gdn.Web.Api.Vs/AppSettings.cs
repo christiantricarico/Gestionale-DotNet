@@ -3,6 +3,7 @@
 public class AppSettings
 {
     public string[]? SupportedCultures { get; set; }
+    public string[]? AllowedOrigins { get; set; }
     public CompanyData CompanyData { get; set; } = new();
 }
 

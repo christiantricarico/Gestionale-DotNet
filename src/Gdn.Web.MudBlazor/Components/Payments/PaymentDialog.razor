@@ -1,0 +1,169 @@
+@inject HttpClient Http
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.Payment" Class="mr-2" Style="vertical-align:middle" />
+            Registra pagamento
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <EditForm EditContext="_editContext" FormName="payment-form">
+            <DataAnnotationsValidator />
+            <MudGrid Spacing="2">
+                <MudItem xs="12" sm="6">
+                    <MudDatePicker Label="Data pagamento"
+                                   @bind-Date="_payment.DateWithTime"
+                                   Required="true"
+                                   RequiredError="Data pagamento richiesta." />
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudNumericField T="decimal"
+                                     Label="Importo"
+                                     Value="_payment.Amount"
+                                     ValueChanged="OnAmountChanged"
+                                     Min="0.01m"
+                                     Format="n2"
+                                     HelperText="@($"Residuo totale: {_totalRemaining:C2}")"
+                                     For="@(() => _payment.Amount)" />
+                </MudItem>
+                <MudItem xs="12">
+                    <MudSelect T="int?"
+                               Label="Metodo di pagamento"
+                               @bind-Value="_payment.PaymentMethodId">
+                        @foreach (var pm in _paymentMethods)
+                        {
+                            <MudSelectItem T="int?" Value="@((int?)pm.Id)">@pm.Name</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+            </MudGrid>
+        </EditForm>
+
+        @if (_allocations.Any(a => a.Amount > 0))
+        {
+            <MudText Typo="Typo.subtitle2" Class="mt-4 mb-1">Allocazione FIFO</MudText>
+            <MudPaper Elevation="0" Class="pa-1">
+                @foreach (var alloc in _allocations.Where(a => a.Amount > 0))
+                {
+                    <MudChip T="string" Color="Color.Primary" Variant="Variant.Outlined" Class="ma-1">
+                        @alloc.DueDate.ToString("d") — @alloc.Amount.ToString("C2") / @alloc.DueRemainingAmount.ToString("C2")
+                    </MudChip>
+                }
+            </MudPaper>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Annulla</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="SaveAsync" Disabled="_isSaving">
+            Salva
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance Dialog { get; set; } = default!;
+    [Parameter] public int InvoiceId { get; set; }
+
+    /// <summary>Scadenze non pagate della fattura, già ordinate per data (più vecchia prima).</summary>
+    [Parameter] public List<InvoiceDueEditModel> Dues { get; set; } = [];
+
+    private readonly PaymentInputModel _payment = new();
+    private EditContext _editContext = default!;
+    private IEnumerable<PaymentMethodViewModel> _paymentMethods = [];
+
+    // Mirrors Dues as allocation slots; mutated by RecalculateAllocations.
+    private List<PaymentAllocationModel> _allocations = [];
+    private decimal _totalRemaining;
+    private bool _isSaving;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _editContext = new EditContext(_payment);
+
+        _allocations = Dues
+            .Where(d => !d.IsPaid)
+            .OrderBy(d => d.Date)
+            .Select(d => new PaymentAllocationModel
+            {
+                DueId = d.Id!.Value,
+                DueDate = d.Date,
+                DueAmount = d.Amount,
+                DuePaidAmount = d.PaidAmount
+            })
+            .ToList();
+
+        _totalRemaining = _allocations.Sum(a => a.DueRemainingAmount);
+        _payment.Amount = _totalRemaining;
+        RecalculateAllocations();
+
+        _paymentMethods = await Http.GetFromJsonAsync<IEnumerable<PaymentMethodViewModel>>("paymentmethods")
+            ?? [];
+    }
+
+    private void OnAmountChanged(decimal value)
+    {
+        _payment.Amount = value;
+        RecalculateAllocations();
+    }
+
+    /// <summary>
+    /// Distributes <see cref="PaymentInputModel.Amount"/> across <see cref="_allocations"/>
+    /// in date order (oldest first), capping each slot at its remaining balance.
+    /// </summary>
+    private void RecalculateAllocations()
+    {
+        var remaining = _payment.Amount;
+
+        foreach (var alloc in _allocations)
+            alloc.Amount = 0;
+
+        foreach (var alloc in _allocations)
+        {
+            if (remaining <= 0)
+                break;
+
+            alloc.Amount = Math.Min(alloc.DueRemainingAmount, remaining);
+            remaining -= alloc.Amount;
+        }
+    }
+
+    private async Task SaveAsync()
+    {
+        if (!_editContext.Validate())
+            return;
+
+        RecalculateAllocations();
+
+        var positiveAllocations = _allocations.Where(a => a.Amount > 0).ToList();
+        if (positiveAllocations.Count == 0)
+        {
+            Snackbar.Add("Nessuna scadenza da saldare.", Severity.Warning);
+            return;
+        }
+
+        var request = new
+        {
+            _payment.Date,
+            _payment.Amount,
+            _payment.PaymentMethodId,
+            InvoiceId,
+            Allocations = positiveAllocations.Select(a => new { a.DueId, a.Amount })
+        };
+
+        _isSaving = true;
+        try
+        {
+            var response = await Http.PostAsJsonAsync("payments", request);
+            if (await Snackbar.ShowResponseErrorAsync(response))
+                Dialog.Close(DialogResult.Ok(true));
+        }
+        finally
+        {
+            _isSaving = false;
+        }
+    }
+
+    private void Cancel() => Dialog.Cancel();
+}

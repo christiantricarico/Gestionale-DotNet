@@ -1,0 +1,122 @@
+@page "/measurementunits"
+
+@inject HttpClient Http
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+
+<PageTitle>Unità di misura</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
+    <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-4">
+        <MudText Typo="Typo.h5">Unità di misura</MudText>
+        <MudSpacer />
+        @if (!_isLoading)
+        {
+            <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.Add"
+                       OnClick="CreateButtonClick">Nuova</MudButton>
+        }
+    </MudStack>
+
+    @if (_isLoading)
+    {
+        <MudProgressLinear Indeterminate="true" />
+    }
+    else
+    {
+        @foreach (var item in _items)
+        {
+            <MudCard Class="mb-2">
+                <MudCardContent Class="pa-3">
+                    <MudGrid>
+                        <MudItem xs="6" sm="2">
+                            <MudText Typo="Typo.caption">Codice</MudText>
+                            <MudText>@item.Code</MudText>
+                        </MudItem>
+                        <MudItem xs="6" sm="3">
+                            <MudText Typo="Typo.caption">Nome</MudText>
+                            <MudText>@item.Name</MudText>
+                        </MudItem>
+                        <MudItem xs="12" sm="5">
+                            <MudText Typo="Typo.caption">Descrizione</MudText>
+                            <MudText>@item.Description</MudText>
+                        </MudItem>
+                        <MudItem xs="12" sm="2" Class="d-flex justify-end align-center gap-1">
+                            <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                           Size="Size.Small"
+                                           OnClick="@(() => EditButtonClick(item))" />
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                           Size="Size.Small"
+                                           Color="Color.Error"
+                                           OnClick="@(() => DeleteButtonClick(item))" />
+                        </MudItem>
+                    </MudGrid>
+                </MudCardContent>
+            </MudCard>
+        }
+    }
+</MudContainer>
+
+@code {
+    private bool _isLoading = true;
+    private IEnumerable<MeasurementUnitViewModel> _items = [];
+
+    protected override async Task OnInitializedAsync() => await ReloadAsync();
+
+    private async Task ReloadAsync()
+    {
+        _isLoading = true;
+        StateHasChanged();
+        try
+        {
+            _items = await Http.GetFromJsonAsync<IEnumerable<MeasurementUnitViewModel>>("measurementunits") ?? [];
+        }
+        catch (HttpRequestException)
+        {
+            Snackbar.Add("Errore durante il caricamento dei dati.", Severity.Error);
+            _items = [];
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private async Task CreateButtonClick()
+    {
+        var parameters = new DialogParameters<MeasurementUnitEditDialog>();
+        parameters.Add(x => x._content, new DialogContent());
+        var options = new DialogOptions { CloseOnEscapeKey = false, CloseButton = false, BackdropClick = false };
+        var dialog = await DialogService.ShowAsync<MeasurementUnitEditDialog>("Nuova unità di misura", parameters, options);
+        var result = await dialog.Result;
+        if (result is not null && !result.Canceled)
+            await ReloadAsync();
+    }
+
+    private async Task EditButtonClick(MeasurementUnitViewModel item)
+    {
+        var parameters = new DialogParameters<MeasurementUnitEditDialog>();
+        parameters.Add(x => x._content, new DialogContent { Id = item.Id });
+        var options = new DialogOptions { CloseOnEscapeKey = false, CloseButton = false, BackdropClick = false };
+        var dialog = await DialogService.ShowAsync<MeasurementUnitEditDialog>("Modifica unità di misura", parameters, options);
+        var result = await dialog.Result;
+        if (result is not null && !result.Canceled)
+            await ReloadAsync();
+    }
+
+    private async Task DeleteButtonClick(MeasurementUnitViewModel item)
+    {
+        bool? confirmed = await DialogService.ShowMessageBox(
+            "Eliminazione",
+            "Sei sicuro di voler eliminare questo elemento?",
+            yesText: "Sì", cancelText: "No");
+        if (confirmed is not true)
+            return;
+
+        var response = await Http.DeleteAsync($"measurementunits/{item.Id}");
+        if (!await Snackbar.ShowResponseErrorAsync(response))
+            return;
+
+        await ReloadAsync();
+    }
+}

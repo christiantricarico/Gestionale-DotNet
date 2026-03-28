@@ -34,6 +34,19 @@ builder.Services
 
 var appSettings = builder.Services.ConfigureAndGet<AppSettings>(builder.Configuration, nameof(AppSettings)) ?? new();
 
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        if (appSettings.AllowedOrigins?.Length > 0)
+            policy.WithOrigins(appSettings.AllowedOrigins);
+        else
+            policy.SetIsOriginAllowed(_ => false);
+
+        policy.AllowAnyHeader().AllowAnyMethod();
+    });
+});
+
 // from tinyhelpers lib -> by default add detail, instance, traceid, stacktrace to problem details response
 // https://www.youtube.com/watch?v=anqV3zkeyrM
 builder.Services.AddDefaultProblemDetails();
@@ -62,6 +75,7 @@ await UpdateDatabaseAsync(app.Services);
 app.UseExceptionHandler(); // Converts unhandled exceptions into Problem Details responses in production environment
 app.UseStatusCodePages(); // Returns the Problem Details response for (empty) non-successful responses
 app.UseHttpsRedirection();
+app.UseCors();
 app.UseRequestLocalization();
 app.UseRouting();
 

@@ -1,39 +1,22 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="">Gdn.Web.MudBlazor</a>
-        <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-    </div>
-</div>
-
-<div class="@NavMenuCssClass nav-scrollable" @onclick="ToggleNavMenu">
-    <nav class="nav flex-column">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="counter">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Counter
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="weather">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Weather
-            </NavLink>
-        </div>
-    </nav>
-</div>
-
-@code {
-    private bool collapseNavMenu = true;
-
-    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
-
-    private void ToggleNavMenu()
-    {
-        collapseNavMenu = !collapseNavMenu;
-    }
-}
+<MudNavMenu>
+    <MudNavLink Href="/" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">
+        Panoramica
+    </MudNavLink>
+    <MudNavLink Href="/invoices" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Receipt">
+        Fatture
+    </MudNavLink>
+    <MudNavGroup Title="Anagrafiche" Icon="@Icons.Material.Filled.TableChart" Expanded="true">
+        <MudNavLink Href="/customers" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.People">
+            Clienti
+        </MudNavLink>
+        <MudNavLink Href="/taxrates" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Percent">
+            Aliquote IVA
+        </MudNavLink>
+        <MudNavLink Href="/measurementunits" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Straighten">
+            Unità di misura
+        </MudNavLink>
+        <MudNavLink Href="/paymentmethods" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Payment">
+            Metodi di pagamento
+        </MudNavLink>
+    </MudNavGroup>
+</MudNavMenu>

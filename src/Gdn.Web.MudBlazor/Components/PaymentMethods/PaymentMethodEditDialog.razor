@@ -1,0 +1,83 @@
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">@((_content.Id == 0) ? "Nuovo metodo di pagamento" : "Modifica metodo di pagamento")</MudText>
+    </TitleContent>
+    <DialogContent>
+        <EditForm id="paymentMethodForm" Model="Model" OnValidSubmit="SaveAsync">
+            <DataAnnotationsValidator />
+            <MudGrid>
+                <MudItem xs="12" sm="3">
+                    <MudTextField @bind-Value="Model.Code"
+                                  For="@(() => Model.Code)"
+                                  Label="Codice"
+                                  AutoFocus="true"
+                                  Required="true" />
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudTextField @bind-Value="Model.Name"
+                                  For="@(() => Model.Name)"
+                                  Label="Nome" />
+                </MudItem>
+                <MudItem xs="12" sm="3">
+                    <MudTextField @bind-Value="Model.DigitalInvoiceCode"
+                                  For="@(() => Model.DigitalInvoiceCode)"
+                                  Label="Cod. Fatt. Elettronica"
+                                  MaxLength="4" />
+                </MudItem>
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="Model.Description"
+                                  For="@(() => Model.Description)"
+                                  Label="Descrizione"
+                                  Lines="3" />
+                </MudItem>
+            </MudGrid>
+        </EditForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="@(() => Dialog.Cancel())">Annulla</MudButton>
+        <MudButton ButtonType="ButtonType.Submit" form="paymentMethodForm" Color="Color.Primary" Variant="Variant.Filled">Salva</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance Dialog { get; set; } = default!;
+    [Parameter] public DialogContent _content { get; set; } = default!;
+    [Inject] private HttpClient Http { get; set; } = default!;
+    [Inject] private ISnackbar Snackbar { get; set; } = default!;
+
+    private PaymentMethodInputModel Model { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (_content.Id > 0)
+        {
+            var viewModel = await Http.GetFromJsonAsync<PaymentMethodViewModel>($"paymentmethods/{_content.Id}");
+            if (viewModel is not null)
+            {
+                Model = new PaymentMethodInputModel
+                {
+                    Id = viewModel.Id,
+                    Code = viewModel.Code,
+                    Name = viewModel.Name,
+                    DigitalInvoiceCode = viewModel.DigitalInvoiceCode,
+                    Description = viewModel.Description
+                };
+            }
+        }
+    }
+
+    private async Task SaveAsync()
+    {
+        HttpResponseMessage response;
+
+        if (!Model.Id.HasValue)
+            response = await Http.PostAsJsonAsync("paymentmethods", Model);
+        else
+            response = await Http.PutAsJsonAsync("paymentmethods", Model);
+
+        if (!await Snackbar.ShowResponseErrorAsync(response))
+            return;
+
+        Dialog.Close(DialogResult.Ok(true));
+    }
+}
