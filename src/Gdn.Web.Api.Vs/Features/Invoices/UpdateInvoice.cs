@@ -52,7 +52,7 @@ public class UpdateInvoice
 
         var invoiceRepository = unitOfWork.GetRepository<IInvoiceRepository>();
 
-        var invoice = await invoiceRepository.GetAsync(request.Id, ["Rows", "Dues.PaymentDues"]);
+        var invoice = await invoiceRepository.GetAsync(request.Id, ["Rows.TaxRate", "Dues.PaymentDues"]);
         if (invoice is null)
             return ResultHelper.NotFound(InvoiceErrors.NotFound(request.Id));
 
@@ -68,6 +68,12 @@ public class UpdateInvoice
         if (dueValidationError is not null)
             return ResultHelper.BadRequest(dueValidationError);
 
+        var taxRateRepository = unitOfWork.GetRepository<ITaxRateRepository>();
+        await PopulateMissingTaxRates(invoice, taxRateRepository);
+
+        var reconcileError = ReconcileDues(invoice);
+        if (reconcileError is not null)
+            return ResultHelper.BadRequest(reconcileError);
         await unitOfWork.SaveChangesAsync();
 
         return ResultHelper.Ok(MapResponse(invoice));
@@ -98,7 +104,7 @@ public class UpdateInvoice
         }
     }
 
-    private static object? ApplyDueChanges(Invoice invoice, IEnumerable<UpdateInvoiceDueRequest> dues)
+    private static Error? ApplyDueChanges(Invoice invoice, IEnumerable<UpdateInvoiceDueRequest> dues)
     {
         foreach (var requestDue in dues)
         {
@@ -132,6 +138,71 @@ public class UpdateInvoice
                 invoice.Dues.Remove(due);
             }
         }
+
+        return null;
+    }
+
+    private static async Task PopulateMissingTaxRates(Invoice invoice, ITaxRateRepository taxRateRepository)
+    {
+        var missingIds = invoice.Rows
+            .Where(r => r.TaxRateId.HasValue && r.TaxRate is null)
+            .Select(r => r.TaxRateId!.Value)
+            .Distinct()
+            .ToList();
+
+        if (missingIds.Count == 0)
+            return;
+
+        var taxRates = (await taxRateRepository.GetAllAsync(r => missingIds.Contains(r.Id)))
+            .ToDictionary(r => r.Id);
+
+        foreach (var row in invoice.Rows.Where(r => r.TaxRateId.HasValue && r.TaxRate is null))
+            row.TaxRate = taxRates.GetValueOrDefault(row.TaxRateId!.Value);
+    }
+
+    private static Error? ReconcileDues(Invoice invoice)
+    {
+        decimal newTotal = InvoiceAmountCalculator.CalculateTotal(invoice);
+        decimal currentDuesTotal = invoice.Dues.Sum(d => d.Amount);
+        decimal delta = newTotal - currentDuesTotal;
+
+        if (delta == 0m)
+            return null;
+
+        var orderedDues = invoice.Dues
+            .OrderByDescending(d => d.Date)
+            .ThenByDescending(d => d.Id)
+            .ToList();
+
+        if (delta > 0m)
+        {
+            var lastDue = orderedDues.FirstOrDefault();
+            if (lastDue is null)
+                return null;
+
+            lastDue.Amount += delta;
+            return null;
+        }
+
+        decimal toReduce = -delta;
+
+        foreach (var due in orderedDues)
+        {
+            decimal reducible = due.Amount - due.PaidAmount;
+            decimal actual = Math.Min(toReduce, reducible);
+
+            due.Amount -= actual;
+            toReduce -= actual;
+
+            if (due.Amount == 0m)
+                invoice.Dues.Remove(due);
+
+            if (toReduce == 0m)
+                break;
+        }
+
+        if (toReduce > 0m)
+            return InvoiceErrors.CannotReduceInvoiceAmount();
 
         return null;
     }

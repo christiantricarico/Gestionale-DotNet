@@ -290,10 +290,17 @@
         if (EditContext.Validate())
         {
             string uri = "invoices";
+            HttpResponseMessage response;
             if (!Model.Id.HasValue)
-                await HttpClient.PostAsJsonAsync<InvoiceEditModel>(uri, Model);
+                response = await HttpClient.PostAsJsonAsync<InvoiceEditModel>(uri, Model);
             else
-                await HttpClient.PutAsJsonAsync<InvoiceEditModel>(uri, Model);
+                response = await HttpClient.PutAsJsonAsync<InvoiceEditModel>(uri, Model);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                await DialogService.ShowResponseErrorAsync(response);
+                return;
+            }
 
             await Dialog.CloseAsync(Model);
         }
