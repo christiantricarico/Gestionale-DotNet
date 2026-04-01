@@ -16,7 +16,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '9.0.x'
+          dotnet-version: '10.0.x'
 
       - name: Restore dependencies (Web Api)
         run: dotnet restore src/Gdn.Web.Api.Vs/Gdn.Web.Api.Vs.csproj
@@ -35,13 +35,13 @@ jobs:
           package: ./publish
 
       - name: Restore dependencies (Blazor App)
-        run: dotnet restore src/Gdn.Web.Fluentblazor/Gdn.Web.Fluentblazor.csproj
+        run: dotnet restore src/Gdn.Web.MudBlazor/Gdn.Web.MudBlazor.csproj
 
       - name: Build (Blazor App)
-        run: dotnet build src/Gdn.Web.Fluentblazor/Gdn.Web.Fluentblazor.csproj --configuration Release --no-restore
+        run: dotnet build src/Gdn.Web.MudBlazor/Gdn.Web.MudBlazor.csproj --configuration Release --no-restore
 
       - name: Publish (Blazor App)
-        run: dotnet publish src/Gdn.Web.Fluentblazor/Gdn.Web.Fluentblazor.csproj --configuration Release --output ./publish-blazor
+        run: dotnet publish src/Gdn.Web.MudBlazor/Gdn.Web.MudBlazor.csproj --configuration Release --output ./publish-blazor
 
       - name: Deploy to Azure Web App (Blazor App)
         uses: azure/webapps-deploy@v3
