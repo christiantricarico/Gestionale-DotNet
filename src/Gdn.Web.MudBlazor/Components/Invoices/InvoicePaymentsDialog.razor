@@ -10,8 +10,6 @@
                 <MudText Typo="Typo.h6">Fattura @Invoice.Number &mdash; @Invoice.CustomerName</MudText>
                 <MudText Typo="Typo.caption">@Invoice.Date.ToString("d")</MudText>
             </MudStack>
-            <MudSpacer />
-            <MudChip T="string" Color="@GetStatusColor(PaymentStatus)" Size="Size.Small">@PaymentStatus</MudChip>
         </MudStack>
     </TitleContent>
     <DialogContent>
@@ -26,6 +24,7 @@
             <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-3">
                 <MudText Typo="Typo.subtitle1">Scadenze</MudText>
                 <MudSpacer />
+                <MudChip T="string" Color="@GetStatusColor(_paymentStatus)" Size="Size.Small">@_paymentStatus</MudChip>
                 @if (_dues.Any(d => !d.IsPaid))
                 {
                     <MudButton Variant="Variant.Filled"
@@ -135,7 +134,7 @@
     private bool _hasChanges;
     private List<InvoiceDueViewModel> _dues = [];
     private List<PaymentHistoryViewModel> _payments = [];
-    private string PaymentStatus { get; set; } = string.Empty;
+    private string _paymentStatus = "Non pagata";
 
     protected override async Task OnInitializedAsync() => await LoadDataAsync();
 
@@ -160,7 +159,7 @@
 
         _payments = await Http.GetFromJsonAsync<List<PaymentHistoryViewModel>>($"invoices/{Invoice.Id}/payments") ?? [];
 
-        PaymentStatus = _dues switch
+        _paymentStatus = _dues switch
         {
             [] => "Non pagata",
             _ when _dues.All(d => d.IsPaid) => "Pagata",
