@@ -16,7 +16,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Gdn.Web.Api.Vs\Gdn.Web.Api.Vs.csproj" />
-    <ProjectReference Include="..\Gdn.Web.Fluentblazor\Gdn.Web.Fluentblazor.csproj" />
     <ProjectReference Include="..\Gdn.Web.MudBlazor\Gdn.Web.MudBlazor.csproj" />
   </ItemGroup>
 
