@@ -6,7 +6,7 @@ on:
       - dev
 
 jobs:
-  build-and-deploy:
+  deploy-web-api:
     runs-on: windows-latest
 
     steps:
@@ -34,7 +34,21 @@ jobs:
           publish-profile: ${{ secrets.AZURE_WEBAPI_PUBLISH_PROFILE }}
           package: ./publish
 
+  deploy-blazor:
+    runs-on: ubuntu-latest
+    needs: deploy-web-api
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
       - name: Set BackendUrl for production (Blazor App)
+        shell: pwsh
         run: |
           $json = Get-Content src/Gdn.Web.MudBlazor/wwwroot/appsettings.json | ConvertFrom-Json
           $json.BackendUrl = "https://gdnwebapiwindemo.azurewebsites.net/api/"
