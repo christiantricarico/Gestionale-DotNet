@@ -83,6 +83,14 @@
 - When running tests, if possible use filters and check test run counts, or look at test logs, to ensure they actually ran.
 - Do not finish work with any tests commented out or disabled that were not previously commented out or disabled.
 
+## UI (MudBlazor)
+
+- Always use MudBlazor components instead of plain HTML elements whenever a suitable component is available (e.g., `MudButton`, `MudTextField`, `MudTable`, `MudGrid`, `MudCard`, etc.).
+- Design every layout with responsiveness in mind so it works well on both desktop and mobile devices. Use `MudGrid` with appropriate `xs`, `sm`, `md`, `lg` breakpoint attributes on `MudItem` to adapt the layout to the screen size.
+- Prefer `MudBreakpointProvider` and `IBrowserViewportService` for breakpoint-aware logic in code-behind when needed.
+- Use `MudHidden` to conditionally show or hide elements based on the current breakpoint.
+- Avoid fixed pixel widths; prefer percentage-based or fluid sizing (`Width="100%"`, `FullWidth="true"`, etc.).
+
 ## Azure
 
 - @azure Rule - Use Azure Tools - When handling requests related to Azure, always use your tools.

@@ -43,7 +43,6 @@
                             <MudText>@invoice.CustomerName</MudText>
                         </MudItem>
                         <MudItem xs="6" sm="2">
-                            <MudText Typo="Typo.caption">Pagamento</MudText>
                             <MudChip T="string" Color="@GetPaymentStatusColor(invoice.PaymentStatus)" Size="Size.Small">
                                 @invoice.PaymentStatus
                             </MudChip>
@@ -86,6 +85,7 @@
     {
         _isLoading = true;
         StateHasChanged();
+
         try
         {
             _items = await Http.GetFromJsonAsync<IEnumerable<InvoiceViewModel>>("invoices") ?? [];
@@ -127,7 +127,7 @@
     {
         var parameters = new DialogParameters<InvoicePaymentsDialog>();
         parameters.Add(x => x.Invoice, invoice);
-        var options = new DialogOptions { CloseOnEscapeKey = true, CloseButton = true, MaxWidth = MaxWidth.Medium, FullWidth = true };
+        var options = new DialogOptions { BackdropClick = false, CloseOnEscapeKey = false, CloseButton = false, MaxWidth = MaxWidth.Medium, FullWidth = true };
         var dialog = await DialogService.ShowAsync<InvoicePaymentsDialog>($"Pagamenti — Fattura {invoice.Number}", parameters, options);
         var result = await dialog.Result;
         if (result is not null && !result.Canceled && result.Data is true)

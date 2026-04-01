@@ -24,7 +24,6 @@
             <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-3">
                 <MudText Typo="Typo.subtitle1">Scadenze</MudText>
                 <MudSpacer />
-                <MudChip T="string" Color="@GetStatusColor(_paymentStatus)" Size="Size.Small">@_paymentStatus</MudChip>
                 @if (_dues.Any(d => !d.IsPaid))
                 {
                     <MudButton Variant="Variant.Filled"
@@ -134,7 +133,6 @@
     private bool _hasChanges;
     private List<InvoiceDueViewModel> _dues = [];
     private List<PaymentHistoryViewModel> _payments = [];
-    private string _paymentStatus = "Non pagata";
 
     protected override async Task OnInitializedAsync() => await LoadDataAsync();
 
@@ -158,14 +156,6 @@
             .ToList() ?? [];
 
         _payments = await Http.GetFromJsonAsync<List<PaymentHistoryViewModel>>($"invoices/{Invoice.Id}/payments") ?? [];
-
-        _paymentStatus = _dues switch
-        {
-            [] => "Non pagata",
-            _ when _dues.All(d => d.IsPaid) => "Pagata",
-            _ when _dues.Any(d => d.PaidAmount > 0) => "Parzialmente pagata",
-            _ => "Non pagata"
-        };
 
         _isLoading = false;
     }
