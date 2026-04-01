@@ -20,7 +20,7 @@ public class InvoiceXmlGenerator(
 {
     public async Task<Stream> GenerateXmlStream(int invoiceId)
     {
-        Invoice? invoice = await invoiceRepository.GetAsync(invoiceId, ["Customer.Addresses", "Rows.TaxRate", "Rows.MeasurementUnit"]);
+        Invoice? invoice = await invoiceRepository.GetAsync(invoiceId, ["Customer.Addresses", "Rows.TaxRate", "Rows.MeasurementUnit", "Dues.PaymentDues.Payment.PaymentMethod"]);
         if (invoice == null)
             throw new InvalidOperationException($"Invoice with ID {invoiceId} not found.");
 
@@ -203,17 +203,39 @@ public class InvoiceXmlGenerator(
         return nature?.Code;
     }
 
-    private void SetDatiPagamento<TDocument>(TDocument document, decimal paymentAmount, FatturaElettronicaBody body)
-        where TDocument : class
+    private void SetDatiPagamento(Invoice invoice, decimal paymentAmount, FatturaElettronicaBody body)
     {
+        var dues = invoice.Dues.OrderBy(d => d.Date).ToList();
+
         var datiPagamento = new FatturaElettronica.Ordinaria.FatturaElettronicaBody.DatiPagamento.DatiPagamento();
-        datiPagamento.CondizioniPagamento = "TP02"; //Pagamento completo
+        datiPagamento.CondizioniPagamento = dues.Count > 1 ? "TP01" : "TP02";
 
-        var dettaglioPagamento = new FatturaElettronica.Ordinaria.FatturaElettronicaBody.DatiPagamento.DettaglioPagamento();
-        dettaglioPagamento.ImportoPagamento = paymentAmount;
-        dettaglioPagamento.ModalitaPagamento = "MP02";//Assegno, il più simile a rimessa diretta
+        // Use the DigitalInvoiceCode from the first payment method found across all dues; fallback to MP05 (rimessa diretta)
+        var modalitaPagamento = dues
+            .SelectMany(d => d.PaymentDues)
+            .Select(pd => pd.Payment?.PaymentMethod?.DigitalInvoiceCode)
+            .FirstOrDefault(code => !string.IsNullOrEmpty(code))
+            ?? "MP05";
 
-        datiPagamento.DettaglioPagamento.Add(dettaglioPagamento);
+        if (dues.Count > 0)
+        {
+            foreach (var due in dues)
+            {
+                var dettaglioPagamento = new FatturaElettronica.Ordinaria.FatturaElettronicaBody.DatiPagamento.DettaglioPagamento();
+                dettaglioPagamento.ModalitaPagamento = modalitaPagamento;
+                dettaglioPagamento.DataScadenzaPagamento = due.Date.ToDateTime(TimeOnly.MinValue);
+                dettaglioPagamento.ImportoPagamento = due.Amount;
+                datiPagamento.DettaglioPagamento.Add(dettaglioPagamento);
+            }
+        }
+        else
+        {
+            var dettaglioPagamento = new FatturaElettronica.Ordinaria.FatturaElettronicaBody.DatiPagamento.DettaglioPagamento();
+            dettaglioPagamento.ModalitaPagamento = modalitaPagamento;
+            dettaglioPagamento.ImportoPagamento = paymentAmount;
+            datiPagamento.DettaglioPagamento.Add(dettaglioPagamento);
+        }
+
         body.DatiPagamento.Add(datiPagamento);
     }
 

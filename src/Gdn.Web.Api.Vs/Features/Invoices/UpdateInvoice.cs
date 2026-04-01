@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 using Gdn.Domain.Data;
 using Gdn.Domain.Data.Repositories;
 using Gdn.Domain.Models;
@@ -11,10 +11,21 @@ public class UpdateInvoice
     public record UpdateInvoiceRowRequest(InputStatus InputStatus, long? Id, string RowType, string? Description,
         decimal? Quantity, decimal? UnitPrice,
         int? MeasurementUnitId, int? TaxRateId);
-    public record UpdateInvoiceRequest(int Id, int Number, DateOnly Date, int CustomerId, decimal? StampDutyAmount, bool StampDutyChargedToCustomer, IEnumerable<UpdateInvoiceRowRequest> Rows);
+
+    public record UpdateInvoiceDueRequest(InputStatus InputStatus, int? Id, DateOnly Date, decimal Amount);
+
+    public record UpdateInvoiceRequest(int Id, int Number, DateOnly Date, int CustomerId,
+        decimal? StampDutyAmount, bool StampDutyChargedToCustomer,
+        IEnumerable<UpdateInvoiceRowRequest> Rows,
+        IEnumerable<UpdateInvoiceDueRequest> Dues);
 
     public record ResponseRow(long Id, string RowType, string? Description, decimal? Quantity, decimal? UnitPrice, int? MeasurementUnitId, int? TaxRateId);
-    public record Response(int Id, int Number, DateOnly Date, int CustomerId, decimal? StampDutyAmount, bool StampDutyChargedToCustomer, IEnumerable<ResponseRow> Rows);
+    public record ResponseDue(int Id, DateOnly Date, decimal Amount, decimal PaidAmount, bool IsPaid);
+    public record Response(int Id, int Number, DateOnly Date, int CustomerId,
+        decimal? StampDutyAmount, bool StampDutyChargedToCustomer,
+        string PaymentStatus,
+        IEnumerable<ResponseRow> Rows,
+        IEnumerable<ResponseDue> Dues);
 
     public sealed class Endpoint : IEndpoint
     {
@@ -41,38 +52,48 @@ public class UpdateInvoice
 
         var invoiceRepository = unitOfWork.GetRepository<IInvoiceRepository>();
 
-        var invoice = await invoiceRepository.GetAsync(request.Id, ["Rows"]);
+        var invoice = await invoiceRepository.GetAsync(request.Id, ["Rows.TaxRate", "Dues.PaymentDues"]);
         if (invoice is null)
             return ResultHelper.NotFound(InvoiceErrors.NotFound(request.Id));
 
-        MapInvoice(invoice, request);
-
-        await unitOfWork.SaveChangesAsync();
-
-        return ResultHelper.Ok(MapResponse(invoice));
-    }
-
-    private static void MapInvoice(Invoice invoice, UpdateInvoiceRequest request)
-    {
         invoice.Number = request.Number.ToString();
         invoice.Date = request.Date;
         invoice.CustomerId = request.CustomerId;
         invoice.StampDutyAmount = request.StampDutyAmount;
         invoice.StampDutyChargedToCustomer = request.StampDutyChargedToCustomer;
 
-        foreach (var requestRow in request.Rows)
+        ApplyRowChanges(invoice, request.Rows);
+
+        var dueValidationError = ApplyDueChanges(invoice, request.Dues);
+        if (dueValidationError is not null)
+            return ResultHelper.BadRequest(dueValidationError);
+
+        var taxRateRepository = unitOfWork.GetRepository<ITaxRateRepository>();
+        await PopulateMissingTaxRates(invoice, taxRateRepository);
+
+        var reconcileError = ReconcileDues(invoice);
+        if (reconcileError is not null)
+            return ResultHelper.BadRequest(reconcileError);
+        await unitOfWork.SaveChangesAsync();
+
+        return ResultHelper.Ok(MapResponse(invoice));
+    }
+
+    private static void ApplyRowChanges(Invoice invoice, IEnumerable<UpdateInvoiceRowRequest> rows)
+    {
+        foreach (var requestRow in rows)
         {
             if (requestRow.InputStatus == InputStatus.Added)
             {
-                var row = new InvoiceRow();
-                row = MapInvoiceRow(row, requestRow);
-                invoice.Rows.Add(row);
+                invoice.Rows.Add(MapInvoiceRow(new InvoiceRow(), requestRow));
+                continue;
             }
 
             if (requestRow.InputStatus == InputStatus.Updated)
             {
                 var row = invoice.Rows.Single(r => r.Id == requestRow.Id);
-                row = MapInvoiceRow(row, requestRow);
+                MapInvoiceRow(row, requestRow);
+                continue;
             }
 
             if (requestRow.InputStatus == InputStatus.Deleted && requestRow.Id.HasValue)
@@ -81,6 +102,109 @@ public class UpdateInvoice
                 invoice.Rows.Remove(row);
             }
         }
+    }
+
+    private static Error? ApplyDueChanges(Invoice invoice, IEnumerable<UpdateInvoiceDueRequest> dues)
+    {
+        foreach (var requestDue in dues)
+        {
+            if (requestDue.InputStatus == InputStatus.Added)
+            {
+                invoice.Dues.Add(new Due
+                {
+                    Date = requestDue.Date,
+                    Amount = requestDue.Amount,
+                    InvoiceId = invoice.Id,
+                    CustomerId = invoice.CustomerId
+                });
+                continue;
+            }
+
+            if (requestDue.InputStatus == InputStatus.Updated && requestDue.Id.HasValue)
+            {
+                var due = invoice.Dues.Single(d => d.Id == requestDue.Id);
+                due.Date = requestDue.Date;
+                due.Amount = requestDue.Amount;
+                continue;
+            }
+
+            if (requestDue.InputStatus == InputStatus.Deleted && requestDue.Id.HasValue)
+            {
+                var due = invoice.Dues.Single(d => d.Id == requestDue.Id);
+
+                if (due.PaymentDues.Count > 0)
+                    return new Error("Due:HasPayments", $"Cannot delete due {due.Id}: it has associated payments.");
+
+                invoice.Dues.Remove(due);
+            }
+        }
+
+        return null;
+    }
+
+    private static async Task PopulateMissingTaxRates(Invoice invoice, ITaxRateRepository taxRateRepository)
+    {
+        var missingIds = invoice.Rows
+            .Where(r => r.TaxRateId.HasValue && r.TaxRate is null)
+            .Select(r => r.TaxRateId!.Value)
+            .Distinct()
+            .ToList();
+
+        if (missingIds.Count == 0)
+            return;
+
+        var taxRates = (await taxRateRepository.GetAllAsync(r => missingIds.Contains(r.Id)))
+            .ToDictionary(r => r.Id);
+
+        foreach (var row in invoice.Rows.Where(r => r.TaxRateId.HasValue && r.TaxRate is null))
+            row.TaxRate = taxRates.GetValueOrDefault(row.TaxRateId!.Value);
+    }
+
+    private static Error? ReconcileDues(Invoice invoice)
+    {
+        decimal newTotal = InvoiceAmountCalculator.CalculateTotal(invoice);
+        decimal currentDuesTotal = invoice.Dues.Sum(d => d.Amount);
+        decimal delta = newTotal - currentDuesTotal;
+
+        if (delta == 0m)
+            return null;
+
+        var orderedDues = invoice.Dues
+            .OrderByDescending(d => d.Date)
+            .ThenByDescending(d => d.Id)
+            .ToList();
+
+        if (delta > 0m)
+        {
+            var lastDue = orderedDues.FirstOrDefault();
+            if (lastDue is null)
+                return null;
+
+            lastDue.Amount += delta;
+            return null;
+        }
+
+        decimal toReduce = -delta;
+
+        foreach (var due in orderedDues)
+        {
+            decimal reducible = due.Amount - due.PaidAmount;
+            decimal actual = Math.Min(toReduce, reducible);
+
+            due.Amount -= actual;
+            toReduce -= actual;
+
+            if (due.Amount == 0m)
+                invoice.Dues.Remove(due);
+
+            if (toReduce == 0m)
+                break;
+        }
+
+        if (toReduce > 0m)
+            return InvoiceErrors.CannotReduceInvoiceAmount();
+
+        return null;
     }
 
     private static InvoiceRow MapInvoiceRow(InvoiceRow row, UpdateInvoiceRowRequest request)
@@ -95,8 +219,28 @@ public class UpdateInvoice
     }
 
     private static Response MapResponse(Invoice invoice)
-        => new(invoice.Id, int.Parse(invoice.Number), invoice.Date, invoice.CustomerId, invoice.StampDutyAmount, invoice.StampDutyChargedToCustomer, invoice.Rows.Select(r => MapResponseRow(r)));
+        => new(invoice.Id, int.Parse(invoice.Number), invoice.Date, invoice.CustomerId,
+               invoice.StampDutyAmount, invoice.StampDutyChargedToCustomer,
+               ResolvePaymentStatus(invoice),
+               invoice.Rows.Select(MapResponseRow),
+               invoice.Dues.Select(MapResponseDue));
 
     private static ResponseRow MapResponseRow(InvoiceRow row)
         => new(row.Id, row.RowType, row.Description, row.Quantity, row.UnitPrice, row.MeasurementUnitId, row.TaxRateId);
+
+    private static ResponseDue MapResponseDue(Due due)
+        => new(due.Id, due.Date, due.Amount, due.PaidAmount, due.IsPaid);
+
+    private static string ResolvePaymentStatus(Invoice invoice)
+    {
+        if (!invoice.Dues.Any())
+            return PaymentStatus.NotPaid;
+
+        if (invoice.IsPaid)
+            return PaymentStatus.Paid;
+
+        return invoice.Dues.Any(d => d.PaidAmount > 0)
+            ? PaymentStatus.PartiallyPaid
+            : PaymentStatus.NotPaid;
+    }
 }

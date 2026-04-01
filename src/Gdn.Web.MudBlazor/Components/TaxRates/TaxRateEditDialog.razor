@@ -1,0 +1,170 @@
+@inject HttpClient Http
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.Percent" Class="mr-2" />
+            @(_content.Id > 0 ? "Modifica aliquota IVA" : "Nuova aliquota IVA")
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <EditForm id="taxRateForm" EditContext="@_editContext" OnValidSubmit="@SaveAsync">
+            <DataAnnotationsValidator />
+            <MudGrid Class="mt-2">
+                <MudItem xs="12" sm="4">
+                    <MudTextField @bind-Value="_model.Code"
+                                  Label="Codice"
+                                  Variant="Variant.Outlined"
+                                  MaxLength="10"
+                                  For="@(() => _model.Code)" />
+                </MudItem>
+                <MudItem xs="12" sm="8">
+                    <MudTextField @bind-Value="_model.Name"
+                                  Label="Nome"
+                                  Variant="Variant.Outlined"
+                                  MaxLength="255"
+                                  For="@(() => _model.Name)" />
+                </MudItem>
+                <MudItem xs="12" sm="4">
+                    <MudNumericField T="decimal"
+                                     Value="@_model.Rate"
+                                     Label="Aliquota %"
+                                     Variant="Variant.Outlined"
+                                     Format="n2"
+                                     Min="0m"
+                                     Max="100m"
+                                     For="@(() => _model.Rate)"
+                                     ValueChanged="@OnRateChanged" />
+                </MudItem>
+                <MudItem xs="12" sm="8">
+                    <MudSelect @bind-Value="_model.TaxRateNatureId"
+                               T="int?"
+                               Label="Natura IVA"
+                               Variant="Variant.Outlined"
+                               Disabled="@(_model.Rate > 0)"
+                               Clearable="true"
+                               ToStringFunc="@(id => _natures.FirstOrDefault(n => n.Id == id)?.Name ?? string.Empty)">
+                        @foreach (var nature in _natures)
+                        {
+                            <MudSelectItem T="int?" Value="@nature.Id">@nature.Name</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="_model.Description"
+                                  Label="Descrizione"
+                                  Variant="Variant.Outlined"
+                                  Lines="4"
+                                  For="@(() => _model.Description)" />
+                </MudItem>
+            </MudGrid>
+        </EditForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="@(() => Dialog.Cancel())">Annulla</MudButton>
+        <MudButton ButtonType="ButtonType.Submit"
+                   form="taxRateForm"
+                   Color="Color.Primary"
+                   Variant="Variant.Filled"
+                   Disabled="@_saving">
+            @if (_saving)
+            {
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+            }
+            Salva
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance Dialog { get; set; } = null!;
+    [Parameter] public DialogContent _content { get; set; } = new();
+
+    private TaxRateInputModel _model = new();
+    private EditContext _editContext = null!;
+    private ValidationMessageStore _messageStore = null!;
+    private List<TaxRateNatureViewModel> _natures = [];
+    private bool _saving;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _editContext = new EditContext(_model);
+        _messageStore = new ValidationMessageStore(_editContext);
+        _editContext.OnValidationRequested += ValidateTaxNature;
+
+        var naturesResponse = await Http.GetAsync("taxratenatures");
+        if (await Snackbar.ShowResponseErrorAsync(naturesResponse))
+        {
+            _natures = await naturesResponse.Content.ReadFromJsonAsync<List<TaxRateNatureViewModel>>() ?? [];
+        }
+
+        if (_content.Id > 0)
+        {
+            var response = await Http.GetAsync($"taxrates/{_content.Id}");
+            if (await Snackbar.ShowResponseErrorAsync(response))
+            {
+                var data = await response.Content.ReadFromJsonAsync<TaxRateViewModel>();
+                if (data is not null)
+                {
+                    _model.Code = data.Code;
+                    _model.Name = data.Name;
+                    _model.Description = data.Description;
+                    _model.Rate = data.Rate;
+                    _model.TaxRateNatureId = data.TaxRateNatureId;
+                }
+            }
+        }
+    }
+
+    private void OnRateChanged(decimal value)
+    {
+        _model.Rate = value;
+        if (value > 0)
+        {
+            _model.TaxRateNatureId = null;
+        }
+        _messageStore.Clear();
+        _editContext.NotifyValidationStateChanged();
+    }
+
+    private void ValidateTaxNature(object? sender, ValidationRequestedEventArgs e)
+    {
+        _messageStore.Clear();
+        if (_model.Rate == 0 && _model.TaxRateNatureId is null)
+        {
+            _messageStore.Add(() => _model.TaxRateNatureId, "La natura IVA è obbligatoria quando l'aliquota è 0%.");
+        }
+    }
+
+    private async Task SaveAsync()
+    {
+        _saving = true;
+
+        HttpResponseMessage response;
+
+        if (_content.Id > 0)
+        {
+            response = await Http.PutAsJsonAsync("taxrates", new
+            {
+                _content.Id, _model.Code, _model.Name, _model.Description,
+                _model.Rate, _model.TaxRateNatureId
+            });
+        }
+        else
+        {
+            response = await Http.PostAsJsonAsync("taxrates", new
+            {
+                _model.Code, _model.Name, _model.Description,
+                _model.Rate, _model.TaxRateNatureId
+            });
+        }
+
+        _saving = false;
+
+        if (await Snackbar.ShowResponseErrorAsync(response))
+        {
+            Dialog.Close(DialogResult.Ok(true));
+        }
+    }
+}

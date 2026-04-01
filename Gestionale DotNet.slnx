@@ -7,7 +7,7 @@
   </Folder>
   <Folder Name="/Presentation/">
     <Project Path="src/Gdn.Web.Api.Vs/Gdn.Web.Api.Vs.csproj" />
-    <Project Path="src/Gdn.Web.Fluentblazor/Gdn.Web.Fluentblazor.csproj" />
+    <Project Path="src/Gdn.Web.MudBlazor/Gdn.Web.MudBlazor.csproj" />
   </Folder>
   <Folder Name="/Solution Items/">
     <File Path=".editorconfig" />

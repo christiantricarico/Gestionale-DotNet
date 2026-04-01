@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 using Gdn.Domain.Data;
 using Gdn.Domain.Data.Repositories;
 using Gdn.Domain.Models;
@@ -12,8 +12,9 @@ public class CreateInvoice
     public record CreateInvoiceRowRequest(string? Description, decimal? Quantity, decimal? UnitPrice, int? MeasurementUnitId, int? TaxRateId);
     public record CreateInvoiceRequest(int Number, DateOnly Date, int CustomerId, decimal? StampDutyAmount, bool StampDutyChargedToCustomer, IEnumerable<CreateInvoiceRowRequest> Rows);
 
+    public record ResponseDue(int Id, DateOnly Date, decimal Amount, decimal PaidAmount, bool IsPaid);
     public record ResponseRow(long Id, string RowType, string? Description, decimal? Quantity, decimal? UnitPrice, int? MeasurementUnitId, int? TaxRateId);
-    public record Response(int Id, int Number, DateOnly Date, int CustomerId, decimal? StampDutyAmount, bool StampDutyChargedToCustomer, IEnumerable<ResponseRow> Rows);
+    public record Response(int Id, int Number, DateOnly Date, int CustomerId, decimal? StampDutyAmount, bool StampDutyChargedToCustomer, IEnumerable<ResponseRow> Rows, IEnumerable<ResponseDue> Dues);
 
     public sealed class Endpoint : IEndpoint
     {
@@ -45,7 +46,24 @@ public class CreateInvoice
 
         await unitOfWork.SaveChangesAsync();
 
-        return ResultHelper.Created(MapResponse(invoice));
+        // Reload with tax rates to compute the total for the auto-generated due.
+        var invoiceWithDetails = await invoiceRepository.GetAsync(invoice.Id, ["Rows.TaxRate"]);
+        decimal totalAmount = InvoiceAmountCalculator.CalculateTotal(invoiceWithDetails!);
+
+        var due = new Due
+        {
+            Date = invoice.Date,
+            Amount = totalAmount,
+            InvoiceId = invoice.Id,
+            CustomerId = invoice.CustomerId
+        };
+
+        var dueRepository = unitOfWork.GetRepository<IDueRepository>();
+        dueRepository.Add(due);
+
+        await unitOfWork.SaveChangesAsync();
+
+        return ResultHelper.Created(MapResponse(invoiceWithDetails!, [due]));
     }
 
     private static Invoice MapInvoice(CreateInvoiceRequest request) => new()
@@ -55,7 +73,7 @@ public class CreateInvoice
         CustomerId = request.CustomerId,
         StampDutyAmount = request.StampDutyAmount,
         StampDutyChargedToCustomer = request.StampDutyChargedToCustomer,
-        Rows = request.Rows.Select(r => MapInvoiceRow(r)).ToList()
+        Rows = request.Rows.Select(MapInvoiceRow).ToList()
     };
 
     private static InvoiceRow MapInvoiceRow(CreateInvoiceRowRequest request) => new()
@@ -68,9 +86,15 @@ public class CreateInvoice
         TaxRateId = request.TaxRateId
     };
 
-    private static Response MapResponse(Invoice invoice)
-        => new(invoice.Id, int.Parse(invoice.Number), invoice.Date, invoice.CustomerId, invoice.StampDutyAmount, invoice.StampDutyChargedToCustomer, invoice.Rows.Select(r => MapResponseRow(r)));
+    private static Response MapResponse(Invoice invoice, IEnumerable<Due> dues)
+        => new(invoice.Id, int.Parse(invoice.Number), invoice.Date, invoice.CustomerId,
+               invoice.StampDutyAmount, invoice.StampDutyChargedToCustomer,
+               invoice.Rows.Select(MapResponseRow),
+               dues.Select(MapResponseDue));
 
     private static ResponseRow MapResponseRow(InvoiceRow row)
         => new(row.Id, row.RowType, row.Description, row.Quantity, row.UnitPrice, row.MeasurementUnitId, row.TaxRateId);
+
+    private static ResponseDue MapResponseDue(Due due)
+        => new(due.Id, due.Date, due.Amount, due.PaidAmount, due.IsPaid);
 }

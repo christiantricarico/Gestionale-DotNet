@@ -1,0 +1,160 @@
+<MudDialog>
+    <TitleContent>
+        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+            <MudIcon Icon="@Icons.Material.Outlined.Business" />
+            <MudText Typo="Typo.h6">@(_content.Id == 0 ? "Nuovo cliente" : "Modifica cliente")</MudText>
+        </MudStack>
+    </TitleContent>
+    <DialogContent>
+        <EditForm id="customerForm" Model="@_model" OnValidSubmit="@SaveAsync">
+            <DataAnnotationsValidator />
+            <MudExpansionPanels MultiExpansion="true" Class="mt-2">
+                <MudExpansionPanel Text="Dati generali" IsInitiallyExpanded="true">
+                    <MudGrid Spacing="2">
+                        <MudItem xs="12" sm="4">
+                            <MudTextField @bind-Value="_model.Code"
+                                          Label="Codice"
+                                          For="@(() => _model.Code)"
+                                          MaxLength="10"
+                                          Required="true"
+                                          AutoFocus="true" />
+                        </MudItem>
+                        <MudItem xs="12" sm="8">
+                            <MudTextField @bind-Value="_model.Name"
+                                          Label="Nome"
+                                          For="@(() => _model.Name)"
+                                          MaxLength="255" />
+                        </MudItem>
+                        <MudItem xs="12">
+                            <MudTextField @bind-Value="_model.Description"
+                                          Label="Descrizione"
+                                          For="@(() => _model.Description)"
+                                          Lines="2" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6">
+                            <MudTextField @bind-Value="_model.FiscalCode"
+                                          Label="Codice fiscale"
+                                          For="@(() => _model.FiscalCode)"
+                                          MaxLength="20" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6">
+                            <MudTextField @bind-Value="_model.VatNumber"
+                                          Label="Partita IVA"
+                                          For="@(() => _model.VatNumber)"
+                                          MaxLength="20" />
+                        </MudItem>
+                        <MudItem xs="12" sm="4">
+                            <MudTextField @bind-Value="_model.Phone"
+                                          Label="Telefono"
+                                          For="@(() => _model.Phone)"
+                                          MaxLength="50" />
+                        </MudItem>
+                        <MudItem xs="12" sm="4">
+                            <MudTextField @bind-Value="_model.Email"
+                                          Label="Email"
+                                          For="@(() => _model.Email)"
+                                          MaxLength="255" />
+                        </MudItem>
+                        <MudItem xs="12" sm="4">
+                            <MudTextField @bind-Value="_model.Website"
+                                          Label="Sito web"
+                                          For="@(() => _model.Website)"
+                                          MaxLength="255" />
+                        </MudItem>
+                        <MudItem xs="12" sm="4">
+                            <MudTextField @bind-Value="_model.Sdi"
+                                          Label="Codice SDI"
+                                          For="@(() => _model.Sdi)"
+                                          MaxLength="10" />
+                        </MudItem>
+                        <MudItem xs="12" sm="8">
+                            <MudTextField @bind-Value="_model.Notes"
+                                          Label="Note"
+                                          For="@(() => _model.Notes)"
+                                          Lines="2" />
+                        </MudItem>
+                    </MudGrid>
+                </MudExpansionPanel>
+                <MudExpansionPanel Text="Indirizzo">
+                    <MudGrid Spacing="2">
+                        <MudItem xs="12">
+                            <MudTextField @bind-Value="_model.Street"
+                                          Label="Indirizzo/Via"
+                                          For="@(() => _model.Street)"
+                                          MaxLength="255" />
+                        </MudItem>
+                        <MudItem xs="12" sm="3">
+                            <MudTextField @bind-Value="_model.PostalCode"
+                                          Label="CAP"
+                                          For="@(() => _model.PostalCode)"
+                                          MaxLength="10" />
+                        </MudItem>
+                        <MudItem xs="12" sm="5">
+                            <MudTextField @bind-Value="_model.City"
+                                          Label="Città"
+                                          For="@(() => _model.City)"
+                                          MaxLength="50" />
+                        </MudItem>
+                        <MudItem xs="12" sm="2">
+                            <MudTextField @bind-Value="_model.Province"
+                                          Label="Provincia"
+                                          For="@(() => _model.Province)"
+                                          MaxLength="50" />
+                        </MudItem>
+                        <MudItem xs="12" sm="2">
+                            <MudTextField @bind-Value="_model.Country"
+                                          Label="Nazione"
+                                          For="@(() => _model.Country)"
+                                          MaxLength="50" />
+                        </MudItem>
+                    </MudGrid>
+                </MudExpansionPanel>
+            </MudExpansionPanels>
+        </EditForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="@(() => Dialog.Cancel())">Annulla</MudButton>
+        <MudButton ButtonType="ButtonType.Submit"
+                   form="customerForm"
+                   Color="Color.Primary"
+                   Variant="Variant.Filled">
+            Salva
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+
+    [Inject]
+    private HttpClient Http { get; set; } = default!;
+
+    [Inject]
+    private ISnackbar Snackbar { get; set; } = default!;
+
+    [CascadingParameter]
+    private IMudDialogInstance Dialog { get; set; } = default!;
+
+    [Parameter]
+    public DialogContent _content { get; set; } = new();
+
+    private CustomerEditModel _model = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (_content.Id > 0)
+            _model = await Http.GetFromJsonAsync<CustomerEditModel>($"customers/{_content.Id}") ?? new();
+    }
+
+    private async Task SaveAsync()
+    {
+        HttpResponseMessage response;
+
+        if (!_model.Id.HasValue)
+            response = await Http.PostAsJsonAsync("customers", _model);
+        else
+            response = await Http.PutAsJsonAsync("customers", _model);
+
+        if (await Snackbar.ShowResponseErrorAsync(response))
+            Dialog.Close(DialogResult.Ok(_model));
+    }
+}

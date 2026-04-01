@@ -17,7 +17,7 @@ namespace Gdn.Persistence.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.1")
+                .HasAnnotation("ProductVersion", "10.0.5")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -132,6 +132,51 @@ namespace Gdn.Persistence.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Customers");
+                });
+
+            modelBuilder.Entity("Gdn.Domain.Models.Due", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 6)
+                        .HasColumnType("decimal(18,6)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("CustomerId")
+                        .HasColumnType("int");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<int?>("InvoiceId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<decimal>("PaidAmount")
+                        .ValueGeneratedOnAdd()
+                        .HasPrecision(18, 6)
+                        .HasColumnType("decimal(18,6)")
+                        .HasDefaultValue(0m);
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CustomerId");
+
+                    b.HasIndex("InvoiceId");
+
+                    b.ToTable("Dues");
                 });
 
             modelBuilder.Entity("Gdn.Domain.Models.Invoice", b =>
@@ -261,6 +306,106 @@ namespace Gdn.Persistence.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("MeasurementUnits");
+                });
+
+            modelBuilder.Entity("Gdn.Domain.Models.Payment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 6)
+                        .HasColumnType("decimal(18,6)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("PaymentMethodId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PaymentMethodId");
+
+                    b.ToTable("Payments");
+                });
+
+            modelBuilder.Entity("Gdn.Domain.Models.PaymentDue", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 6)
+                        .HasColumnType("decimal(18,6)");
+
+                    b.Property<int>("DueId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PaymentId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PaymentId");
+
+                    b.HasIndex("DueId", "PaymentId");
+
+                    b.ToTable("PaymentDues");
+                });
+
+            modelBuilder.Entity("Gdn.Domain.Models.PaymentMethod", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("DigitalInvoiceCode")
+                        .HasMaxLength(4)
+                        .HasColumnType("nvarchar(4)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("PaymentMethods");
                 });
 
             modelBuilder.Entity("Gdn.Domain.Models.Product", b =>
@@ -603,6 +748,23 @@ namespace Gdn.Persistence.Migrations
                     b.Navigation("Customer");
                 });
 
+            modelBuilder.Entity("Gdn.Domain.Models.Due", b =>
+                {
+                    b.HasOne("Gdn.Domain.Models.Customer", "Customer")
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Gdn.Domain.Models.Invoice", "Invoice")
+                        .WithMany("Dues")
+                        .HasForeignKey("InvoiceId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("Customer");
+
+                    b.Navigation("Invoice");
+                });
+
             modelBuilder.Entity("Gdn.Domain.Models.Invoice", b =>
                 {
                     b.HasOne("Gdn.Domain.Models.Customer", "Customer")
@@ -635,6 +797,35 @@ namespace Gdn.Persistence.Migrations
                     b.Navigation("MeasurementUnit");
 
                     b.Navigation("TaxRate");
+                });
+
+            modelBuilder.Entity("Gdn.Domain.Models.Payment", b =>
+                {
+                    b.HasOne("Gdn.Domain.Models.PaymentMethod", "PaymentMethod")
+                        .WithMany()
+                        .HasForeignKey("PaymentMethodId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("PaymentMethod");
+                });
+
+            modelBuilder.Entity("Gdn.Domain.Models.PaymentDue", b =>
+                {
+                    b.HasOne("Gdn.Domain.Models.Due", "Due")
+                        .WithMany("PaymentDues")
+                        .HasForeignKey("DueId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Gdn.Domain.Models.Payment", "Payment")
+                        .WithMany("PaymentDues")
+                        .HasForeignKey("PaymentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Due");
+
+                    b.Navigation("Payment");
                 });
 
             modelBuilder.Entity("Gdn.Domain.Models.Product", b =>
@@ -675,9 +866,21 @@ namespace Gdn.Persistence.Migrations
                     b.Navigation("Addresses");
                 });
 
+            modelBuilder.Entity("Gdn.Domain.Models.Due", b =>
+                {
+                    b.Navigation("PaymentDues");
+                });
+
             modelBuilder.Entity("Gdn.Domain.Models.Invoice", b =>
                 {
+                    b.Navigation("Dues");
+
                     b.Navigation("Rows");
+                });
+
+            modelBuilder.Entity("Gdn.Domain.Models.Payment", b =>
+                {
+                    b.Navigation("PaymentDues");
                 });
 #pragma warning restore 612, 618
         }

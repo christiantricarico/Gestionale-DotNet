@@ -8,9 +8,10 @@ internal sealed class InvoiceReportModel
     public string? Notes { get; set; }
     public AddressModel SellerAddress { get; set; } = default!;
     public AddressModel CustomerAddress { get; set; } = default!;
-    public List<InvoiceRowReportModel> Rows { get; set; } = new();
+    public List<InvoiceRowReportModel> Rows { get; set; } = [];
     public decimal? StampDutyAmount { get; set; }
     public bool StampDutyChargedToCustomer { get; set; }
+    public List<DueReportModel> Dues { get; set; } = [];
 }
 
 internal sealed class InvoiceRowReportModel
@@ -20,6 +21,12 @@ internal sealed class InvoiceRowReportModel
     public decimal? Quantity { get; set; }
     public decimal? UnitPrice { get; set; }
     public decimal? TaxRate { get; set; }
+}
+
+internal sealed class DueReportModel
+{
+    public DateOnly Date { get; set; }
+    public decimal Amount { get; set; }
 }
 
 internal sealed class AddressModel

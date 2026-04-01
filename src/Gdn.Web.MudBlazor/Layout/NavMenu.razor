@@ -1,0 +1,22 @@
+<MudNavMenu>
+    <MudNavLink Href="/" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">
+        Panoramica
+    </MudNavLink>
+    <MudNavLink Href="/invoices" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Receipt">
+        Fatture
+    </MudNavLink>
+    <MudNavGroup Title="Anagrafiche" Icon="@Icons.Material.Filled.TableChart" Expanded="true">
+        <MudNavLink Href="/customers" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.People">
+            Clienti
+        </MudNavLink>
+        <MudNavLink Href="/taxrates" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Percent">
+            Aliquote IVA
+        </MudNavLink>
+        <MudNavLink Href="/measurementunits" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Straighten">
+            Unità di misura
+        </MudNavLink>
+        <MudNavLink Href="/paymentmethods" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Payment">
+            Metodi di pagamento
+        </MudNavLink>
+    </MudNavGroup>
+</MudNavMenu>

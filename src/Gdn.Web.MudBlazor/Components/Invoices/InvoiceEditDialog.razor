@@ -1,0 +1,369 @@
+@inject HttpClient Http
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.Receipt" Class="mr-2" Style="vertical-align:middle" />
+            @(_content.Id > 0 ? "Modifica fattura" : "Nuova fattura")
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        @if (_model is null)
+        {
+            <MudProgressLinear Indeterminate="true" />
+        }
+        else
+        {
+            <EditForm EditContext="_editContext" FormName="edit-invoice-form">
+                <DataAnnotationsValidator />
+                <MudGrid Spacing="2" Class="mt-1">
+                    <MudItem xs="12" sm="3">
+                        <MudNumericField T="int?"
+                                         @bind-Value="_model.Number"
+                                         Label="Numero"
+                                         Variant="Variant.Outlined"
+                                         Min="1"
+                                         For="@(() => _model.Number)" />
+                    </MudItem>
+                    <MudItem xs="12" sm="3">
+                        <MudDatePicker Label="Data"
+                                       @bind-Date="_model.DateWithTime"
+                                       Variant="Variant.Outlined"
+                                       Required="true"
+                                       RequiredError="Data richiesta." />
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudAutocomplete T="CustomerViewModel"
+                                         Label="Cliente"
+                                         Variant="Variant.Outlined"
+                                         Value="_selectedCustomer"
+                                         ValueChanged="OnCustomerChanged"
+                                         SearchFunc="SearchCustomers"
+                                         ToStringFunc="@(c => c?.Name)"
+                                         ResetValueOnEmptyText="true" />
+                        <MudText Typo="Typo.caption" Color="Color.Error">
+                            <ValidationMessage For="@(() => _model.CustomerId)" />
+                        </MudText>
+                    </MudItem>
+                    <MudItem xs="12">
+                        <MudButton Variant="Variant.Outlined"
+                                   StartIcon="@Icons.Material.Filled.Add"
+                                   OnClick="AddRowClick">
+                            Aggiungi riga
+                        </MudButton>
+                    </MudItem>
+                </MudGrid>
+
+                <MudStack Class="mt-3" Spacing="2">
+                    @foreach (var row in _model.Rows.Where(r => r.InputStatus != 3))
+                    {
+                        <MudCard>
+                            <MudCardContent Class="pa-3">
+                                <MudGrid>
+                                    <MudItem xs="12" lg="4">
+                                        <MudText Typo="Typo.caption">Descrizione</MudText>
+                                        <MudText>@row.Description</MudText>
+                                    </MudItem>
+                                    <MudItem xs="6" lg="2">
+                                        <MudText Typo="Typo.caption">Aliq.IVA</MudText>
+                                        <MudText>@row.TaxRateName</MudText>
+                                    </MudItem>
+                                    <MudItem xs="6" lg="1">
+                                        <MudText Typo="Typo.caption">UM</MudText>
+                                        <MudText>@row.MeasurementUnitName</MudText>
+                                    </MudItem>
+                                    <MudItem xs="4" lg="1">
+                                        <MudText Typo="Typo.caption">Qtà</MudText>
+                                        <MudText>@row.Quantity.ToString("N2")</MudText>
+                                    </MudItem>
+                                    <MudItem xs="4" lg="2">
+                                        <MudText Typo="Typo.caption">Prezzo</MudText>
+                                        <MudText>@row.UnitPrice.ToString("C")</MudText>
+                                    </MudItem>
+                                    <MudItem xs="4" lg="1">
+                                        <MudText Typo="Typo.caption">Totale</MudText>
+                                        <MudText>@row.TotalAmount.ToString("C")</MudText>
+                                    </MudItem>
+                                    <MudItem xs="12" lg="1" Class="d-flex justify-end align-center gap-1">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                                       Size="Size.Small"
+                                                       OnClick="@(() => EditRowClick(row))" />
+                                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                       Size="Size.Small"
+                                                       Color="Color.Error"
+                                                       OnClick="@(() => DeleteRowClick(row))" />
+                                    </MudItem>
+                                </MudGrid>
+                            </MudCardContent>
+                        </MudCard>
+                    }
+                </MudStack>
+
+                @if (ExemptVatTotal > StampDutyThreshold)
+                {
+                    <MudDivider Class="my-4" />
+                    <MudPaper Class="pa-3 mud-background-gray" Elevation="0">
+                        <MudText Typo="Typo.subtitle1" GutterBottom="true">Imposta di bollo (€2,00)</MudText>
+                        <MudText Typo="Typo.body2" GutterBottom="true">
+                            La fattura contiene importi esenti IVA superiori a €77,47. È necessario applicare l'imposta di bollo virtuale di €2,00.
+                        </MudText>
+                        <MudCheckBox @bind-Value="StampDutyEnabled" Label="Applica imposta di bollo" />
+                        @if (StampDutyEnabled)
+                        {
+                            <MudRadioGroup @bind-Value="_model.StampDutyChargedToCustomer" Class="mt-2">
+                                <MudRadio T="bool" Value="false">A carico dell'emittente</MudRadio>
+                                <MudRadio T="bool" Value="true">A carico del cliente</MudRadio>
+                            </MudRadioGroup>
+                        }
+                    </MudPaper>
+                }
+
+                @if (_model.Id.HasValue)
+                {
+                    <MudDivider Class="my-4" />
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-2">
+                        <MudText Typo="Typo.subtitle1">Scadenze</MudText>
+                        <MudSpacer />
+                        <MudButton Variant="Variant.Outlined"
+                                   StartIcon="@Icons.Material.Filled.Add"
+                                   Size="Size.Small"
+                                   OnClick="AddDueClick">
+                            Aggiungi scadenza
+                        </MudButton>
+                    </MudStack>
+                    <MudStack Spacing="2">
+                        @foreach (var due in _model.Dues.Where(d => d.InputStatus != 3))
+                        {
+                            <MudCard>
+                                <MudCardContent Class="pa-3">
+                                    <MudGrid>
+                                        <MudItem xs="6" sm="3">
+                                            <MudText Typo="Typo.caption">Data scadenza</MudText>
+                                            <MudText>@due.Date.ToString("d")</MudText>
+                                        </MudItem>
+                                        <MudItem xs="6" sm="2">
+                                            <MudText Typo="Typo.caption">Importo</MudText>
+                                            <MudText>@due.Amount.ToString("C")</MudText>
+                                        </MudItem>
+                                        <MudItem xs="6" sm="2">
+                                            <MudText Typo="Typo.caption">Pagato</MudText>
+                                            <MudText>@due.PaidAmount.ToString("C")</MudText>
+                                        </MudItem>
+                                        <MudItem xs="6" sm="3">
+                                            <MudText Typo="Typo.caption">Stato</MudText>
+                                            <MudText>@due.Status</MudText>
+                                        </MudItem>
+                                        <MudItem xs="12" sm="2" Class="d-flex justify-end align-center gap-1">
+                                            <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                                           Size="Size.Small"
+                                                           OnClick="@(() => EditDueClick(due))" />
+                                            <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                           Size="Size.Small"
+                                                           Color="Color.Error"
+                                                           Disabled="@due.HasPayments"
+                                                           OnClick="@(() => DeleteDueClick(due))" />
+                                        </MudItem>
+                                    </MudGrid>
+                                </MudCardContent>
+                            </MudCard>
+                        }
+                    </MudStack>
+                }
+            </EditForm>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Annulla</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="SaveAsync" Disabled="_saving">Salva</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance Dialog { get; set; } = default!;
+    [Parameter] public DialogContent _content { get; set; } = new();
+
+    private InvoiceEditModel? _model;
+    private EditContext _editContext = default!;
+    private bool _saving;
+
+    private IEnumerable<CustomerViewModel> _customers = [];
+    private CustomerViewModel? _selectedCustomer;
+
+    private const decimal StampDutyValue = 2.00m;
+    private const decimal StampDutyThreshold = 77.47m;
+
+    private decimal ExemptVatTotal =>
+        _model?.Rows
+            .Where(r => r.InputStatus != 3 && r.TaxRateValue == 0)
+            .Sum(r => r.TotalAmount) ?? 0m;
+
+    private bool StampDutyEnabled
+    {
+        get => _model?.StampDutyAmount.HasValue ?? false;
+        set
+        {
+            if (_model is null)
+                return;
+            _model.StampDutyAmount = value ? StampDutyValue : null;
+            if (!value)
+                _model.StampDutyChargedToCustomer = false;
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (_content.Id == 0)
+        {
+            var lastNumber = await Http.GetFromJsonAsync<int>("invoices/last-number");
+            _model = new InvoiceEditModel { Number = lastNumber + 1 };
+        }
+        else
+        {
+            _model = await Http.GetFromJsonAsync<InvoiceEditModel>($"invoices/{_content.Id}") ?? new();
+            _model.DateWithTime = _model.Date.ToDateTime(TimeOnly.MinValue);
+        }
+
+        _editContext = new EditContext(_model);
+
+        _customers = await Http.GetFromJsonAsync<IEnumerable<CustomerViewModel>>("customers") ?? [];
+
+        if (_model.CustomerId.HasValue)
+            _selectedCustomer = _customers.FirstOrDefault(c => c.Id == _model.CustomerId);
+    }
+
+    private Task<IEnumerable<CustomerViewModel>> SearchCustomers(string? text, CancellationToken ct)
+    {
+        var results = string.IsNullOrWhiteSpace(text)
+            ? _customers
+            : _customers.Where(c => c.Name?.Contains(text, StringComparison.OrdinalIgnoreCase) ?? false);
+        return Task.FromResult(results);
+    }
+
+    private void OnCustomerChanged(CustomerViewModel? customer)
+    {
+        _selectedCustomer = customer;
+        _model!.CustomerId = customer?.Id;
+    }
+
+    private async Task SaveAsync()
+    {
+        if (_model is null)
+            return;
+
+        _model.Date = DateOnly.FromDateTime(_model.DateWithTime ?? DateTime.MinValue);
+
+        if (ExemptVatTotal <= StampDutyThreshold)
+        {
+            _model.StampDutyAmount = null;
+            _model.StampDutyChargedToCustomer = false;
+        }
+
+        if (!_editContext.Validate())
+            return;
+
+        _saving = true;
+        try
+        {
+            HttpResponseMessage response;
+            if (!_model.Id.HasValue)
+                response = await Http.PostAsJsonAsync("invoices", _model);
+            else
+                response = await Http.PutAsJsonAsync("invoices", _model);
+
+            if (!await Snackbar.ShowResponseErrorAsync(response))
+                return;
+
+            Dialog.Close();
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+
+    private async Task AddRowClick()
+    {
+        var newRow = new InvoiceRowEditModel();
+        var parameters = new DialogParameters<InvoiceRowEditDialog>();
+        parameters.Add(x => x.Row, newRow);
+        var options = new DialogOptions { CloseOnEscapeKey = false, CloseButton = false, BackdropClick = false, MaxWidth = MaxWidth.Medium, FullWidth = true };
+        var dialog = await DialogService.ShowAsync<InvoiceRowEditDialog>("Nuova riga fattura", parameters, options);
+        var result = await dialog.Result;
+        if (result is not null && !result.Canceled)
+        {
+            newRow.InputStatus = 1;
+            _model!.Rows.Add(newRow);
+        }
+    }
+
+    private async Task EditRowClick(InvoiceRowEditModel row)
+    {
+        var parameters = new DialogParameters<InvoiceRowEditDialog>();
+        parameters.Add(x => x.Row, row);
+        var options = new DialogOptions { CloseOnEscapeKey = false, CloseButton = false, BackdropClick = false, MaxWidth = MaxWidth.Medium, FullWidth = true };
+        var dialog = await DialogService.ShowAsync<InvoiceRowEditDialog>("Modifica riga fattura", parameters, options);
+        var result = await dialog.Result;
+        if (result is not null && !result.Canceled && row.InputStatus == 0)
+            row.InputStatus = 2;
+    }
+
+    private async Task DeleteRowClick(InvoiceRowEditModel row)
+    {
+        bool? confirmed = await DialogService.ShowMessageBox(
+            "Eliminazione",
+            "Sei sicuro di voler eliminare questa riga?",
+            yesText: "Sì", cancelText: "No");
+        if (confirmed is not true)
+            return;
+        row.InputStatus = 3;
+    }
+
+    private async Task AddDueClick()
+    {
+        var newDue = new InvoiceDueEditModel { Date = _model!.Date };
+        var parameters = new DialogParameters<InvoiceDueEditDialog>();
+        parameters.Add(x => x.Due, newDue);
+        var options = new DialogOptions { CloseOnEscapeKey = false, CloseButton = false, BackdropClick = false };
+        var dialog = await DialogService.ShowAsync<InvoiceDueEditDialog>("Nuova scadenza", parameters, options);
+        var result = await dialog.Result;
+        if (result is not null && !result.Canceled)
+        {
+            newDue.InputStatus = 1;
+            _model.Dues.Add(newDue);
+        }
+    }
+
+    private async Task EditDueClick(InvoiceDueEditModel due)
+    {
+        var parameters = new DialogParameters<InvoiceDueEditDialog>();
+        parameters.Add(x => x.Due, due);
+        var options = new DialogOptions { CloseOnEscapeKey = false, CloseButton = false, BackdropClick = false };
+        var dialog = await DialogService.ShowAsync<InvoiceDueEditDialog>("Modifica scadenza", parameters, options);
+        var result = await dialog.Result;
+        if (result is not null && !result.Canceled)
+        {
+            if (result.Data is InvoiceDueEditModel updated)
+            {
+                due.Date = updated.Date;
+                due.Amount = updated.Amount;
+            }
+            if (due.InputStatus == 0)
+                due.InputStatus = 2;
+        }
+    }
+
+    private async Task DeleteDueClick(InvoiceDueEditModel due)
+    {
+        bool? confirmed = await DialogService.ShowMessageBox(
+            "Eliminazione",
+            "Sei sicuro di voler eliminare questa scadenza?",
+            yesText: "Sì", cancelText: "No");
+        if (confirmed is not true)
+            return;
+        due.InputStatus = 3;
+    }
+
+    private void Cancel() => Dialog.Cancel();
+}

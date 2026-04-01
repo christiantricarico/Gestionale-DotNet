@@ -1,4 +1,4 @@
-﻿using Gdn.Domain.Models.Bases;
+using Gdn.Domain.Models.Bases;
 using Gdn.Domain.Models.Enums;
 
 namespace Gdn.Domain.Models;
@@ -11,10 +11,19 @@ public class Invoice : TrackedEntity<int>
     public int CustomerId { get; set; }
     public Customer Customer { get; set; } = default!;
 
-    public ICollection<InvoiceRow> Rows { get; set; } = new List<InvoiceRow>();
+    public ICollection<InvoiceRow> Rows { get; set; } = [];
 
     public decimal? StampDutyAmount { get; set; }
     public bool StampDutyChargedToCustomer { get; set; }
+
+    /// <summary>The dues (payment deadlines) associated with this invoice.</summary>
+    public ICollection<Due> Dues { get; set; } = [];
+
+    /// <summary>
+    /// Returns <see langword="true"/> when all dues are fully paid.
+    /// Returns <see langword="false"/> if there are no dues.
+    /// </summary>
+    public bool IsPaid => Dues.Count > 0 && Dues.All(d => d.IsPaid);
 }
 
 public class InvoiceRow : TrackedEntity<long>

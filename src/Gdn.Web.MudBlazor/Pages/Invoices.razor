@@ -1,0 +1,182 @@
+@page "/invoices"
+
+@inject HttpClient Http
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+@inject IJSRuntime JS
+
+<PageTitle>Fatture</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
+    <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-4">
+        <MudText Typo="Typo.h5">Fatture</MudText>
+        <MudSpacer />
+        @if (!_isLoading)
+        {
+            <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.Add"
+                       OnClick="CreateButtonClick">Nuova</MudButton>
+        }
+    </MudStack>
+
+    @if (_isLoading)
+    {
+        <MudProgressLinear Indeterminate="true" />
+    }
+    else
+    {
+        @foreach (var invoice in _items)
+        {
+            <MudCard Class="mb-2">
+                <MudCardContent Class="pa-3">
+                    <MudGrid>
+                        <MudItem xs="6" sm="2">
+                            <MudText Typo="Typo.caption">Numero</MudText>
+                            <MudText>@invoice.Number</MudText>
+                        </MudItem>
+                        <MudItem xs="6" sm="2">
+                            <MudText Typo="Typo.caption">Data</MudText>
+                            <MudText>@invoice.Date.ToString("d")</MudText>
+                        </MudItem>
+                        <MudItem xs="12" sm="4">
+                            <MudText Typo="Typo.caption">Cliente</MudText>
+                            <MudText>@invoice.CustomerName</MudText>
+                        </MudItem>
+                        <MudItem xs="6" sm="2">
+                            <MudChip T="string" Color="@GetPaymentStatusColor(invoice.PaymentStatus)" Size="Size.Small">
+                                @invoice.PaymentStatus
+                            </MudChip>
+                        </MudItem>
+                        <MudItem xs="12" sm="2" Class="d-flex justify-end align-center gap-1">
+                            <MudIconButton Icon="@Icons.Material.Filled.Payments"
+                                           Size="Size.Small"
+                                           Title="Pagamenti"
+                                           OnClick="@(() => PaymentsButtonClick(invoice))" />
+                            <MudIconButton Icon="@Icons.Material.Filled.Print"
+                                           Size="Size.Small"
+                                           Title="Stampa PDF"
+                                           OnClick="@(() => PrintButtonClick(invoice))" />
+                            <MudIconButton Icon="@Icons.Material.Filled.Download"
+                                           Size="Size.Small"
+                                           Title="Scarica XML"
+                                           OnClick="@(() => DownloadButtonClick(invoice))" />
+                            <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                           Size="Size.Small"
+                                           OnClick="@(() => EditButtonClick(invoice))" />
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                           Size="Size.Small"
+                                           Color="Color.Error"
+                                           OnClick="@(() => DeleteButtonClick(invoice))" />
+                        </MudItem>
+                    </MudGrid>
+                </MudCardContent>
+            </MudCard>
+        }
+    }
+</MudContainer>
+
+@code {
+    private bool _isLoading = true;
+    private IEnumerable<InvoiceViewModel> _items = [];
+
+    protected override async Task OnInitializedAsync() => await ReloadAsync();
+
+    private async Task ReloadAsync()
+    {
+        _isLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            _items = await Http.GetFromJsonAsync<IEnumerable<InvoiceViewModel>>("invoices") ?? [];
+        }
+        catch (HttpRequestException)
+        {
+            Snackbar.Add("Errore durante il caricamento dei dati.", Severity.Error);
+            _items = [];
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private async Task CreateButtonClick()
+    {
+        var parameters = new DialogParameters<InvoiceEditDialog>();
+        parameters.Add(x => x._content, new DialogContent());
+        var options = new DialogOptions { CloseOnEscapeKey = false, CloseButton = false, BackdropClick = false, MaxWidth = MaxWidth.Large, FullWidth = true };
+        var dialog = await DialogService.ShowAsync<InvoiceEditDialog>("Nuova fattura", parameters, options);
+        var result = await dialog.Result;
+        if (result is not null && !result.Canceled)
+            await ReloadAsync();
+    }
+
+    private async Task EditButtonClick(InvoiceViewModel invoice)
+    {
+        var parameters = new DialogParameters<InvoiceEditDialog>();
+        parameters.Add(x => x._content, new DialogContent { Id = invoice.Id });
+        var options = new DialogOptions { CloseOnEscapeKey = false, CloseButton = false, BackdropClick = false, MaxWidth = MaxWidth.Large, FullWidth = true };
+        var dialog = await DialogService.ShowAsync<InvoiceEditDialog>("Modifica fattura", parameters, options);
+        var result = await dialog.Result;
+        if (result is not null && !result.Canceled)
+            await ReloadAsync();
+    }
+
+    private async Task PaymentsButtonClick(InvoiceViewModel invoice)
+    {
+        var parameters = new DialogParameters<InvoicePaymentsDialog>();
+        parameters.Add(x => x.Invoice, invoice);
+        var options = new DialogOptions { BackdropClick = false, CloseOnEscapeKey = false, CloseButton = false, MaxWidth = MaxWidth.Medium, FullWidth = true };
+        var dialog = await DialogService.ShowAsync<InvoicePaymentsDialog>($"Pagamenti — Fattura {invoice.Number}", parameters, options);
+        var result = await dialog.Result;
+        if (result is not null && !result.Canceled && result.Data is true)
+            await ReloadAsync();
+    }
+
+    private async Task PrintButtonClick(InvoiceViewModel invoice)
+    {
+        var response = await Http.GetAsync($"invoices/pdf/{invoice.Id}");
+        if (!await Snackbar.ShowResponseErrorAsync(response))
+            return;
+
+        var fileStream = await response.Content.ReadAsStreamAsync();
+        using var streamRef = new DotNetStreamReference(fileStream);
+        await JS.InvokeVoidAsync("openPdfFromStream", streamRef);
+    }
+
+    private async Task DownloadButtonClick(InvoiceViewModel invoice)
+    {
+        var response = await Http.GetAsync($"invoices/xml/{invoice.Id}");
+        if (!await Snackbar.ShowResponseErrorAsync(response))
+            return;
+
+        var fileName = response.Content.Headers.ContentDisposition?.FileName?.Trim('"');
+        var fileStream = await response.Content.ReadAsStreamAsync();
+        using var streamRef = new DotNetStreamReference(fileStream);
+        await JS.InvokeVoidAsync("downloadFileFromStream", fileName, streamRef);
+    }
+
+    private async Task DeleteButtonClick(InvoiceViewModel invoice)
+    {
+        bool? confirmed = await DialogService.ShowMessageBox(
+            "Eliminazione",
+            "Sei sicuro di voler eliminare questa fattura?",
+            yesText: "Sì", cancelText: "No");
+        if (confirmed is not true)
+            return;
+
+        var response = await Http.DeleteAsync($"invoices/{invoice.Id}");
+        if (!await Snackbar.ShowResponseErrorAsync(response))
+            return;
+
+        await ReloadAsync();
+    }
+
+    private static Color GetPaymentStatusColor(string status) => status switch
+    {
+        "Pagata" => Color.Success,
+        "Parzialmente pagata" => Color.Warning,
+        _ => Color.Default
+    };
+}

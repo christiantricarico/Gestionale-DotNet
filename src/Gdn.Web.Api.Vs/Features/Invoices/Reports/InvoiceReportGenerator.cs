@@ -16,7 +16,7 @@ public class InvoiceReportGenerator(IOptions<AppSettings> appSettings, IInvoiceR
 
     private async Task<InvoiceReportModel> GetReportDataAsync(int invoiceId)
     {
-        var invoice = await invoiceRepository.GetAsync(invoiceId, ["Customer.Addresses", "Rows.TaxRate", "Rows.MeasurementUnit"])
+        var invoice = await invoiceRepository.GetAsync(invoiceId, ["Customer.Addresses", "Rows.TaxRate", "Rows.MeasurementUnit", "Dues"])
             ?? throw new InvalidOperationException("Invoice not found");
 
         var company = appSettings.Value.CompanyData;
@@ -58,7 +58,14 @@ public class InvoiceReportGenerator(IOptions<AppSettings> appSettings, IInvoiceR
                 UnitPrice = row.UnitPrice,
                 MeasurementUnitCode = row.MeasurementUnit?.Code,
                 TaxRate = row.TaxRate?.Rate
-            }).ToList()
+            }).ToList(),
+            Dues = invoice.Dues
+                .OrderBy(d => d.Date)
+                .Select(d => new DueReportModel
+                {
+                    Date = d.Date,
+                    Amount = d.Amount
+                }).ToList()
         };
 
         return reportModel;
