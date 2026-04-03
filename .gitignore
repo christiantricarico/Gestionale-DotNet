@@ -364,3 +364,4 @@ FodyWeavers.xsd
 /src/Gdn.Web.Api.Vs/appsettings.Development.json
 /src/Gdn.Web.Fluentblazor/Properties/ServiceDependencies/*
 /src/Gdn.Web.Api.Vs/Properties/ServiceDependencies/*
+/publish-blazor
