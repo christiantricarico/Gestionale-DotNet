@@ -365,3 +365,4 @@ FodyWeavers.xsd
 /src/Gdn.Web.Fluentblazor/Properties/ServiceDependencies/*
 /src/Gdn.Web.Api.Vs/Properties/ServiceDependencies/*
 /publish-blazor
+/src/Gdn.Web.MudBlazor/publish-blazor
