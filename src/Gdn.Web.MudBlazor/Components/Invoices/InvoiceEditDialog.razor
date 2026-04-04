@@ -20,20 +20,20 @@
                 <DataAnnotationsValidator />
                 <MudGrid Spacing="2" Class="mt-1">
                     <MudItem xs="12" sm="3">
-                        <AppNumericField T="int?"
+                        <MudNumericField T="int?"
                                          @bind-Value="_model.Number"
                                          Label="Numero"
                                          Min="1"
                                          For="@(() => _model.Number)" />
                     </MudItem>
                     <MudItem xs="12" sm="3">
-                        <AppDatePicker Label="Data"
+                        <MudDatePicker Label="Data"
                                        @bind-Date="_model.DateWithTime"
                                        Required="true"
                                        RequiredError="Data richiesta." />
                     </MudItem>
                     <MudItem xs="12" sm="6">
-                        <AppAutocomplete T="CustomerViewModel"
+                        <MudAutocomplete T="CustomerViewModel"
                                          Label="Cliente"
                                          Value="_selectedCustomer"
                                          ValueChanged="OnCustomerChanged"

@@ -13,13 +13,13 @@
             <DataAnnotationsValidator />
             <MudGrid Spacing="2">
                 <MudItem xs="12" sm="6">
-                    <AppDatePicker Label="Data pagamento"
+                    <MudDatePicker Label="Data pagamento"
                                    @bind-Date="_payment.DateWithTime"
                                    Required="true"
                                    RequiredError="Data pagamento richiesta." />
                 </MudItem>
                 <MudItem xs="12" sm="6">
-                    <AppNumericField T="decimal"
+                    <MudNumericField T="decimal"
                                      Label="Importo"
                                      Value="_payment.Amount"
                                      ValueChanged="OnAmountChanged"
@@ -29,14 +29,14 @@
                                      For="@(() => _payment.Amount)" />
                 </MudItem>
                 <MudItem xs="12">
-                    <AppSelect T="int?"
+                    <MudSelect T="int?"
                                Label="Metodo di pagamento"
                                @bind-Value="_payment.PaymentMethodId">
                         @foreach (var pm in _paymentMethods)
                         {
                             <MudSelectItem T="int?" Value="@((int?)pm.Id)">@pm.Name</MudSelectItem>
                         }
-                    </AppSelect>
+                    </MudSelect>
                 </MudItem>
             </MudGrid>
         </EditForm>
