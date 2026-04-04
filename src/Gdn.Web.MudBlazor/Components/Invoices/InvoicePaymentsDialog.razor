@@ -182,7 +182,7 @@
 
     private async Task DeletePaymentClickAsync(PaymentHistoryViewModel payment)
     {
-        bool? confirmed = await DialogService.ShowMessageBox(
+        bool? confirmed = await DialogService.ShowMessageBoxAsync(
             "Eliminazione",
             "Sei sicuro di voler eliminare questo pagamento?",
             yesText: "Sì", cancelText: "No");

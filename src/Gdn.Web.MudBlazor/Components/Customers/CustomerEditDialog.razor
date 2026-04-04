@@ -12,7 +12,7 @@
         <EditForm id="customerForm" Model="@_model" OnValidSubmit="@SaveAsync">
             <DataAnnotationsValidator />
             <MudExpansionPanels MultiExpansion="true" Class="mt-2">
-                <MudExpansionPanel Text="Dati generali" IsInitiallyExpanded="true">
+                <MudExpansionPanel Text="Dati generali" @bind-Expanded="_generalPanelExpanded">
                     <MudGrid Spacing="2">
                         <MudItem xs="12" sm="4">
                             <MudTextField @bind-Value="_model.Code"
@@ -135,6 +135,7 @@
     public DialogContent _content { get; set; } = new();
 
     private CustomerEditModel _model = new();
+    private bool _generalPanelExpanded = true;
 
     protected override async Task OnInitializedAsync()
     {

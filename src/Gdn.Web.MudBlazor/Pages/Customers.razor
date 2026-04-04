@@ -110,7 +110,7 @@
 
     private async Task DeleteButtonClick(CustomerViewModel item)
     {
-        bool? confirmed = await DialogService.ShowMessageBox(
+        bool? confirmed = await DialogService.ShowMessageBoxAsync(
             "Eliminazione",
             "Sei sicuro di voler eliminare questo elemento?",
             yesText: "Sì", cancelText: "No");
