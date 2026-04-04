@@ -15,14 +15,12 @@
                 <MudItem xs="12" sm="4">
                     <MudTextField @bind-Value="_model.Code"
                                   Label="Codice"
-                                  Variant="Variant.Outlined"
                                   MaxLength="10"
                                   For="@(() => _model.Code)" />
                 </MudItem>
                 <MudItem xs="12" sm="8">
                     <MudTextField @bind-Value="_model.Name"
                                   Label="Nome"
-                                  Variant="Variant.Outlined"
                                   MaxLength="255"
                                   For="@(() => _model.Name)" />
                 </MudItem>
@@ -30,7 +28,6 @@
                     <MudNumericField T="decimal"
                                      Value="@_model.Rate"
                                      Label="Aliquota %"
-                                     Variant="Variant.Outlined"
                                      Format="n2"
                                      Min="0m"
                                      Max="100m"
@@ -41,7 +38,6 @@
                     <MudSelect @bind-Value="_model.TaxRateNatureId"
                                T="int?"
                                Label="Natura IVA"
-                               Variant="Variant.Outlined"
                                Disabled="@(_model.Rate > 0)"
                                Clearable="true"
                                ToStringFunc="@(id => _natures.FirstOrDefault(n => n.Id == id)?.Name ?? string.Empty)">
@@ -54,7 +50,6 @@
                 <MudItem xs="12">
                     <MudTextField @bind-Value="_model.Description"
                                   Label="Descrizione"
-                                  Variant="Variant.Outlined"
                                   Lines="4"
                                   For="@(() => _model.Description)" />
                 </MudItem>

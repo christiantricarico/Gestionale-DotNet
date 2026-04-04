@@ -15,14 +15,12 @@
                 <MudItem xs="12">
                     <MudTextField @bind-Value="_model.Description"
                                   Label="Descrizione"
-                                  Variant="Variant.Outlined"
                                   Lines="2"
                                   For="@(() => _model.Description)" />
                 </MudItem>
                 <MudItem xs="12" sm="6">
                     <MudAutocomplete T="TaxRateViewModel"
                                      Label="Aliquota IVA"
-                                     Variant="Variant.Outlined"
                                      Value="_selectedTaxRate"
                                      ValueChanged="OnTaxRateChanged"
                                      SearchFunc="SearchTaxRates"
@@ -35,7 +33,6 @@
                 <MudItem xs="12" sm="6">
                     <MudAutocomplete T="MeasurementUnitViewModel"
                                      Label="Unità di misura"
-                                     Variant="Variant.Outlined"
                                      Value="_selectedMeasurementUnit"
                                      ValueChanged="OnMeasurementUnitChanged"
                                      SearchFunc="SearchMeasurementUnits"

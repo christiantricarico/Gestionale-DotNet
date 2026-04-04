@@ -15,21 +15,18 @@
                 <MudItem xs="12" sm="4">
                     <MudTextField @bind-Value="_model.Code"
                                   Label="Codice"
-                                  Variant="Variant.Outlined"
                                   MaxLength="10"
                                   For="@(() => _model.Code)" />
                 </MudItem>
                 <MudItem xs="12" sm="8">
                     <MudTextField @bind-Value="_model.Name"
                                   Label="Nome"
-                                  Variant="Variant.Outlined"
                                   MaxLength="255"
                                   For="@(() => _model.Name)" />
                 </MudItem>
                 <MudItem xs="12">
                     <MudTextField @bind-Value="_model.Description"
                                   Label="Descrizione"
-                                  Variant="Variant.Outlined"
                                   Lines="4"
                                   For="@(() => _model.Description)" />
                 </MudItem>
