@@ -1,9 +1,13 @@
 @namespace Gdn.Web.MudBlazor.Components.Custom
 
-<MudDatePicker @attributes="AdditionalAttributes"
+<MudDatePicker Date="@Date"
+               DateChanged="@DateChanged"
+               @attributes="AdditionalAttributes"
                Variant="Variant.Outlined" />
 
 @code {
+    [Parameter] public DateTime? Date { get; set; }
+    [Parameter] public EventCallback<DateTime?> DateChanged { get; set; }
     [Parameter(CaptureUnmatchedValues = true)]
     public IDictionary<string, object>? AdditionalAttributes { get; set; }
 }
