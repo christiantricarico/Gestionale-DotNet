@@ -20,21 +20,20 @@
                 <DataAnnotationsValidator />
                 <MudGrid Spacing="2" Class="mt-1">
                     <MudItem xs="12" sm="3">
-                        <MudNumericField T="int?"
+                        <AppNumericField T="int?"
                                          @bind-Value="_model.Number"
                                          Label="Numero"
                                          Min="1"
                                          For="@(() => _model.Number)" />
                     </MudItem>
                     <MudItem xs="12" sm="3">
-                        <MudDatePicker Label="Data"
+                        <AppDatePicker Label="Data"
                                        @bind-Date="_model.DateWithTime"
-                                       Variant="Variant.Outlined"
                                        Required="true"
                                        RequiredError="Data richiesta." />
                     </MudItem>
                     <MudItem xs="12" sm="6">
-                        <MudAutocomplete T="CustomerViewModel"
+                        <AppAutocomplete T="CustomerViewModel"
                                          Label="Cliente"
                                          Value="_selectedCustomer"
                                          ValueChanged="OnCustomerChanged"
@@ -309,7 +308,7 @@
 
     private async Task DeleteRowClick(InvoiceRowEditModel row)
     {
-        bool? confirmed = await DialogService.ShowMessageBox(
+        bool? confirmed = await DialogService.ShowMessageBoxAsync(
             "Eliminazione",
             "Sei sicuro di voler eliminare questa riga?",
             yesText: "Sì", cancelText: "No");
@@ -354,7 +353,7 @@
 
     private async Task DeleteDueClick(InvoiceDueEditModel due)
     {
-        bool? confirmed = await DialogService.ShowMessageBox(
+        bool? confirmed = await DialogService.ShowMessageBoxAsync(
             "Eliminazione",
             "Sei sicuro di voler eliminare questa scadenza?",
             yesText: "Sì", cancelText: "No");

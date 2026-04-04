@@ -12,7 +12,7 @@
         <MudIconButton Icon="@(_isDarkMode ? Icons.Material.Filled.LightMode : Icons.Material.Filled.DarkMode)"
                        Color="Color.Inherit"
                        OnClick="@ToggleDarkMode"
-                       Title="@(_isDarkMode ? "Tema chiaro" : "Tema scuro")" />
+                       title="@(_isDarkMode ? "Tema chiaro" : "Tema scuro")" />
     </MudAppBar>
 
     <MudDrawer @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2">
@@ -39,7 +39,7 @@
         if (firstRender)
         {
             var storedTheme = await JS.InvokeAsync<string?>("localStorage.getItem", "mudTheme");
-            _isDarkMode = storedTheme == "dark" || (storedTheme is null && await _themeProvider.GetSystemPreference());
+            _isDarkMode = storedTheme == "dark" || (storedTheme is null && await _themeProvider.GetSystemDarkModeAsync());
             StateHasChanged();
         }
     }

@@ -13,13 +13,13 @@
             <DataAnnotationsValidator />
             <MudGrid Spacing="2" Class="mt-1">
                 <MudItem xs="12">
-                    <MudTextField @bind-Value="_model.Description"
+                    <AppTextField @bind-Value="_model.Description"
                                   Label="Descrizione"
                                   Lines="2"
                                   For="@(() => _model.Description)" />
                 </MudItem>
                 <MudItem xs="12" sm="6">
-                    <MudAutocomplete T="TaxRateViewModel"
+                    <AppAutocomplete T="TaxRateViewModel"
                                      Label="Aliquota IVA"
                                      Value="_selectedTaxRate"
                                      ValueChanged="OnTaxRateChanged"
@@ -31,7 +31,7 @@
                     </MudText>
                 </MudItem>
                 <MudItem xs="12" sm="6">
-                    <MudAutocomplete T="MeasurementUnitViewModel"
+                    <AppAutocomplete T="MeasurementUnitViewModel"
                                      Label="Unità di misura"
                                      Value="_selectedMeasurementUnit"
                                      ValueChanged="OnMeasurementUnitChanged"

@@ -12,10 +12,10 @@
         <EditForm id="customerForm" Model="@_model" OnValidSubmit="@SaveAsync">
             <DataAnnotationsValidator />
             <MudExpansionPanels MultiExpansion="true" Class="mt-2">
-                <MudExpansionPanel Text="Dati generali" IsInitiallyExpanded="true">
+                <MudExpansionPanel Text="Dati generali" @bind-Expanded="_generalPanelExpanded">
                     <MudGrid Spacing="2">
                         <MudItem xs="12" sm="4">
-                            <MudTextField @bind-Value="_model.Code"
+                            <AppTextField @bind-Value="_model.Code"
                                           Label="Codice"
                                           For="@(() => _model.Code)"
                                           MaxLength="10"
@@ -23,55 +23,55 @@
                                           AutoFocus="true" />
                         </MudItem>
                         <MudItem xs="12" sm="8">
-                            <MudTextField @bind-Value="_model.Name"
+                            <AppTextField @bind-Value="_model.Name"
                                           Label="Nome"
                                           For="@(() => _model.Name)"
                                           MaxLength="255" />
                         </MudItem>
                         <MudItem xs="12">
-                            <MudTextField @bind-Value="_model.Description"
+                            <AppTextField @bind-Value="_model.Description"
                                           Label="Descrizione"
                                           For="@(() => _model.Description)"
                                           Lines="2" />
                         </MudItem>
                         <MudItem xs="12" sm="6">
-                            <MudTextField @bind-Value="_model.FiscalCode"
+                            <AppTextField @bind-Value="_model.FiscalCode"
                                           Label="Codice fiscale"
                                           For="@(() => _model.FiscalCode)"
                                           MaxLength="20" />
                         </MudItem>
                         <MudItem xs="12" sm="6">
-                            <MudTextField @bind-Value="_model.VatNumber"
+                            <AppTextField @bind-Value="_model.VatNumber"
                                           Label="Partita IVA"
                                           For="@(() => _model.VatNumber)"
                                           MaxLength="20" />
                         </MudItem>
                         <MudItem xs="12" sm="4">
-                            <MudTextField @bind-Value="_model.Phone"
+                            <AppTextField @bind-Value="_model.Phone"
                                           Label="Telefono"
                                           For="@(() => _model.Phone)"
                                           MaxLength="50" />
                         </MudItem>
                         <MudItem xs="12" sm="4">
-                            <MudTextField @bind-Value="_model.Email"
+                            <AppTextField @bind-Value="_model.Email"
                                           Label="Email"
                                           For="@(() => _model.Email)"
                                           MaxLength="255" />
                         </MudItem>
                         <MudItem xs="12" sm="4">
-                            <MudTextField @bind-Value="_model.Website"
+                            <AppTextField @bind-Value="_model.Website"
                                           Label="Sito web"
                                           For="@(() => _model.Website)"
                                           MaxLength="255" />
                         </MudItem>
                         <MudItem xs="12" sm="4">
-                            <MudTextField @bind-Value="_model.Sdi"
+                            <AppTextField @bind-Value="_model.Sdi"
                                           Label="Codice SDI"
                                           For="@(() => _model.Sdi)"
                                           MaxLength="10" />
                         </MudItem>
                         <MudItem xs="12" sm="8">
-                            <MudTextField @bind-Value="_model.Notes"
+                            <AppTextField @bind-Value="_model.Notes"
                                           Label="Note"
                                           For="@(() => _model.Notes)"
                                           Lines="2" />
@@ -81,31 +81,31 @@
                 <MudExpansionPanel Text="Indirizzo">
                     <MudGrid Spacing="2">
                         <MudItem xs="12">
-                            <MudTextField @bind-Value="_model.Street"
+                            <AppTextField @bind-Value="_model.Street"
                                           Label="Indirizzo/Via"
                                           For="@(() => _model.Street)"
                                           MaxLength="255" />
                         </MudItem>
                         <MudItem xs="12" sm="3">
-                            <MudTextField @bind-Value="_model.PostalCode"
+                            <AppTextField @bind-Value="_model.PostalCode"
                                           Label="CAP"
                                           For="@(() => _model.PostalCode)"
                                           MaxLength="10" />
                         </MudItem>
                         <MudItem xs="12" sm="5">
-                            <MudTextField @bind-Value="_model.City"
+                            <AppTextField @bind-Value="_model.City"
                                           Label="Città"
                                           For="@(() => _model.City)"
                                           MaxLength="50" />
                         </MudItem>
                         <MudItem xs="12" sm="2">
-                            <MudTextField @bind-Value="_model.Province"
+                            <AppTextField @bind-Value="_model.Province"
                                           Label="Provincia"
                                           For="@(() => _model.Province)"
                                           MaxLength="50" />
                         </MudItem>
                         <MudItem xs="12" sm="2">
-                            <MudTextField @bind-Value="_model.Country"
+                            <AppTextField @bind-Value="_model.Country"
                                           Label="Nazione"
                                           For="@(() => _model.Country)"
                                           MaxLength="50" />
@@ -135,6 +135,7 @@
     public DialogContent _content { get; set; } = new();
 
     private CustomerEditModel _model = new();
+    private bool _generalPanelExpanded = true;
 
     protected override async Task OnInitializedAsync()
     {

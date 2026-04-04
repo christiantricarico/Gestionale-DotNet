@@ -13,19 +13,19 @@
             <DataAnnotationsValidator />
             <MudGrid Class="mt-2">
                 <MudItem xs="12" sm="4">
-                    <MudTextField @bind-Value="_model.Code"
+                    <AppTextField @bind-Value="_model.Code"
                                   Label="Codice"
                                   MaxLength="10"
                                   For="@(() => _model.Code)" />
                 </MudItem>
                 <MudItem xs="12" sm="8">
-                    <MudTextField @bind-Value="_model.Name"
+                    <AppTextField @bind-Value="_model.Name"
                                   Label="Nome"
                                   MaxLength="255"
                                   For="@(() => _model.Name)" />
                 </MudItem>
                 <MudItem xs="12" sm="4">
-                    <MudNumericField T="decimal"
+                    <AppNumericField T="decimal"
                                      Value="@_model.Rate"
                                      Label="Aliquota %"
                                      Format="n2"
@@ -35,7 +35,7 @@
                                      ValueChanged="@OnRateChanged" />
                 </MudItem>
                 <MudItem xs="12" sm="8">
-                    <MudSelect @bind-Value="_model.TaxRateNatureId"
+                    <AppSelect @bind-Value="_model.TaxRateNatureId"
                                T="int?"
                                Label="Natura IVA"
                                Disabled="@(_model.Rate > 0)"
@@ -45,10 +45,10 @@
                         {
                             <MudSelectItem T="int?" Value="@nature.Id">@nature.Name</MudSelectItem>
                         }
-                    </MudSelect>
+                    </AppSelect>
                 </MudItem>
                 <MudItem xs="12">
-                    <MudTextField @bind-Value="_model.Description"
+                    <AppTextField @bind-Value="_model.Description"
                                   Label="Descrizione"
                                   Lines="4"
                                   For="@(() => _model.Description)" />

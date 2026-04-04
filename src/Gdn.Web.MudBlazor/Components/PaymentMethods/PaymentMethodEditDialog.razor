@@ -10,25 +10,25 @@
             <DataAnnotationsValidator />
             <MudGrid>
                 <MudItem xs="12" sm="3">
-                    <MudTextField @bind-Value="Model.Code"
+                    <AppTextField @bind-Value="Model.Code"
                                   For="@(() => Model.Code)"
                                   Label="Codice"
                                   AutoFocus="true"
                                   Required="true" />
                 </MudItem>
                 <MudItem xs="12" sm="6">
-                    <MudTextField @bind-Value="Model.Name"
+                    <AppTextField @bind-Value="Model.Name"
                                   For="@(() => Model.Name)"
                                   Label="Nome" />
                 </MudItem>
                 <MudItem xs="12" sm="3">
-                    <MudTextField @bind-Value="Model.DigitalInvoiceCode"
+                    <AppTextField @bind-Value="Model.DigitalInvoiceCode"
                                   For="@(() => Model.DigitalInvoiceCode)"
                                   Label="Cod. Fatt. Elettronica"
                                   MaxLength="4" />
                 </MudItem>
                 <MudItem xs="12">
-                    <MudTextField @bind-Value="Model.Description"
+                    <AppTextField @bind-Value="Model.Description"
                                   For="@(() => Model.Description)"
                                   Label="Descrizione"
                                   Lines="3" />

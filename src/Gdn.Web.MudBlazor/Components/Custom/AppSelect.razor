@@ -1,0 +1,20 @@
+@namespace Gdn.Web.MudBlazor.Components.Custom
+@typeparam T
+
+<MudSelect T="T"
+           Value="@Value"
+           ValueChanged="@ValueChanged"
+           ToStringFunc="@ToStringFunc"
+           @attributes="AdditionalAttributes"
+           Variant="Variant.Outlined">
+    @ChildContent
+</MudSelect>
+
+@code {
+    [Parameter] public T Value { get; set; } = default!;
+    [Parameter] public EventCallback<T> ValueChanged { get; set; }
+    [Parameter] public Func<T, string>? ToStringFunc { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IDictionary<string, object>? AdditionalAttributes { get; set; }
+}

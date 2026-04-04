@@ -50,15 +50,15 @@
                         <MudItem xs="12" sm="2" Class="d-flex justify-end align-center gap-1">
                             <MudIconButton Icon="@Icons.Material.Filled.Payments"
                                            Size="Size.Small"
-                                           Title="Pagamenti"
+                                           title="Pagamenti"
                                            OnClick="@(() => PaymentsButtonClick(invoice))" />
                             <MudIconButton Icon="@Icons.Material.Filled.Print"
                                            Size="Size.Small"
-                                           Title="Stampa PDF"
+                                           title="Stampa PDF"
                                            OnClick="@(() => PrintButtonClick(invoice))" />
                             <MudIconButton Icon="@Icons.Material.Filled.Download"
                                            Size="Size.Small"
-                                           Title="Scarica XML"
+                                           title="Scarica XML"
                                            OnClick="@(() => DownloadButtonClick(invoice))" />
                             <MudIconButton Icon="@Icons.Material.Filled.Edit"
                                            Size="Size.Small"
@@ -159,7 +159,7 @@
 
     private async Task DeleteButtonClick(InvoiceViewModel invoice)
     {
-        bool? confirmed = await DialogService.ShowMessageBox(
+        bool? confirmed = await DialogService.ShowMessageBoxAsync(
             "Eliminazione",
             "Sei sicuro di voler eliminare questa fattura?",
             yesText: "Sì", cancelText: "No");

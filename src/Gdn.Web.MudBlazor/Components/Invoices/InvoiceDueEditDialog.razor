@@ -10,14 +10,13 @@
             <DataAnnotationsValidator />
             <MudGrid Spacing="2">
                 <MudItem xs="12" sm="6">
-                    <MudDatePicker Label="Data scadenza"
+                    <AppDatePicker Label="Data scadenza"
                                    @bind-Date="_dateTime"
-                                   Variant="Variant.Outlined"
                                    Required="true"
                                    RequiredError="Data scadenza richiesta." />
                 </MudItem>
                 <MudItem xs="12" sm="6">
-                    <MudNumericField T="decimal"
+                    <AppNumericField T="decimal"
                                      Label="Importo"
                                      @bind-Value="_model.Amount"
                                      Min="0.01m"

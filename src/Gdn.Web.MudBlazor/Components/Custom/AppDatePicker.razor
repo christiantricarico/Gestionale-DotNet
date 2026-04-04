@@ -1,0 +1,9 @@
+@namespace Gdn.Web.MudBlazor.Components.Custom
+
+<MudDatePicker @attributes="AdditionalAttributes"
+               Variant="Variant.Outlined" />
+
+@code {
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IDictionary<string, object>? AdditionalAttributes { get; set; }
+}

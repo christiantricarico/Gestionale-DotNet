@@ -15,6 +15,4 @@ builder.Services.AddScoped(sp => new HttpClient
 
 builder.Services.AddMudServices();
 
-MudGlobal.InputDefaults.Variant = Variant.Outlined;
-
 await builder.Build().RunAsync();
