@@ -1,3 +1,6 @@
+@inject HttpClient Http
+@inject ISnackbar Snackbar
+
 <MudDialog>
     <TitleContent>
         <MudText Typo="Typo.h6">@((_content.Id == 0) ? "Nuovo metodo di pagamento" : "Modifica metodo di pagamento")</MudText>
@@ -42,8 +45,6 @@
 @code {
     [CascadingParameter] private IMudDialogInstance Dialog { get; set; } = default!;
     [Parameter] public DialogContent _content { get; set; } = default!;
-    [Inject] private HttpClient Http { get; set; } = default!;
-    [Inject] private ISnackbar Snackbar { get; set; } = default!;
 
     private PaymentMethodInputModel Model { get; set; } = new();
 

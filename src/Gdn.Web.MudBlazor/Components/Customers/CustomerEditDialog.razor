@@ -1,3 +1,6 @@
+@inject HttpClient Http
+@inject ISnackbar Snackbar
+
 <MudDialog>
     <TitleContent>
         <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
@@ -124,12 +127,6 @@
 </MudDialog>
 
 @code {
-
-    [Inject]
-    private HttpClient Http { get; set; } = default!;
-
-    [Inject]
-    private ISnackbar Snackbar { get; set; } = default!;
 
     [CascadingParameter]
     private IMudDialogInstance Dialog { get; set; } = default!;
