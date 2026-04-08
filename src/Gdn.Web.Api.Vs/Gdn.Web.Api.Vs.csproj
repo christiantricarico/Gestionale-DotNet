@@ -5,15 +5,15 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="FatturaElettronica" Version="4.0.4" />
+    <PackageReference Include="FatturaElettronica" Version="4.0.7" />
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.5" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.5">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="QuestPDF" Version="2026.2.3" />
-    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="10.1.5" />
+    <PackageReference Include="QuestPDF" Version="2026.2.4" />
+    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="10.1.7" />
     <PackageReference Include="TinyHelpers.AspNetCore" Version="4.1.19" />
   </ItemGroup>
   <ItemGroup>
