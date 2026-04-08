@@ -1,4 +1,5 @@
-﻿using Gdn.Domain.Data.Repositories;
+﻿using System.Linq.Expressions;
+using Gdn.Domain.Data.Repositories;
 using Gdn.Domain.Models.Bases;
 using Microsoft.EntityFrameworkCore;
 
@@ -93,4 +94,10 @@ internal abstract class Repository<TEntity, TId> : IRepository<TEntity, TId>
     {
         _dbContext.Set<TEntity>().Update(entity);
     }
+
+    public Task<int> CountAsync()
+        => _dbContext.Set<TEntity>().CountAsync();
+
+    public Task<int> CountAsync(Expression<Func<TEntity, bool>> predicate)
+        => _dbContext.Set<TEntity>().CountAsync(predicate);
 }

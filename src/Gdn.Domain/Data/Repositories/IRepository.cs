@@ -1,4 +1,5 @@
-﻿using Gdn.Domain.Models.Bases;
+﻿using System.Linq.Expressions;
+using Gdn.Domain.Models.Bases;
 
 namespace Gdn.Domain.Data.Repositories;
 
@@ -14,4 +15,6 @@ public interface IRepository<TEntity, TId>
     Task<IEnumerable<TEntity>> GetAllAsync(IEnumerable<string> includes);
     Task<IEnumerable<TEntity>> GetAllAsync(Func<TEntity, bool>? predicate = null, IEnumerable<string>? includes = null);
     void Update(TEntity entity);
+    Task<int> CountAsync();
+    Task<int> CountAsync(Expression<Func<TEntity, bool>> predicate);
 }

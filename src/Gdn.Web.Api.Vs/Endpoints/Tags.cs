@@ -10,4 +10,5 @@ public static class Tags
     public const string Invoices = "Invoices";
     public const string PaymentMethods = "PaymentMethods";
     public const string Payments = "Payments";
+    public const string Dashboard = "Dashboard";
 }
