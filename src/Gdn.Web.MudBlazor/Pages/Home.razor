@@ -1,8 +1,76 @@
 @page "/"
 
+@inject HttpClient Http
+@inject ISnackbar Snackbar
+
 <PageTitle>Panoramica</PageTitle>
 
-<MudContainer MaxWidth="MaxWidth.Small" Class="mt-8">
-    <MudText Typo="Typo.h4" GutterBottom="true">Benvenuto su GDN</MudText>
-    <MudText Typo="Typo.body1">GDN è un gestionale open-source sviluppato in .NET e Blazor.</MudText>
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
+    @if (_isLoading)
+    {
+        <MudProgressLinear Indeterminate="true" Class="mt-4" />
+    }
+    else
+    {
+        <MudGrid Class="mt-4">
+            <MudItem xs="12" sm="6">
+                <MudCard>
+                    <MudCardContent>
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-2">
+                            <MudIcon Icon="@Icons.Material.Filled.People" Color="Color.Primary" Size="Size.Large" />
+                            <MudText Typo="Typo.h6">Clienti</MudText>
+                        </MudStack>
+                        <MudText Typo="Typo.h3" Color="Color.Primary">@_stats?.CustomerCount</MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">clienti in anagrafica</MudText>
+                    </MudCardContent>
+                    <MudCardActions>
+                        <MudButton Href="/customers" Variant="Variant.Text" Color="Color.Primary"
+                                   EndIcon="@Icons.Material.Filled.ArrowForward">
+                            Vai ai clienti
+                        </MudButton>
+                    </MudCardActions>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6">
+                <MudCard>
+                    <MudCardContent>
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-2">
+                            <MudIcon Icon="@Icons.Material.Filled.Receipt" Color="Color.Primary" Size="Size.Large" />
+                            <MudText Typo="Typo.h6">Fatture</MudText>
+                        </MudStack>
+                        <MudText Typo="Typo.h3" Color="Color.Primary">@_stats?.CurrentYearInvoiceCount</MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">fatture emesse nel @DateTime.Now.Year</MudText>
+                    </MudCardContent>
+                    <MudCardActions>
+                        <MudButton Href="/invoices" Variant="Variant.Text" Color="Color.Primary"
+                                   EndIcon="@Icons.Material.Filled.ArrowForward">
+                            Vai alle fatture
+                        </MudButton>
+                    </MudCardActions>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+    }
 </MudContainer>
+
+@code {
+    private bool _isLoading = true;
+    private DashboardViewModel? _stats;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _stats = await Http.GetFromJsonAsync<DashboardViewModel>("dashboard");
+        }
+        catch (HttpRequestException)
+        {
+            Snackbar.Add("Errore durante il caricamento dei dati.", Severity.Error);
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+}

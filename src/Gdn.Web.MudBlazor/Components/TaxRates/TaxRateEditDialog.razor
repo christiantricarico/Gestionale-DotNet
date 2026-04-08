@@ -40,6 +40,7 @@
                                Label="Natura IVA"
                                Disabled="@(_model.Rate > 0)"
                                Clearable="true"
+                               For="@(() => _model.TaxRateNatureId)"
                                ToStringFunc="@(id => _natures.FirstOrDefault(n => n.Id == id)?.Name ?? string.Empty)">
                         @foreach (var nature in _natures)
                         {
@@ -128,7 +129,7 @@
         _messageStore.Clear();
         if (_model.Rate == 0 && _model.TaxRateNatureId is null)
         {
-            _messageStore.Add(() => _model.TaxRateNatureId, "La natura IVA è obbligatoria quando l'aliquota è 0%.");
+            _messageStore.Add(() => _model.TaxRateNatureId!, "La natura IVA è obbligatoria quando l'aliquota è 0%.");
         }
     }
 
