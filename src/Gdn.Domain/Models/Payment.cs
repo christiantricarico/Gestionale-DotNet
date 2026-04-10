@@ -24,6 +24,16 @@ public class Payment : TrackedEntity<int>
     /// <summary>Navigation property to the payment method used.</summary>
     public PaymentMethod? PaymentMethod { get; set; }
 
+    /// <summary>
+    /// FK to the customer who made this payment. Set when registering a customer receipt
+    /// (incasso), allowing the payment to be queried directly by customer.
+    /// <see langword="null"/> for invoice-level payments registered via the invoice workflow.
+    /// </summary>
+    public int? CustomerId { get; set; }
+
+    /// <summary>Navigation property to the customer who made this payment.</summary>
+    public Customer? Customer { get; set; }
+
     /// <summary>Allocations of this payment's amount to individual dues.</summary>
     public ICollection<PaymentDue> PaymentDues { get; set; } = [];
 }

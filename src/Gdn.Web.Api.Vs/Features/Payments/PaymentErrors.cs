@@ -6,4 +6,6 @@ public static class PaymentErrors
     public static Error DueNotFound(int id) => new("Payment:DueNotFound", $"Due with Id={id} not found");
     public static Error AllocationExceedsDue(int dueId) => new("Payment:AllocationExceedsDue", $"Allocation for due {dueId} would exceed its outstanding balance");
     public static Error AllocationExceedsPayment() => new("Payment:AllocationExceedsPayment", "Sum of allocations exceeds payment amount");
+    public static Error CustomerNotFound(int id) => new("Payment:CustomerNotFound", $"Customer with Id={id} not found");
+    public static Error DueNotBelongToCustomer(int dueId, int customerId) => new("Payment:DueNotBelongToCustomer", $"Due with Id={dueId} does not belong to customer {customerId}");
 }

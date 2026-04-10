@@ -9,10 +9,10 @@ namespace Gdn.Web.Api.Vs.Features.Payments;
 public class CreatePayment
 {
     public record AllocationRequest(int DueId, decimal Amount);
-    public record Request(DateOnly Date, decimal Amount, int? PaymentMethodId, IEnumerable<AllocationRequest> Allocations);
+    public record Request(DateOnly Date, decimal Amount, int? PaymentMethodId, int? CustomerId, IEnumerable<AllocationRequest> Allocations);
 
     public record AllocationResponse(int DueId, decimal Amount);
-    public record Response(int Id, DateOnly Date, decimal Amount, int? PaymentMethodId, IEnumerable<AllocationResponse> Allocations);
+    public record Response(int Id, DateOnly Date, decimal Amount, int? PaymentMethodId, int? CustomerId, IEnumerable<AllocationResponse> Allocations);
 
     public sealed class Endpoint : IEndpoint
     {
@@ -45,6 +45,14 @@ public class CreatePayment
         if (allocationSum > request.Amount)
             return ResultHelper.BadRequest(PaymentErrors.AllocationExceedsPayment());
 
+        if (request.CustomerId.HasValue)
+        {
+            var customerRepository = unitOfWork.GetRepository<ICustomerRepository>();
+            var customer = await customerRepository.GetAsync(request.CustomerId.Value);
+            if (customer is null)
+                return ResultHelper.NotFound(PaymentErrors.CustomerNotFound(request.CustomerId.Value));
+        }
+
         var dueRepository = unitOfWork.GetRepository<IDueRepository>();
 
         var paymentDues = new List<PaymentDue>();
@@ -54,6 +62,9 @@ public class CreatePayment
             var due = await dueRepository.GetAsync(allocation.DueId);
             if (due is null)
                 return ResultHelper.BadRequest(PaymentErrors.DueNotFound(allocation.DueId));
+
+            if (request.CustomerId.HasValue && due.CustomerId != request.CustomerId)
+                return ResultHelper.BadRequest(PaymentErrors.DueNotBelongToCustomer(allocation.DueId, request.CustomerId.Value));
 
             if (due.PaidAmount + allocation.Amount > due.Amount)
                 return ResultHelper.BadRequest(PaymentErrors.AllocationExceedsDue(allocation.DueId));
@@ -66,6 +77,7 @@ public class CreatePayment
             Date = request.Date,
             Amount = request.Amount,
             PaymentMethodId = request.PaymentMethodId,
+            CustomerId = request.CustomerId,
             PaymentDues = paymentDues
         };
 
@@ -78,6 +90,6 @@ public class CreatePayment
     }
 
     private static Response MapResponse(Payment p)
-        => new(p.Id, p.Date, p.Amount, p.PaymentMethodId,
+        => new(p.Id, p.Date, p.Amount, p.PaymentMethodId, p.CustomerId,
                p.PaymentDues.Select(pd => new AllocationResponse(pd.DueId, pd.Amount)));
 }
