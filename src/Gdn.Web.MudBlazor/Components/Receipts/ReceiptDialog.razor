@@ -1,0 +1,288 @@
+@using Gdn.Web.MudBlazor.Models.Receipts
+@inject HttpClient Http
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.ReceiptLong" Class="mr-2" Style="vertical-align:middle" />
+            Registra incasso
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        @if (_isLoading)
+        {
+            <MudStack AlignItems="AlignItems.Center" Class="pa-8">
+                <MudProgressCircular Indeterminate="true" />
+            </MudStack>
+        }
+        else if (_dues.Count == 0)
+        {
+            <MudAlert Severity="Severity.Info">Nessuna scadenza aperta per questo cliente.</MudAlert>
+        }
+        else
+        {
+            <EditForm EditContext="_editContext" FormName="receipt-form">
+                <DataAnnotationsValidator />
+                <MudGrid Spacing="2">
+                    <MudItem xs="12" sm="6">
+                        <MudDatePicker Label="Data incasso"
+                                       @bind-Date="_receipt.DateWithTime"
+                                       Required="true"
+                                       RequiredError="Data incasso richiesta." />
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudNumericField T="decimal"
+                                         Label="Importo"
+                                         Value="_receipt.Amount"
+                                         ValueChanged="OnAmountChanged"
+                                         Min="0.01m"
+                                         Format="n2"
+                                         HelperText="@($"Residuo totale: {_totalRemaining:C2}")"
+                                         For="@(() => _receipt.Amount)" />
+                    </MudItem>
+                    <MudItem xs="12">
+                        <MudSelect T="int?"
+                                   Label="Metodo di pagamento"
+                                   @bind-Value="_receipt.PaymentMethodId">
+                            <MudSelectItem T="int?" Value="@((int?)null)">—</MudSelectItem>
+                            @foreach (var pm in _paymentMethods)
+                            {
+                                <MudSelectItem T="int?" Value="@((int?)pm.Id)">@pm.Name</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudItem>
+                    <MudItem xs="12">
+                        <MudSwitch T="bool"
+                                   Label="Modalità avanzata (selezione manuale scadenze)"
+                                   @bind-Value="_advancedMode"
+                                   Color="Color.Primary" />
+                    </MudItem>
+                </MudGrid>
+            </EditForm>
+
+            @if (!_advancedMode)
+            {
+                @if (_dues.Any(d => d.AllocatedAmount > 0))
+                {
+                    <MudText Typo="Typo.subtitle2" Class="mt-4 mb-1">Allocazione FIFO</MudText>
+                    <MudPaper Elevation="0" Class="pa-1">
+                        @foreach (var due in _dues.Where(d => d.AllocatedAmount > 0))
+                        {
+                            <MudChip T="string" Color="Color.Primary" Variant="Variant.Outlined" Class="ma-1">
+                                @(due.DocumentNumber ?? due.DocumentType) @due.DueDate.ToString("d") — @due.AllocatedAmount.ToString("C2") / @due.RemainingAmount.ToString("C2")
+                            </MudChip>
+                        }
+                    </MudPaper>
+                }
+            }
+            else
+            {
+                <MudText Typo="Typo.subtitle2" Class="mt-4 mb-2">Scadenze aperte — seleziona e imposta importo</MudText>
+                <MudStack Spacing="1">
+                    @foreach (var due in _dues)
+                    {
+                        <MudCard Elevation="1">
+                            <MudCardContent Class="pa-2">
+                                <MudGrid>
+                                    <MudItem xs="1">
+                                        <MudCheckBox T="bool"
+                                                     Value="due.IsSelected"
+                                                     ValueChanged="@((v) => OnDueSelectionChanged(due, v))"
+                                                     Color="Color.Primary" />
+                                    </MudItem>
+                                    <MudItem xs="3" sm="2">
+                                        <MudText Typo="Typo.caption">Scadenza</MudText>
+                                        <MudText>@due.DueDate.ToString("d")</MudText>
+                                    </MudItem>
+                                    <MudItem xs="4" sm="3">
+                                        <MudText Typo="Typo.caption">Documento</MudText>
+                                        <MudText>@(due.DocumentNumber is not null ? $"{due.DocumentType} {due.DocumentNumber}" : due.DocumentType)</MudText>
+                                    </MudItem>
+                                    <MudItem xs="4" sm="2">
+                                        <MudText Typo="Typo.caption">Residuo</MudText>
+                                        <MudText>@due.RemainingAmount.ToString("C2")</MudText>
+                                    </MudItem>
+                                    <MudItem xs="12" sm="4">
+                                        <MudNumericField T="decimal"
+                                                         Label="Importo allocato"
+                                                         Value="due.AllocatedAmount"
+                                                         ValueChanged="@((v) => OnDueAmountChanged(due, v))"
+                                                         Disabled="!due.IsSelected"
+                                                         Min="0m"
+                                                         Max="due.RemainingAmount"
+                                                         Format="n2"
+                                                         Margin="Margin.Dense" />
+                                    </MudItem>
+                                </MudGrid>
+                            </MudCardContent>
+                        </MudCard>
+                    }
+                </MudStack>
+
+                @if (_advancedAllocationSum > _receipt.Amount)
+                {
+                    <MudAlert Severity="Severity.Warning" Class="mt-2">
+                        Il totale allocato (@_advancedAllocationSum.ToString("C2")) supera l'importo dell'incasso (@_receipt.Amount.ToString("C2")).
+                    </MudAlert>
+                }
+            }
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Annulla</MudButton>
+        <MudButton Color="Color.Primary"
+                   Variant="Variant.Filled"
+                   OnClick="SaveAsync"
+                   Disabled="@(_isSaving || _isLoading || _dues.Count == 0)">
+            Salva
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance Dialog { get; set; } = default!;
+    [Parameter] public int CustomerId { get; set; }
+
+    private readonly ReceiptInputModel _receipt = new();
+    private EditContext _editContext = default!;
+    private IEnumerable<PaymentMethodViewModel> _paymentMethods = [];
+    private List<CustomerDueViewModel> _dues = [];
+    private decimal _totalRemaining;
+    private bool _isSaving;
+    private bool _isLoading = true;
+    private bool _advancedMode;
+    private decimal _advancedAllocationSum;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _editContext = new EditContext(_receipt);
+
+        await Task.WhenAll(LoadDuesAsync(), LoadPaymentMethodsAsync());
+
+        _isLoading = false;
+    }
+
+    private async Task LoadDuesAsync()
+    {
+        var dues = await Http.GetFromJsonAsync<IEnumerable<CustomerDueViewModel>>($"customers/{CustomerId}/dues") ?? [];
+        _dues = dues.ToList();
+        _totalRemaining = _dues.Sum(d => d.RemainingAmount);
+        _receipt.Amount = _totalRemaining > 0 ? _totalRemaining : 0;
+        RecalculateFifoAllocations();
+    }
+
+    private async Task LoadPaymentMethodsAsync()
+    {
+        _paymentMethods = await Http.GetFromJsonAsync<IEnumerable<PaymentMethodViewModel>>("paymentmethods") ?? [];
+    }
+
+    private void OnAmountChanged(decimal value)
+    {
+        _receipt.Amount = value;
+        if (!_advancedMode)
+            RecalculateFifoAllocations();
+    }
+
+    /// <summary>
+    /// Distributes <see cref="ReceiptInputModel.Amount"/> across all open dues
+    /// in date order (oldest first), capping each slot at its remaining balance.
+    /// </summary>
+    private void RecalculateFifoAllocations()
+    {
+        var remaining = _receipt.Amount;
+
+        foreach (var due in _dues)
+            due.AllocatedAmount = 0;
+
+        foreach (var due in _dues)
+        {
+            if (remaining <= 0)
+                break;
+
+            due.AllocatedAmount = Math.Min(due.RemainingAmount, remaining);
+            remaining -= due.AllocatedAmount;
+        }
+    }
+
+    private void OnDueSelectionChanged(CustomerDueViewModel due, bool selected)
+    {
+        due.IsSelected = selected;
+        if (!selected)
+            due.AllocatedAmount = 0;
+        else
+            due.AllocatedAmount = due.RemainingAmount;
+
+        RecalculateAdvancedTotal();
+    }
+
+    private void OnDueAmountChanged(CustomerDueViewModel due, decimal value)
+    {
+        due.AllocatedAmount = value;
+        RecalculateAdvancedTotal();
+    }
+
+    private void RecalculateAdvancedTotal()
+    {
+        _advancedAllocationSum = _dues.Where(d => d.IsSelected).Sum(d => d.AllocatedAmount);
+    }
+
+    private async Task SaveAsync()
+    {
+        if (!_editContext.Validate())
+            return;
+
+        List<CustomerDueViewModel> allocations;
+
+        if (_advancedMode)
+        {
+            allocations = _dues.Where(d => d.IsSelected && d.AllocatedAmount > 0).ToList();
+
+            if (allocations.Count == 0)
+            {
+                Snackbar.Add("Selezionare almeno una scadenza da coprire.", Severity.Warning);
+                return;
+            }
+
+            if (_advancedAllocationSum > _receipt.Amount)
+            {
+                Snackbar.Add("Il totale allocato supera l'importo dell'incasso.", Severity.Warning);
+                return;
+            }
+        }
+        else
+        {
+            RecalculateFifoAllocations();
+            allocations = _dues.Where(d => d.AllocatedAmount > 0).ToList();
+
+            if (allocations.Count == 0)
+            {
+                Snackbar.Add("Nessuna scadenza da coprire con l'importo inserito.", Severity.Warning);
+                return;
+            }
+        }
+
+        var request = new
+        {
+            _receipt.Date,
+            _receipt.Amount,
+            _receipt.PaymentMethodId,
+            CustomerId,
+            Allocations = allocations.Select(d => new { DueId = d.DueId, Amount = d.AllocatedAmount })
+        };
+
+        _isSaving = true;
+        try
+        {
+            var response = await Http.PostAsJsonAsync("payments", request);
+            if (await Snackbar.ShowResponseErrorAsync(response))
+                Dialog.Close(DialogResult.Ok(true));
+        }
+        finally
+        {
+            _isSaving = false;
+        }
+    }
+
+    private void Cancel() => Dialog.Cancel();
+}

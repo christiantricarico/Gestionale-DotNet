@@ -1,0 +1,47 @@
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.People" Class="mr-2" Style="vertical-align:middle" />
+            Seleziona cliente
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudSelect T="int?"
+                   Label="Cliente"
+                   @bind-Value="_selectedCustomerId"
+                   FullWidth="true">
+            @foreach (var customer in Customers)
+            {
+                <MudSelectItem T="int?" Value="@((int?)customer.Id)">@customer.Name</MudSelectItem>
+            }
+        </MudSelect>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Annulla</MudButton>
+        <MudButton Color="Color.Primary"
+                   Variant="Variant.Filled"
+                   OnClick="Confirm"
+                   Disabled="!_selectedCustomerId.HasValue">
+            Continua
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance Dialog { get; set; } = default!;
+    [Parameter] public List<CustomerViewModel> Customers { get; set; } = [];
+
+    private int? _selectedCustomerId;
+
+    private void Confirm()
+    {
+        if (!_selectedCustomerId.HasValue)
+            return;
+
+        Dialog.Close(DialogResult.Ok(_selectedCustomerId.Value));
+    }
+
+    private void Cancel() => Dialog.Cancel();
+}
