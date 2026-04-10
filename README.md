@@ -30,3 +30,4 @@ Nelle prime versioni l'obiettivo è quello di costruire un modulo di fatturazion
 - [FatturaElettronica.NET](https://github.com/FatturaElettronica/FatturaElettronica.NET): per la generazione dei file xml di fatturazione elettronica.
 - [QuestPDF](https://github.com/QuestPDF/QuestPDF): per la generazione dei report PDF.
 - [TinyHelpers](https://github.com/marcominerva/TinyHelpers): utilities di configurazione per ASP.NET Core.
+- [MudBlazor](https://github.com/mudblazor/mudblazor): libreria di componenti Blazor per il front-end.
