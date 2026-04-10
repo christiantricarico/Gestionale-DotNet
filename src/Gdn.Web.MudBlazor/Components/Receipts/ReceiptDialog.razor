@@ -185,7 +185,7 @@
     }
 
     /// <summary>
-    /// Distributes <see cref="ReceiptInputModel.Amount"/> across <see cref="_dues"/>
+    /// Distributes <see cref="ReceiptInputModel.Amount"/> across all open dues
     /// in date order (oldest first), capping each slot at its remaining balance.
     /// </summary>
     private void RecalculateFifoAllocations()

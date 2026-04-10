@@ -161,11 +161,16 @@ internal sealed class AddressComponent(string title, AddressModel address) : ICo
 
             column.Item().BorderBottom(1).PaddingBottom(5).Text(title).SemiBold();
 
-            column.Item().Text(address.CompanyName);
-            column.Item().Text(address.Street);
-            column.Item().Text($"{address.PostalCode} {address.City}, {address.Province}");
-            column.Item().Text(address.Email);
-            column.Item().Text(address.Phone);
+            if (!string.IsNullOrWhiteSpace(address.CompanyName))
+                column.Item().Text(address.CompanyName);
+            if (!string.IsNullOrWhiteSpace(address.Street))
+                column.Item().Text(address.Street);
+            if (!string.IsNullOrWhiteSpace(address.City))
+                column.Item().Text($"{address.PostalCode} {address.City}, {address.Province}".Trim(' ', ','));
+            if (!string.IsNullOrWhiteSpace(address.Email))
+                column.Item().Text(address.Email);
+            if (!string.IsNullOrWhiteSpace(address.Phone))
+                column.Item().Text(address.Phone);
         });
     }
 }

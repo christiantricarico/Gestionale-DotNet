@@ -168,7 +168,6 @@
                 (!_selectedCustomerId.HasValue || r.CustomerId == _selectedCustomerId) &&
                 (!_filterFromDate.HasValue || r.Receipt.Date >= DateOnly.FromDateTime(_filterFromDate.Value)) &&
                 (!_filterToDate.HasValue || r.Receipt.Date <= DateOnly.FromDateTime(_filterToDate.Value)))
-            .Select(r => r)
             .ToList();
     }
 
