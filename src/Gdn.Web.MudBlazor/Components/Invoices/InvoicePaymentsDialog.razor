@@ -170,6 +170,7 @@
 
         var parameters = new DialogParameters<PaymentDialog>();
         parameters.Add(x => x.InvoiceId, Invoice.Id);
+        parameters.Add(x => x.CustomerId, Invoice.CustomerId);
         parameters.Add(x => x.Dues, dues);
         var options = new DialogOptions { CloseOnEscapeKey = false, CloseButton = false, BackdropClick = false, MaxWidth = MaxWidth.Small, FullWidth = true };
         var dlg = await DialogService.ShowAsync<PaymentDialog>($"Registra pagamento — Fattura {Invoice.Number}", parameters, options);
