@@ -1,0 +1,243 @@
+@page "/receipts"
+
+@using Gdn.Web.MudBlazor.Models.Receipts
+@using Gdn.Web.MudBlazor.Components.Receipts
+@inject HttpClient Http
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+@inject IJSRuntime JS
+
+<PageTitle>Incassi</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
+    <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-4">
+        <MudText Typo="Typo.h5">Incassi</MudText>
+        <MudSpacer />
+        @if (!_isLoading)
+        {
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.Add"
+                       OnClick="NewReceiptClickAsync">
+                Nuovo incasso
+            </MudButton>
+        }
+    </MudStack>
+
+    <MudGrid Spacing="2" Class="mb-4">
+        <MudItem xs="12" sm="6" md="4">
+            <MudSelect T="int?"
+                       Label="Cliente"
+                       @bind-Value="_selectedCustomerId"
+                       Clearable="true"
+                       AnchorOrigin="Origin.BottomCenter">
+                @foreach (var c in _customers)
+                {
+                    <MudSelectItem T="int?" Value="@((int?)c.Id)">@c.Name</MudSelectItem>
+                }
+            </MudSelect>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="3">
+            <MudDatePicker Label="Da data"
+                           @bind-Date="_filterFromDate"
+                           Clearable="true" />
+        </MudItem>
+        <MudItem xs="12" sm="6" md="3">
+            <MudDatePicker Label="A data"
+                           @bind-Date="_filterToDate"
+                           Clearable="true" />
+        </MudItem>
+        <MudItem xs="12" sm="6" md="2" Class="d-flex align-end">
+            <MudButton Variant="Variant.Outlined"
+                       FullWidth="true"
+                       OnClick="ApplyFilters">
+                Filtra
+            </MudButton>
+        </MudItem>
+    </MudGrid>
+
+    @if (_isLoading)
+    {
+        <MudProgressLinear Indeterminate="true" />
+    }
+    else if (_filteredReceipts.Count == 0)
+    {
+        <MudAlert Severity="Severity.Info">Nessun incasso trovato.</MudAlert>
+    }
+    else
+    {
+        @foreach (var receipt in _filteredReceipts)
+        {
+            <MudCard Class="mb-2">
+                <MudCardContent Class="pa-3">
+                    <MudGrid>
+                        <MudItem xs="6" sm="2">
+                            <MudText Typo="Typo.caption">Data</MudText>
+                            <MudText>@receipt.Receipt.Date.ToString("d")</MudText>
+                        </MudItem>
+                        <MudItem xs="6" sm="2">
+                            <MudText Typo="Typo.caption">Importo</MudText>
+                            <MudText>@receipt.Receipt.Amount.ToString("C2")</MudText>
+                        </MudItem>
+                        <MudItem xs="6" sm="2">
+                            <MudText Typo="Typo.caption">Metodo</MudText>
+                            <MudText>@(receipt.Receipt.PaymentMethodName ?? "—")</MudText>
+                        </MudItem>
+                        <MudItem xs="12" sm="4">
+                            <MudText Typo="Typo.caption">Scadenze coperte</MudText>
+                            <MudStack Row="true" Wrap="Wrap.Wrap" Spacing="1" Class="mt-1">
+                                @foreach (var d in receipt.Receipt.CoveredDues)
+                                {
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Default">
+                                        @(d.DocumentNumber is not null ? $"{d.DocumentType} {d.DocumentNumber}" : d.DocumentType) @d.DueDate.ToString("dd/MM") — @d.AllocationAmount.ToString("C2")
+                                    </MudChip>
+                                }
+                            </MudStack>
+                        </MudItem>
+                        <MudItem xs="12" sm="2" Class="d-flex justify-end align-center gap-1">
+                            <MudIconButton Icon="@Icons.Material.Filled.Print"
+                                           Size="Size.Small"
+                                           title="Stampa distinta"
+                                           OnClick="@(() => PrintReceiptAsync(receipt))" />
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                           Size="Size.Small"
+                                           Color="Color.Error"
+                                           title="Elimina"
+                                           OnClick="@(() => DeleteReceiptAsync(receipt))" />
+                        </MudItem>
+                    </MudGrid>
+                </MudCardContent>
+            </MudCard>
+        }
+    }
+</MudContainer>
+
+@code {
+    private bool _isLoading = true;
+    private IEnumerable<CustomerViewModel> _customers = [];
+    private List<ReceiptWithCustomerViewModel> _allReceipts = [];
+    private List<ReceiptWithCustomerViewModel> _filteredReceipts = [];
+
+    private int? _selectedCustomerId;
+    private DateTime? _filterFromDate;
+    private DateTime? _filterToDate;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCustomersAsync();
+        await LoadAllReceiptsAsync();
+    }
+
+    private async Task LoadCustomersAsync()
+    {
+        _customers = await Http.GetFromJsonAsync<IEnumerable<CustomerViewModel>>("customers") ?? [];
+    }
+
+    private async Task LoadAllReceiptsAsync()
+    {
+        _isLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            var allReceipts = new List<ReceiptWithCustomerViewModel>();
+
+            foreach (var customer in _customers)
+            {
+                var receipts = await Http.GetFromJsonAsync<IEnumerable<ReceiptHistoryViewModel>>($"customers/{customer.Id}/receipts") ?? [];
+                allReceipts.AddRange(receipts.Select(r => new ReceiptWithCustomerViewModel(r, customer)));
+            }
+
+            _allReceipts = [.. allReceipts.OrderByDescending(r => r.Receipt.Date)];
+            ApplyFilters();
+        }
+        catch (HttpRequestException)
+        {
+            Snackbar.Add("Errore durante il caricamento degli incassi.", Severity.Error);
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private void ApplyFilters()
+    {
+        _filteredReceipts = _allReceipts
+            .Where(r =>
+                (!_selectedCustomerId.HasValue || r.CustomerId == _selectedCustomerId) &&
+                (!_filterFromDate.HasValue || r.Receipt.Date >= DateOnly.FromDateTime(_filterFromDate.Value)) &&
+                (!_filterToDate.HasValue || r.Receipt.Date <= DateOnly.FromDateTime(_filterToDate.Value)))
+            .Select(r => r)
+            .ToList();
+    }
+
+    private async Task NewReceiptClickAsync()
+    {
+        if (!_selectedCustomerId.HasValue && _customers.Any())
+        {
+            // Show customer selector
+            var parameters = new DialogParameters<NewReceiptCustomerDialog>();
+            parameters.Add(x => x.Customers, _customers.ToList());
+            var selectorOptions = new DialogOptions { CloseOnEscapeKey = true, CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true };
+            var selectorDlg = await DialogService.ShowAsync<NewReceiptCustomerDialog>("Seleziona cliente", parameters, selectorOptions);
+            var selectorResult = await selectorDlg.Result;
+            if (selectorResult is null || selectorResult.Canceled || selectorResult.Data is not int customerId)
+                return;
+
+            await OpenReceiptDialogAsync(customerId);
+        }
+        else if (_selectedCustomerId.HasValue)
+        {
+            await OpenReceiptDialogAsync(_selectedCustomerId.Value);
+        }
+    }
+
+    private async Task OpenReceiptDialogAsync(int customerId)
+    {
+        var customer = _customers.FirstOrDefault(c => c.Id == customerId);
+        var parameters = new DialogParameters<ReceiptDialog>();
+        parameters.Add(x => x.CustomerId, customerId);
+        var options = new DialogOptions { CloseOnEscapeKey = false, CloseButton = false, BackdropClick = false, MaxWidth = MaxWidth.Medium, FullWidth = true };
+        var dlg = await DialogService.ShowAsync<ReceiptDialog>($"Nuovo incasso — {customer?.Name}", parameters, options);
+        var result = await dlg.Result;
+        if (result is not null && !result.Canceled)
+        {
+            await LoadCustomersAsync();
+            await LoadAllReceiptsAsync();
+        }
+    }
+
+    private async Task PrintReceiptAsync(ReceiptWithCustomerViewModel receipt)
+    {
+        var response = await Http.GetAsync($"payments/{receipt.Receipt.PaymentId}/receipt-pdf");
+        if (!await Snackbar.ShowResponseErrorAsync(response))
+            return;
+
+        var fileStream = await response.Content.ReadAsStreamAsync();
+        using var streamRef = new DotNetStreamReference(fileStream);
+        await JS.InvokeVoidAsync("openPdfFromStream", streamRef);
+    }
+
+    private async Task DeleteReceiptAsync(ReceiptWithCustomerViewModel receipt)
+    {
+        bool? confirmed = await DialogService.ShowMessageBoxAsync(
+            "Eliminazione",
+            "Sei sicuro di voler eliminare questo incasso? Le scadenze coperte torneranno allo stato precedente.",
+            yesText: "Sì", cancelText: "No");
+        if (confirmed is not true)
+            return;
+
+        var response = await Http.DeleteAsync($"payments/{receipt.Receipt.PaymentId}");
+        if (!await Snackbar.ShowResponseErrorAsync(response))
+            return;
+
+        await LoadAllReceiptsAsync();
+    }
+
+    private sealed record ReceiptWithCustomerViewModel(ReceiptHistoryViewModel Receipt, CustomerViewModel Customer)
+    {
+        public int CustomerId => Customer.Id;
+        public DateOnly Date => Receipt.Date;
+    }
+}

@@ -12,5 +12,12 @@ internal sealed class PaymentConfiguration : IEntityTypeConfiguration<Payment>
                .WithMany()
                .HasForeignKey(e => e.PaymentMethodId)
                .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(e => e.Customer)
+               .WithMany()
+               .HasForeignKey(e => e.CustomerId)
+               .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasIndex(e => e.CustomerId);
     }
 }
