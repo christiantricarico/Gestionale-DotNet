@@ -29,8 +29,7 @@
             <MudSelect T="int?"
                        Label="Cliente"
                        @bind-Value="_selectedCustomerId"
-                       Clearable="true"
-                       AnchorOrigin="Origin.BottomCenter">
+                       Clearable="true">
                 @foreach (var c in _customers)
                 {
                     <MudSelectItem T="int?" Value="@((int?)c.Id)">@c.Name</MudSelectItem>
