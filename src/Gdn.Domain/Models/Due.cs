@@ -30,6 +30,12 @@ public class Due : TrackedEntity<int>
     /// <summary>Navigation property to the associated invoice.</summary>
     public Invoice? Invoice { get; set; }
 
+    /// <summary>FK to the associated credit note. <see langword="null"/> if not credit-note-related.</summary>
+    public int? CreditNoteId { get; set; }
+
+    /// <summary>Navigation property to the associated credit note.</summary>
+    public CreditNote? CreditNote { get; set; }
+
     /// <summary>FK to the associated customer. <see langword="null"/> if not customer-related.</summary>
     public int? CustomerId { get; set; }
 

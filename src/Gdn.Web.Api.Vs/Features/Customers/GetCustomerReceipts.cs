@@ -40,7 +40,7 @@ public class GetCustomerReceipts
 
         var payments = await paymentRepository.GetAllAsync(
             predicate: p => p.CustomerId == customerId && !p.IsDeleted,
-            includes: ["PaymentMethod", "PaymentDues.Due.Invoice"]);
+            includes: ["PaymentMethod", "PaymentDues.Due.Invoice", "PaymentDues.Due.CreditNote"]);
 
         var receipts = payments
             .OrderByDescending(p => p.Date)
@@ -52,8 +52,8 @@ public class GetCustomerReceipts
                 p.PaymentDues.Select(pd => new CoveredDueResponse(
                     pd.DueId,
                     pd.Due.Date,
-                    pd.Due.Invoice?.Number,
-                    pd.Due.Invoice is not null ? "Fattura" : "Scadenza",
+                    pd.Due.CreditNote?.Number ?? pd.Due.Invoice?.Number,
+                    pd.Due.CreditNote is not null ? "Nota di credito" : pd.Due.Invoice is not null ? "Fattura" : "Scadenza",
                     pd.Amount))));
 
         return ResultHelper.Ok(receipts);

@@ -7,11 +7,11 @@
 @inject ISnackbar Snackbar
 @inject IJSRuntime JS
 
-<PageTitle>Incassi</PageTitle>
+<PageTitle>Pagamenti</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
     <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-4">
-        <MudText Typo="Typo.h5">Incassi</MudText>
+        <MudText Typo="Typo.h5">Pagamenti</MudText>
         <MudSpacer />
         @if (!_isLoading)
         {
@@ -19,7 +19,7 @@
                        Color="Color.Primary"
                        StartIcon="@Icons.Material.Filled.Add"
                        OnClick="NewReceiptClickAsync">
-                Nuovo incasso
+                Nuovo pagamento
             </MudButton>
         }
     </MudStack>
@@ -61,7 +61,7 @@
     }
     else if (_filteredReceipts.Count == 0)
     {
-        <MudAlert Severity="Severity.Info">Nessun incasso trovato.</MudAlert>
+        <MudAlert Severity="Severity.Info">Nessun pagamento trovato.</MudAlert>
     }
     else
     {
@@ -152,7 +152,7 @@
         }
         catch (HttpRequestException)
         {
-            Snackbar.Add("Errore durante il caricamento degli incassi.", Severity.Error);
+            Snackbar.Add("Errore durante il caricamento dei pagamenti.", Severity.Error);
         }
         finally
         {
@@ -197,7 +197,7 @@
         var parameters = new DialogParameters<ReceiptDialog>();
         parameters.Add(x => x.CustomerId, customerId);
         var options = new DialogOptions { CloseOnEscapeKey = false, CloseButton = false, BackdropClick = false, MaxWidth = MaxWidth.Medium, FullWidth = true };
-        var dlg = await DialogService.ShowAsync<ReceiptDialog>($"Nuovo incasso — {customer?.Name}", parameters, options);
+        var dlg = await DialogService.ShowAsync<ReceiptDialog>($"Nuovo pagamento — {customer?.Name}", parameters, options);
         var result = await dlg.Result;
         if (result is not null && !result.Canceled)
         {
@@ -221,7 +221,7 @@
     {
         bool? confirmed = await DialogService.ShowMessageBoxAsync(
             "Eliminazione",
-            "Sei sicuro di voler eliminare questo incasso? Le scadenze coperte torneranno allo stato precedente.",
+            "Sei sicuro di voler eliminare questo pagamento? Le scadenze coperte torneranno allo stato precedente.",
             yesText: "Sì", cancelText: "No");
         if (confirmed is not true)
             return;

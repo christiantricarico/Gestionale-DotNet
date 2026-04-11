@@ -6,7 +6,7 @@
     <TitleContent>
         <MudText Typo="Typo.h6">
             <MudIcon Icon="@Icons.Material.Filled.ReceiptLong" Class="mr-2" Style="vertical-align:middle" />
-            Registra incasso
+            Registra pagamento
         </MudText>
     </TitleContent>
     <DialogContent>
@@ -26,10 +26,10 @@
                 <DataAnnotationsValidator />
                 <MudGrid Spacing="2">
                     <MudItem xs="12" sm="6">
-                        <MudDatePicker Label="Data incasso"
+                        <MudDatePicker Label="Data pagamento"
                                        @bind-Date="_receipt.DateWithTime"
                                        Required="true"
-                                       RequiredError="Data incasso richiesta." />
+                                       RequiredError="Data pagamento richiesta." />
                     </MudItem>
                     <MudItem xs="12" sm="6">
                         <MudNumericField T="decimal"
@@ -246,7 +246,7 @@
 
             if (_advancedAllocationSum > _receipt.Amount)
             {
-                Snackbar.Add("Il totale allocato supera l'importo dell'incasso.", Severity.Warning);
+                Snackbar.Add("Il totale allocato supera l'importo del pagamento.", Severity.Warning);
                 return;
             }
         }

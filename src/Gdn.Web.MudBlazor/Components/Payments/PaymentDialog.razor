@@ -65,9 +65,10 @@
 @code {
     [CascadingParameter] private IMudDialogInstance Dialog { get; set; } = default!;
     [Parameter] public int InvoiceId { get; set; }
+    [Parameter] public int? CreditNoteId { get; set; }
     [Parameter] public int? CustomerId { get; set; }
 
-    /// <summary>Scadenze non pagate della fattura, già ordinate per data (più vecchia prima).</summary>
+    /// <summary>Scadenze non pagate del documento, già ordinate per data (più vecchia prima).</summary>
     [Parameter] public List<InvoiceDueEditModel> Dues { get; set; } = [];
 
     private readonly PaymentInputModel _payment = new();
