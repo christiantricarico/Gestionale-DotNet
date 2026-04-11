@@ -43,7 +43,7 @@ public class CreditNoteXmlGenerator(
 
         header.DatiTrasmissione.IdTrasmittente.IdPaese = companyData.FatturaElettronicaData?.IdPaeseTrasmittente;
         header.DatiTrasmissione.IdTrasmittente.IdCodice = companyData.FatturaElettronicaData?.IdCodiceTrasmittente;
-        header.DatiTrasmissione.ProgressivoInvio = $"NC{creditNote.Date.Year.ToString().Substring(2, 2)}{creditNote.Number.PadLeft(6, '0')}";
+        header.DatiTrasmissione.ProgressivoInvio = $"NC{(creditNote.Date.Year % 100):D2}{creditNote.Number.PadLeft(6, '0')}";
 
         header.DatiTrasmissione.CodiceDestinatario = creditNote.Customer.Sdi;
 

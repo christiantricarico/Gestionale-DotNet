@@ -106,7 +106,7 @@
     private async Task CreateButtonClick()
     {
         var parameters = new DialogParameters<CreditNoteEditDialog>();
-        parameters.Add(x => x._content, new DialogContent());
+        parameters.Add(x => x.Content, new DialogContent());
         var options = new DialogOptions { CloseOnEscapeKey = false, CloseButton = false, BackdropClick = false, MaxWidth = MaxWidth.Large, FullWidth = true };
         var dialog = await DialogService.ShowAsync<CreditNoteEditDialog>("Nuova nota di credito", parameters, options);
         var result = await dialog.Result;
@@ -117,7 +117,7 @@
     private async Task EditButtonClick(CreditNoteViewModel creditNote)
     {
         var parameters = new DialogParameters<CreditNoteEditDialog>();
-        parameters.Add(x => x._content, new DialogContent { Id = creditNote.Id });
+        parameters.Add(x => x.Content, new DialogContent { Id = creditNote.Id });
         var options = new DialogOptions { CloseOnEscapeKey = false, CloseButton = false, BackdropClick = false, MaxWidth = MaxWidth.Large, FullWidth = true };
         var dialog = await DialogService.ShowAsync<CreditNoteEditDialog>("Modifica nota di credito", parameters, options);
         var result = await dialog.Result;

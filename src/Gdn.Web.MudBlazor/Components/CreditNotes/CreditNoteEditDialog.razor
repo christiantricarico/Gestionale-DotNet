@@ -6,7 +6,7 @@
     <TitleContent>
         <MudText Typo="Typo.h6">
             <MudIcon Icon="@Icons.Material.Filled.ReceiptLong" Class="mr-2" Style="vertical-align:middle" />
-            @(_content.Id > 0 ? "Modifica nota di credito" : "Nuova nota di credito")
+            @(Content.Id > 0 ? "Modifica nota di credito" : "Nuova nota di credito")
         </MudText>
     </TitleContent>
     <DialogContent>
@@ -179,7 +179,7 @@
 
 @code {
     [CascadingParameter] private IMudDialogInstance Dialog { get; set; } = default!;
-    [Parameter] public DialogContent _content { get; set; } = new();
+    [Parameter] public DialogContent Content { get; set; } = new();
 
     private CreditNoteEditModel? _model;
     private EditContext _editContext = default!;
@@ -211,14 +211,14 @@
 
     protected override async Task OnInitializedAsync()
     {
-        if (_content.Id == 0)
+        if (Content.Id == 0)
         {
             var lastNumber = await Http.GetFromJsonAsync<int>("creditnotes/last-number");
             _model = new CreditNoteEditModel { Number = lastNumber + 1 };
         }
         else
         {
-            _model = await Http.GetFromJsonAsync<CreditNoteEditModel>($"creditnotes/{_content.Id}") ?? new();
+            _model = await Http.GetFromJsonAsync<CreditNoteEditModel>($"creditnotes/{Content.Id}") ?? new();
             _model.DateWithTime = _model.Date.ToDateTime(TimeOnly.MinValue);
         }
 

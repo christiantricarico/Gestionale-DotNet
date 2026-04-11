@@ -14,7 +14,7 @@ public class CreditNoteXmlFileNameGenerator(
         if (creditNote is null)
             throw new InvalidOperationException($"Credit note with ID {creditNoteId} not found.");
 
-        string fileName = $"IT{appSettings.Value.CompanyData.VatNumber}_NC{DateTime.Today.Year.ToString().Substring(2, 2)}{creditNote.Number.PadLeft(6, '0')}";
+        string fileName = $"IT{appSettings.Value.CompanyData.VatNumber}_NC{(creditNote.Date.Year % 100):D2}{creditNote.Number.PadLeft(6, '0')}";
         string fileExtension = "xml";
         string fullFileName = $"{fileName}.{fileExtension}";
         return fullFileName;
