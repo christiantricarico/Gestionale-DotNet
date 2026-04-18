@@ -24,11 +24,11 @@ public class GetCustomerDues
     {
         public void MapEndpoint(IEndpointRouteBuilder app)
         {
-            app.MapGet("api/customers/{customerId:int}/dues", Handler).WithTags(Tags.Customers);
+            app.MapGet("api/customers/{customerId:int}/dues", HandlerAsync).WithTags(Tags.Customers);
         }
     }
 
-    private static async Task<IResult> Handler(int customerId, ICustomerRepository customerRepository, IDueRepository dueRepository)
+    private static async Task<IResult> HandlerAsync(int customerId, ICustomerRepository customerRepository, IDueRepository dueRepository)
     {
         var customer = await customerRepository.GetAsync(customerId);
         if (customer is null)

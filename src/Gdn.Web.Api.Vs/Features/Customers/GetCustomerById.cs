@@ -1,4 +1,4 @@
-﻿using Gdn.Domain.Data.Repositories;
+using Gdn.Domain.Data.Repositories;
 using Gdn.Domain.Models;
 using Gdn.Web.Api.Vs.Endpoints;
 
@@ -14,11 +14,11 @@ public class GetCustomerById
     {
         public void MapEndpoint(IEndpointRouteBuilder app)
         {
-            app.MapGet("api/customers/{id:int}", Handler).WithTags(Tags.Customers);
+            app.MapGet("api/customers/{id:int}", HandlerAsync).WithTags(Tags.Customers);
         }
     }
 
-    private static async Task<IResult> Handler(int id, ICustomerRepository customerRepository)
+    private static async Task<IResult> HandlerAsync(int id, ICustomerRepository customerRepository)
     {
         var data = await customerRepository.GetAsync(id, ["Addresses"]);
 

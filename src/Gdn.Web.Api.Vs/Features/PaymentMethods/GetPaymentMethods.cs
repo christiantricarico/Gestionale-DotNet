@@ -12,11 +12,11 @@ public class GetPaymentMethods
     {
         public void MapEndpoint(IEndpointRouteBuilder app)
         {
-            app.MapGet("api/paymentmethods", Handler).WithTags(Tags.PaymentMethods);
+            app.MapGet("api/paymentmethods", HandlerAsync).WithTags(Tags.PaymentMethods);
         }
     }
 
-    private static async Task<IResult> Handler(IPaymentMethodRepository repository)
+    private static async Task<IResult> HandlerAsync(IPaymentMethodRepository repository)
     {
         var data = await repository.GetAllAsync();
 

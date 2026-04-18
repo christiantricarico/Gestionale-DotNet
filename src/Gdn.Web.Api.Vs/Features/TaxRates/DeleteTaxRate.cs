@@ -1,4 +1,4 @@
-﻿using Gdn.Domain.Data;
+using Gdn.Domain.Data;
 using Gdn.Domain.Data.Repositories;
 using Gdn.Web.Api.Vs.Endpoints;
 
@@ -10,11 +10,11 @@ public class DeleteTaxRate
     {
         public void MapEndpoint(IEndpointRouteBuilder app)
         {
-            app.MapDelete("api/taxrates/{id:int}", Handler).WithTags(Tags.TaxRates);
+            app.MapDelete("api/taxrates/{id:int}", HandlerAsync).WithTags(Tags.TaxRates);
         }
     }
 
-    private static async Task<IResult> Handler(int id, IUnitOfWork unitOfWork)
+    private static async Task<IResult> HandlerAsync(int id, IUnitOfWork unitOfWork)
     {
         var taxRateRepository = unitOfWork.GetRepository<ITaxRateRepository>();
         await taxRateRepository.RemoveAsync(id);

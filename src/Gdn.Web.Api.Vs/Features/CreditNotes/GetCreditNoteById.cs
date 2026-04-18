@@ -23,11 +23,11 @@ public class GetCreditNoteById
     {
         public void MapEndpoint(IEndpointRouteBuilder app)
         {
-            app.MapGet("api/creditnotes/{id:int}", Handler).WithTags(Tags.CreditNotes);
+            app.MapGet("api/creditnotes/{id:int}", HandlerAsync).WithTags(Tags.CreditNotes);
         }
     }
 
-    private static async Task<IResult> Handler(int id, ICreditNoteRepository creditNoteRepository)
+    private static async Task<IResult> HandlerAsync(int id, ICreditNoteRepository creditNoteRepository)
     {
         var data = await creditNoteRepository.GetAsync(id, ["Rows.TaxRate", "Rows.MeasurementUnit", "Dues"]);
 

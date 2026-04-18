@@ -1,4 +1,4 @@
-﻿using Gdn.Domain.Data.Repositories;
+using Gdn.Domain.Data.Repositories;
 using Gdn.Domain.Models;
 using Gdn.Web.Api.Vs.Endpoints;
 
@@ -12,11 +12,11 @@ public class GetMeasurementUnitById
     {
         public void MapEndpoint(IEndpointRouteBuilder app)
         {
-            app.MapGet("api/measurementunits/{id:int}", Handler).WithTags(Tags.MeasurementUnits);
+            app.MapGet("api/measurementunits/{id:int}", HandlerAsync).WithTags(Tags.MeasurementUnits);
         }
     }
 
-    private static async Task<IResult> Handler(int id, IMeasurementUnitRepository measurementUnitRepository)
+    private static async Task<IResult> HandlerAsync(int id, IMeasurementUnitRepository measurementUnitRepository)
     {
         var data = await measurementUnitRepository.GetAsync(id);
 

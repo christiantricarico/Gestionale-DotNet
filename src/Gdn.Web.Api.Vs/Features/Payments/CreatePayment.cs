@@ -18,7 +18,7 @@ public class CreatePayment
     {
         public void MapEndpoint(IEndpointRouteBuilder app)
         {
-            app.MapPost("api/payments", Handler).WithTags(Tags.Payments);
+            app.MapPost("api/payments", HandlerAsync).WithTags(Tags.Payments);
         }
     }
 
@@ -34,7 +34,7 @@ public class CreatePayment
         }
     }
 
-    private static async Task<IResult> Handler(Request request, IValidator<Request> validator, IUnitOfWork unitOfWork)
+    private static async Task<IResult> HandlerAsync(Request request, IValidator<Request> validator, IUnitOfWork unitOfWork)
     {
         var validationResult = await validator.ValidateAsync(request);
         if (!validationResult.IsValid)

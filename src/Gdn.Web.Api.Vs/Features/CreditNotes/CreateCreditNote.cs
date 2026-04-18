@@ -20,7 +20,7 @@ public class CreateCreditNote
     {
         public void MapEndpoint(IEndpointRouteBuilder app)
         {
-            app.MapPost("api/creditnotes", Handler).WithTags(Tags.CreditNotes);
+            app.MapPost("api/creditnotes", HandlerAsync).WithTags(Tags.CreditNotes);
         }
     }
 
@@ -33,7 +33,7 @@ public class CreateCreditNote
         }
     }
 
-    private static async Task<IResult> Handler(CreateCreditNoteRequest request, IValidator<CreateCreditNoteRequest> validator, IUnitOfWork unitOfWork)
+    private static async Task<IResult> HandlerAsync(CreateCreditNoteRequest request, IValidator<CreateCreditNoteRequest> validator, IUnitOfWork unitOfWork)
     {
         var validationResult = await validator.ValidateAsync(request);
         if (!validationResult.IsValid)

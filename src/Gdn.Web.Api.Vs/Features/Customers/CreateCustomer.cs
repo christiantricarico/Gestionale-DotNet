@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 using Gdn.Domain.Data;
 using Gdn.Domain.Data.Repositories;
 using Gdn.Domain.Models;
@@ -17,7 +17,7 @@ public class CreateCustomer
     {
         public void MapEndpoint(IEndpointRouteBuilder app)
         {
-            app.MapPost("api/customers", Handler).WithTags(Tags.Customers);
+            app.MapPost("api/customers", HandlerAsync).WithTags(Tags.Customers);
         }
     }
 
@@ -42,7 +42,7 @@ public class CreateCustomer
         }
     }
 
-    private static async Task<IResult> Handler(CreateCustomerRequest request, IValidator<CreateCustomerRequest> validator, IUnitOfWork unitOfWork)
+    private static async Task<IResult> HandlerAsync(CreateCustomerRequest request, IValidator<CreateCustomerRequest> validator, IUnitOfWork unitOfWork)
     {
         var validationResult = await validator.ValidateAsync(request);
         if (!validationResult.IsValid)

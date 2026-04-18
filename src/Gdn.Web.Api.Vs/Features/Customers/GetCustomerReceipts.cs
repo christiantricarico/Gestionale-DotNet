@@ -28,11 +28,11 @@ public class GetCustomerReceipts
     {
         public void MapEndpoint(IEndpointRouteBuilder app)
         {
-            app.MapGet("api/customers/{customerId:int}/receipts", Handler).WithTags(Tags.Customers);
+            app.MapGet("api/customers/{customerId:int}/receipts", HandlerAsync).WithTags(Tags.Customers);
         }
     }
 
-    private static async Task<IResult> Handler(int customerId, ICustomerRepository customerRepository, IPaymentRepository paymentRepository)
+    private static async Task<IResult> HandlerAsync(int customerId, ICustomerRepository customerRepository, IPaymentRepository paymentRepository)
     {
         var customer = await customerRepository.GetAsync(customerId);
         if (customer is null)

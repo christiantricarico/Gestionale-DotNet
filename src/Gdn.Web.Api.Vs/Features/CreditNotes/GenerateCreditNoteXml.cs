@@ -10,11 +10,11 @@ public class GenerateCreditNoteXml
     {
         public void MapEndpoint(IEndpointRouteBuilder app)
         {
-            app.MapGet("api/creditnotes/xml/{id:int}", Handler).WithTags(Tags.CreditNotes);
+            app.MapGet("api/creditnotes/xml/{id:int}", HandlerAsync).WithTags(Tags.CreditNotes);
         }
     }
 
-    private static async Task<IResult> Handler(
+    private static async Task<IResult> HandlerAsync(
         int id,
         CreditNoteXmlGenerator xmlGenerator,
         CreditNoteXmlFileNameGenerator xmlFileNameGenerator)

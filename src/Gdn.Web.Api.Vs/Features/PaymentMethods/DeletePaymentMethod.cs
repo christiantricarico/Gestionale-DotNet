@@ -10,11 +10,11 @@ public class DeletePaymentMethod
     {
         public void MapEndpoint(IEndpointRouteBuilder app)
         {
-            app.MapDelete("api/paymentmethods/{id:int}", Handler).WithTags(Tags.PaymentMethods);
+            app.MapDelete("api/paymentmethods/{id:int}", HandlerAsync).WithTags(Tags.PaymentMethods);
         }
     }
 
-    private static async Task<IResult> Handler(int id, IUnitOfWork unitOfWork)
+    private static async Task<IResult> HandlerAsync(int id, IUnitOfWork unitOfWork)
     {
         var repository = unitOfWork.GetRepository<IPaymentMethodRepository>();
         await repository.RemoveAsync(id);

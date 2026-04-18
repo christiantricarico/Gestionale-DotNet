@@ -12,11 +12,11 @@ public class GetPaymentMethodById
     {
         public void MapEndpoint(IEndpointRouteBuilder app)
         {
-            app.MapGet("api/paymentmethods/{id:int}", Handler).WithTags(Tags.PaymentMethods);
+            app.MapGet("api/paymentmethods/{id:int}", HandlerAsync).WithTags(Tags.PaymentMethods);
         }
     }
 
-    private static async Task<IResult> Handler(int id, IPaymentMethodRepository repository)
+    private static async Task<IResult> HandlerAsync(int id, IPaymentMethodRepository repository)
     {
         var entity = await repository.GetAsync(id);
 

@@ -10,11 +10,11 @@ public class DeleteCreditNote
     {
         public void MapEndpoint(IEndpointRouteBuilder app)
         {
-            app.MapDelete("api/creditnotes/{id:int}", Handler).WithTags(Tags.CreditNotes);
+            app.MapDelete("api/creditnotes/{id:int}", HandlerAsync).WithTags(Tags.CreditNotes);
         }
     }
 
-    private static async Task<IResult> Handler(int id, IUnitOfWork unitOfWork)
+    private static async Task<IResult> HandlerAsync(int id, IUnitOfWork unitOfWork)
     {
         var creditNoteRepository = unitOfWork.GetRepository<ICreditNoteRepository>();
 

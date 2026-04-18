@@ -1,4 +1,4 @@
-﻿using Gdn.Web.Api.Vs.Endpoints;
+using Gdn.Web.Api.Vs.Endpoints;
 using Gdn.Web.Api.Vs.Features.Invoices.Reports;
 
 namespace Gdn.Web.Api.Vs.Features.Invoices;
@@ -9,11 +9,11 @@ public class GenerateInvoicePdf
     {
         public void MapEndpoint(IEndpointRouteBuilder app)
         {
-            app.MapGet("api/invoices/pdf/{id:int}", Handler).WithTags(Tags.Invoices);
+            app.MapGet("api/invoices/pdf/{id:int}", HandlerAsync).WithTags(Tags.Invoices);
         }
     }
 
-    private static async Task<IResult> Handler(int id, InvoiceReportGenerator reportGenerator)
+    private static async Task<IResult> HandlerAsync(int id, InvoiceReportGenerator reportGenerator)
     {
         //await reportGenerator.GeneratePdfAndShowAsync(id);
         //return ResultHelper.Ok("PDF invoice generated.");

@@ -1,4 +1,4 @@
-﻿using Gdn.Domain.Data.Repositories;
+using Gdn.Domain.Data.Repositories;
 using Gdn.Domain.Models;
 using Gdn.Web.Api.Vs.Endpoints;
 
@@ -14,11 +14,11 @@ public class GetInvoiceRowById
     {
         public void MapEndpoint(IEndpointRouteBuilder app)
         {
-            app.MapGet("api/invoices/rows/{id}", Handler).WithTags(Tags.Invoices);
+            app.MapGet("api/invoices/rows/{id}", HandlerAsync).WithTags(Tags.Invoices);
         }
     }
 
-    private static async Task<IResult> Handler(IInvoiceRowRepository invoiceRowRepository, long id)
+    private static async Task<IResult> HandlerAsync(IInvoiceRowRepository invoiceRowRepository, long id)
     {
         var data = await invoiceRowRepository.GetAsync(id);
 

@@ -1,4 +1,4 @@
-﻿using Gdn.Domain.Data.Repositories;
+using Gdn.Domain.Data.Repositories;
 using Gdn.Domain.Models;
 using Gdn.Web.Api.Vs.Endpoints;
 
@@ -13,11 +13,11 @@ public class GetTaxRates
     {
         public void MapEndpoint(IEndpointRouteBuilder app)
         {
-            app.MapGet("api/taxrates", Handler).WithTags(Tags.TaxRates);
+            app.MapGet("api/taxrates", HandlerAsync).WithTags(Tags.TaxRates);
         }
     }
 
-    private static async Task<IResult> Handler(ITaxRateRepository taxRateRepository)
+    private static async Task<IResult> HandlerAsync(ITaxRateRepository taxRateRepository)
     {
         var includes = new string[] { "TaxRateNature" };
         var data = await taxRateRepository.GetAllAsync(includes);

@@ -12,11 +12,11 @@ public class GetPaymentsByCreditNote
     {
         public void MapEndpoint(IEndpointRouteBuilder app)
         {
-            app.MapGet("api/creditnotes/{creditNoteId:int}/payments", Handler).WithTags(Tags.CreditNotes);
+            app.MapGet("api/creditnotes/{creditNoteId:int}/payments", HandlerAsync).WithTags(Tags.CreditNotes);
         }
     }
 
-    private static async Task<IResult> Handler(int creditNoteId, IDueRepository dueRepository)
+    private static async Task<IResult> HandlerAsync(int creditNoteId, IDueRepository dueRepository)
     {
         var dues = await dueRepository.GetAllAsync(
             predicate: d => d.CreditNoteId == creditNoteId,

@@ -8,11 +8,11 @@ public class GenerateCreditNotePdf
     {
         public void MapEndpoint(IEndpointRouteBuilder app)
         {
-            app.MapGet("api/creditnotes/pdf/{id:int}", Handler).WithTags(Tags.CreditNotes);
+            app.MapGet("api/creditnotes/pdf/{id:int}", HandlerAsync).WithTags(Tags.CreditNotes);
         }
     }
 
-    private static async Task<IResult> Handler(int id, Reports.CreditNoteReportGenerator reportGenerator)
+    private static async Task<IResult> HandlerAsync(int id, Reports.CreditNoteReportGenerator reportGenerator)
     {
         var pdfBytes = await reportGenerator.GeneratePdfBytesAsync(id);
         var pdfStream = new MemoryStream(pdfBytes);

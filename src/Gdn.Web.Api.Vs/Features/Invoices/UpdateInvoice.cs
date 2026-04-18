@@ -31,7 +31,7 @@ public class UpdateInvoice
     {
         public void MapEndpoint(IEndpointRouteBuilder app)
         {
-            app.MapPut("api/invoices", Handler).WithTags(Tags.Invoices);
+            app.MapPut("api/invoices", HandlerAsync).WithTags(Tags.Invoices);
         }
     }
 
@@ -44,7 +44,7 @@ public class UpdateInvoice
         }
     }
 
-    private static async Task<IResult> Handler(UpdateInvoiceRequest request, IValidator<UpdateInvoiceRequest> validator, IUnitOfWork unitOfWork)
+    private static async Task<IResult> HandlerAsync(UpdateInvoiceRequest request, IValidator<UpdateInvoiceRequest> validator, IUnitOfWork unitOfWork)
     {
         var validationResult = await validator.ValidateAsync(request);
         if (!validationResult.IsValid)

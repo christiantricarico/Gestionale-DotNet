@@ -14,11 +14,11 @@ public class GetReceiptPdf
     {
         public void MapEndpoint(IEndpointRouteBuilder app)
         {
-            app.MapGet("api/payments/{id:int}/receipt-pdf", Handler).WithTags(Tags.Payments);
+            app.MapGet("api/payments/{id:int}/receipt-pdf", HandlerAsync).WithTags(Tags.Payments);
         }
     }
 
-    private static async Task<IResult> Handler(int id, IPaymentRepository paymentRepository, ReceiptReportGenerator reportGenerator)
+    private static async Task<IResult> HandlerAsync(int id, IPaymentRepository paymentRepository, ReceiptReportGenerator reportGenerator)
     {
         var payment = await paymentRepository.GetAsync(id);
         if (payment is null)

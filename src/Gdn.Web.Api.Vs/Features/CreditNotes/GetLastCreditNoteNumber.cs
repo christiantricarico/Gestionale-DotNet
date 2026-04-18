@@ -9,11 +9,11 @@ public class GetLastCreditNoteNumber
     {
         public void MapEndpoint(IEndpointRouteBuilder app)
         {
-            app.MapGet("api/creditnotes/last-number", Handler).WithTags(Tags.CreditNotes);
+            app.MapGet("api/creditnotes/last-number", HandlerAsync).WithTags(Tags.CreditNotes);
         }
     }
 
-    private static async Task<IResult> Handler(ICreditNoteRepository creditNoteRepository)
+    private static async Task<IResult> HandlerAsync(ICreditNoteRepository creditNoteRepository)
     {
         var creditNotes = await creditNoteRepository.GetAllAsync();
         var lastNumber = creditNotes

@@ -11,11 +11,11 @@ public class GetDashboardStats
     {
         public void MapEndpoint(IEndpointRouteBuilder app)
         {
-            app.MapGet("api/dashboard", Handler).WithTags(Tags.Dashboard);
+            app.MapGet("api/dashboard", HandlerAsync).WithTags(Tags.Dashboard);
         }
     }
 
-    private static async Task<IResult> Handler(ICustomerRepository customerRepository, IInvoiceRepository invoiceRepository, ICreditNoteRepository creditNoteRepository)
+    private static async Task<IResult> HandlerAsync(ICustomerRepository customerRepository, IInvoiceRepository invoiceRepository, ICreditNoteRepository creditNoteRepository)
     {
         var currentYear = DateTime.UtcNow.Year;
 
