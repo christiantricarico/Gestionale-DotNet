@@ -74,7 +74,7 @@ public class UpdateCreditNote
         var taxRateRepository = unitOfWork.GetRepository<ITaxRateRepository>();
         await PopulateMissingTaxRates(creditNote, taxRateRepository);
 
-        bool hasDueChanges = request.Dues.Any(d => (int)d.InputStatus != 0);
+        var hasDueChanges = request.Dues.Any(d => (int)d.InputStatus != 0);
         if (!hasDueChanges)
         {
             var reconcileError = await ReconcileDuesAsync(creditNote, dueRepository);
@@ -170,9 +170,9 @@ public class UpdateCreditNote
 
     private static async Task<Error?> ReconcileDuesAsync(CreditNote creditNote, IDueRepository dueRepository)
     {
-        decimal newTotal = ToSignedCreditNoteAmount(CreditNoteAmountCalculator.CalculateTotal(creditNote));
-        decimal currentDuesTotal = creditNote.Dues.Sum(d => d.Amount);
-        decimal delta = newTotal - currentDuesTotal;
+        var newTotal = ToSignedCreditNoteAmount(CreditNoteAmountCalculator.CalculateTotal(creditNote));
+        var currentDuesTotal = creditNote.Dues.Sum(d => d.Amount);
+        var delta = newTotal - currentDuesTotal;
 
         if (delta == 0m)
             return null;
@@ -192,12 +192,12 @@ public class UpdateCreditNote
             return null;
         }
 
-        decimal toReduce = delta;
+        var toReduce = delta;
 
         foreach (var due in orderedDues)
         {
-            decimal reducible = Math.Abs(due.RemainingAmount);
-            decimal actual = Math.Min(toReduce, reducible);
+            var reducible = Math.Abs(due.RemainingAmount);
+            var actual = Math.Min(toReduce, reducible);
 
             due.Amount += actual;
             toReduce -= actual;

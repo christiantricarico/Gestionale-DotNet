@@ -73,13 +73,14 @@ public class UpdateInvoice
         var taxRateRepository = unitOfWork.GetRepository<ITaxRateRepository>();
         await PopulateMissingTaxRates(invoice, taxRateRepository);
 
-        bool hasDueChanges = request.Dues.Any(d => (int)d.InputStatus != 0);
+        var hasDueChanges = request.Dues.Any(d => (int)d.InputStatus != 0);
         if (!hasDueChanges)
         {
             var reconcileError = await ReconcileDuesAsync(invoice, dueRepository);
             if (reconcileError is not null)
                 return ResultHelper.BadRequest(reconcileError);
         }
+
         await unitOfWork.SaveChangesAsync();
 
         return ResultHelper.Ok(MapResponse(invoice));
@@ -168,9 +169,9 @@ public class UpdateInvoice
 
     private static async Task<Error?> ReconcileDuesAsync(Invoice invoice, IDueRepository dueRepository)
     {
-        decimal newTotal = InvoiceAmountCalculator.CalculateTotal(invoice);
-        decimal currentDuesTotal = invoice.Dues.Sum(d => d.Amount);
-        decimal delta = newTotal - currentDuesTotal;
+        var newTotal = InvoiceAmountCalculator.CalculateTotal(invoice);
+        var currentDuesTotal = invoice.Dues.Sum(d => d.Amount);
+        var delta = newTotal - currentDuesTotal;
 
         if (delta == 0m)
             return null;
@@ -190,12 +191,12 @@ public class UpdateInvoice
             return null;
         }
 
-        decimal toReduce = -delta;
+        var toReduce = -delta;
 
         foreach (var due in orderedDues)
         {
-            decimal reducible = due.Amount - due.PaidAmount;
-            decimal actual = Math.Min(toReduce, reducible);
+            var reducible = due.Amount - due.PaidAmount;
+            var actual = Math.Min(toReduce, reducible);
 
             due.Amount -= actual;
             toReduce -= actual;
