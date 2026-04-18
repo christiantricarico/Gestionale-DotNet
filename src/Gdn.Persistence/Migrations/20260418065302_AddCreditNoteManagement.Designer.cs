@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Gdn.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260411174004_AddCreditNoteManagement")]
+    [Migration("20260418065302_AddCreditNoteManagement")]
     partial class AddCreditNoteManagement
     {
         /// <inheritdoc />
@@ -897,7 +897,7 @@ namespace Gdn.Persistence.Migrations
                     b.HasOne("Gdn.Domain.Models.CreditNote", "CreditNote")
                         .WithMany("Dues")
                         .HasForeignKey("CreditNoteId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.ClientCascade);
 
                     b.HasOne("Gdn.Domain.Models.Customer", "Customer")
                         .WithMany()

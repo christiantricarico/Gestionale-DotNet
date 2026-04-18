@@ -111,8 +111,7 @@ namespace Gdn.Persistence.Migrations
                 table: "Dues",
                 column: "CreditNoteId",
                 principalTable: "CreditNotes",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Cascade);
+                principalColumn: "Id");
         }
 
         /// <inheritdoc />

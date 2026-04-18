@@ -894,7 +894,7 @@ namespace Gdn.Persistence.Migrations
                     b.HasOne("Gdn.Domain.Models.CreditNote", "CreditNote")
                         .WithMany("Dues")
                         .HasForeignKey("CreditNoteId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.ClientCascade);
 
                     b.HasOne("Gdn.Domain.Models.Customer", "Customer")
                         .WithMany()
