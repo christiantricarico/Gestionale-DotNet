@@ -5,7 +5,7 @@ using Gdn.Web.Api.Vs.Features.Payments.Reports;
 namespace Gdn.Web.Api.Vs.Features.Payments;
 
 /// <summary>
-/// Generates and returns the PDF distinta di incasso for a registered payment.
+/// Generates and returns the PDF payment statement for a registered payment.
 /// The document can be generated and re-generated at any time from the payment ID.
 /// </summary>
 public class GetReceiptPdf
@@ -27,6 +27,6 @@ public class GetReceiptPdf
         var pdfBytes = await reportGenerator.GeneratePdfBytesAsync(id);
         var pdfStream = new MemoryStream(pdfBytes);
         return TypedResults.Stream(pdfStream, contentType: "application/octet-stream",
-            fileDownloadName: $"distinta-incasso-{id}.pdf");
+            fileDownloadName: $"distinta-pagamento-{id}.pdf");
     }
 }

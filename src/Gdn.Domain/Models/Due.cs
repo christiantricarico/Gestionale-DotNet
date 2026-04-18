@@ -15,7 +15,11 @@ public class Due : TrackedEntity<int>
     /// <summary>The date by which payment is expected.</summary>
     public DateOnly Date { get; set; }
 
-    /// <summary>The total amount expected for this due.</summary>
+    /// <summary>
+    /// The total signed amount expected for this due.
+    /// Positive amounts identify incoming customer balances, while negative amounts
+    /// identify outgoing balances such as credit notes.
+    /// </summary>
     public decimal Amount { get; set; }
 
     /// <summary>
@@ -23,6 +27,11 @@ public class Due : TrackedEntity<int>
     /// SQL trigger on <c>PaymentDues</c> — do not set from application code.
     /// </summary>
     public decimal PaidAmount { get; set; }
+
+    /// <summary>
+    /// Gets the signed amount that is still open for this due.
+    /// </summary>
+    public decimal RemainingAmount => Amount - PaidAmount;
 
     /// <summary>FK to the associated invoice. <see langword="null"/> if not invoice-related.</summary>
     public int? InvoiceId { get; set; }
@@ -46,7 +55,18 @@ public class Due : TrackedEntity<int>
     public ICollection<PaymentDue> PaymentDues { get; set; } = [];
 
     /// <summary>
-    /// Returns <see langword="true"/> when <see cref="PaidAmount"/> fully covers <see cref="Amount"/>.
+    /// Returns <see langword="true"/> when <see cref="PaidAmount"/> fully covers <see cref="Amount"/>
+    /// while preserving the expected amount direction.
     /// </summary>
-    public bool IsPaid => PaidAmount >= Amount;
+    public bool IsPaid => Amount switch
+    {
+        > 0m => PaidAmount >= Amount,
+        < 0m => PaidAmount <= Amount,
+        _ => true
+    };
+
+    /// <summary>
+    /// Returns <see langword="true"/> when at least one payment allocation is associated with this due.
+    /// </summary>
+    public bool HasPayments => PaidAmount != 0m;
 }

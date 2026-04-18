@@ -26,11 +26,10 @@ public class CreatePayment
     {
         public Validator()
         {
-            RuleFor(e => e.Amount).GreaterThan(0);
             RuleFor(e => e.Allocations).NotEmpty();
             RuleForEach(e => e.Allocations).ChildRules(a =>
             {
-                a.RuleFor(x => x.Amount).GreaterThan(0);
+                a.RuleFor(x => x.Amount).NotEqual(0);
             });
         }
     }
@@ -42,8 +41,23 @@ public class CreatePayment
             return ResultHelper.BadRequest(validationResult.Errors);
 
         var allocationSum = request.Allocations.Sum(a => a.Amount);
-        if (allocationSum > request.Amount)
-            return ResultHelper.BadRequest(PaymentErrors.AllocationExceedsPayment());
+
+        // When amount is zero it must be a compensation: individual allocations can be non-zero
+        // but must cancel out. For non-zero amounts, sign and cap are enforced.
+        if (request.Amount == 0m)
+        {
+            if (allocationSum != 0m)
+                return ResultHelper.BadRequest(PaymentErrors.AllocationExceedsPayment());
+        }
+        else
+        {
+            if (Math.Sign(allocationSum) != Math.Sign(request.Amount))
+                return ResultHelper.BadRequest(PaymentErrors.AllocationExceedsPayment());
+
+            if ((request.Amount > 0m && allocationSum > request.Amount)
+                || (request.Amount < 0m && allocationSum < request.Amount))
+                return ResultHelper.BadRequest(PaymentErrors.AllocationExceedsPayment());
+        }
 
         if (request.CustomerId.HasValue)
         {
@@ -66,7 +80,12 @@ public class CreatePayment
             if (request.CustomerId.HasValue && due.CustomerId != request.CustomerId)
                 return ResultHelper.BadRequest(PaymentErrors.DueNotBelongToCustomer(allocation.DueId, request.CustomerId.Value));
 
-            if (due.PaidAmount + allocation.Amount > due.Amount)
+            if (Math.Sign(allocation.Amount) != Math.Sign(due.Amount))
+                return ResultHelper.BadRequest(PaymentErrors.AllocationSignMismatch(allocation.DueId));
+
+            var newPaidAmount = due.PaidAmount + allocation.Amount;
+            if ((due.Amount > 0m && newPaidAmount > due.Amount)
+                || (due.Amount < 0m && newPaidAmount < due.Amount))
                 return ResultHelper.BadRequest(PaymentErrors.AllocationExceedsDue(allocation.DueId));
 
             paymentDues.Add(new PaymentDue { DueId = allocation.DueId, Amount = allocation.Amount });

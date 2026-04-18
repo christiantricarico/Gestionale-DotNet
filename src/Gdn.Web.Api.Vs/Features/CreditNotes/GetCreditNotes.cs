@@ -41,7 +41,7 @@ public class GetCreditNotes
         if (creditNote.IsPaid)
             return PaymentStatus.Paid;
 
-        return creditNote.Dues.Any(d => d.PaidAmount > 0)
+        return creditNote.Dues.Any(d => d.HasPayments)
             ? PaymentStatus.PartiallyPaid
             : PaymentStatus.NotPaid;
     }

@@ -67,6 +67,6 @@ public class GetCustomerDues
             documentNumber = null;
         }
 
-        return new Response(d.Id, d.Date, documentNumber, documentType, d.Amount, d.PaidAmount, d.Amount - d.PaidAmount);
+        return new Response(d.Id, d.Date, documentNumber, documentType, d.Amount, d.PaidAmount, d.RemainingAmount);
     }
 }

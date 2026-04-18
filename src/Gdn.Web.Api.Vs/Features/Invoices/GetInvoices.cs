@@ -40,7 +40,7 @@ public class GetInvoices
         if (invoice.IsPaid)
             return PaymentStatus.Paid;
 
-        return invoice.Dues.Any(d => d.PaidAmount > 0)
+        return invoice.Dues.Any(d => d.HasPayments)
             ? PaymentStatus.PartiallyPaid
             : PaymentStatus.NotPaid;
     }

@@ -71,9 +71,13 @@ public class UpdateInvoice
         var taxRateRepository = unitOfWork.GetRepository<ITaxRateRepository>();
         await PopulateMissingTaxRates(invoice, taxRateRepository);
 
-        var reconcileError = ReconcileDues(invoice);
-        if (reconcileError is not null)
-            return ResultHelper.BadRequest(reconcileError);
+        bool hasDueChanges = request.Dues.Any(d => (int)d.InputStatus != 0);
+        if (!hasDueChanges)
+        {
+            var reconcileError = ReconcileDues(invoice);
+            if (reconcileError is not null)
+                return ResultHelper.BadRequest(reconcileError);
+        }
         await unitOfWork.SaveChangesAsync();
 
         return ResultHelper.Ok(MapResponse(invoice));
@@ -239,7 +243,7 @@ public class UpdateInvoice
         if (invoice.IsPaid)
             return PaymentStatus.Paid;
 
-        return invoice.Dues.Any(d => d.PaidAmount > 0)
+        return invoice.Dues.Any(d => d.HasPayments)
             ? PaymentStatus.PartiallyPaid
             : PaymentStatus.NotPaid;
     }

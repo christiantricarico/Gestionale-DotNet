@@ -71,7 +71,7 @@ public class CreditNoteDueEditModel
     public DateOnly Date { get; set; }
 
     [Required(ErrorMessage = "Importo richiesto.")]
-    [Range(0.01, double.MaxValue, ErrorMessage = "Importo deve essere maggiore di zero.")]
+    [Range(double.MinValue, -0.01, ErrorMessage = "Importo deve essere minore di zero.")]
     [Display(Name = "Importo")]
     public decimal Amount { get; set; }
 
@@ -81,7 +81,7 @@ public class CreditNoteDueEditModel
     public bool IsPaid { get; set; }
 
     [Display(Name = "Stato")]
-    public string Status => IsPaid ? "Pagata" : PaidAmount > 0 ? "Parzialmente pagata" : "Non pagata";
+    public string Status => IsPaid ? "Pagata" : PaidAmount != 0m ? "Parzialmente pagata" : "Non pagata";
 
-    public bool HasPayments => PaidAmount > 0;
+    public bool HasPayments => PaidAmount != 0m;
 }

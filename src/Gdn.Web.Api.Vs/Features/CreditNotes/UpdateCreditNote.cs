@@ -72,9 +72,13 @@ public class UpdateCreditNote
         var taxRateRepository = unitOfWork.GetRepository<ITaxRateRepository>();
         await PopulateMissingTaxRates(creditNote, taxRateRepository);
 
-        var reconcileError = ReconcileDues(creditNote);
-        if (reconcileError is not null)
-            return ResultHelper.BadRequest(reconcileError);
+        bool hasDueChanges = request.Dues.Any(d => (int)d.InputStatus != 0);
+        if (!hasDueChanges)
+        {
+            var reconcileError = ReconcileDues(creditNote);
+            if (reconcileError is not null)
+                return ResultHelper.BadRequest(reconcileError);
+        }
 
         await unitOfWork.SaveChangesAsync();
 
@@ -115,7 +119,7 @@ public class UpdateCreditNote
                 creditNote.Dues.Add(new Due
                 {
                     Date = requestDue.Date,
-                    Amount = requestDue.Amount,
+                    Amount = ToSignedCreditNoteAmount(requestDue.Amount),
                     CreditNoteId = creditNote.Id,
                     CustomerId = creditNote.CustomerId
                 });
@@ -126,7 +130,7 @@ public class UpdateCreditNote
             {
                 var due = creditNote.Dues.Single(d => d.Id == requestDue.Id);
                 due.Date = requestDue.Date;
-                due.Amount = requestDue.Amount;
+                due.Amount = ToSignedCreditNoteAmount(requestDue.Amount);
                 continue;
             }
 
@@ -164,7 +168,7 @@ public class UpdateCreditNote
 
     private static Error? ReconcileDues(CreditNote creditNote)
     {
-        decimal newTotal = CreditNoteAmountCalculator.CalculateTotal(creditNote);
+        decimal newTotal = ToSignedCreditNoteAmount(CreditNoteAmountCalculator.CalculateTotal(creditNote));
         decimal currentDuesTotal = creditNote.Dues.Sum(d => d.Amount);
         decimal delta = newTotal - currentDuesTotal;
 
@@ -176,7 +180,7 @@ public class UpdateCreditNote
             .ThenByDescending(d => d.Id)
             .ToList();
 
-        if (delta > 0m)
+        if (delta < 0m)
         {
             var lastDue = orderedDues.FirstOrDefault();
             if (lastDue is null)
@@ -186,14 +190,14 @@ public class UpdateCreditNote
             return null;
         }
 
-        decimal toReduce = -delta;
+        decimal toReduce = delta;
 
         foreach (var due in orderedDues)
         {
-            decimal reducible = due.Amount - due.PaidAmount;
+            decimal reducible = Math.Abs(due.RemainingAmount);
             decimal actual = Math.Min(toReduce, reducible);
 
-            due.Amount -= actual;
+            due.Amount += actual;
             toReduce -= actual;
 
             if (due.Amount == 0m)
@@ -241,8 +245,10 @@ public class UpdateCreditNote
         if (creditNote.IsPaid)
             return PaymentStatus.Paid;
 
-        return creditNote.Dues.Any(d => d.PaidAmount > 0)
+        return creditNote.Dues.Any(d => d.HasPayments)
             ? PaymentStatus.PartiallyPaid
             : PaymentStatus.NotPaid;
     }
+
+    private static decimal ToSignedCreditNoteAmount(decimal amount) => amount > 0m ? -amount : amount;
 }

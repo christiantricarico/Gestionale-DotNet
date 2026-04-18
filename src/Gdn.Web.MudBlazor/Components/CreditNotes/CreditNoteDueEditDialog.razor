@@ -19,7 +19,7 @@
                     <MudNumericField T="decimal"
                                      Label="Importo"
                                      @bind-Value="_model.Amount"
-                                     Min="0.01m"
+                                     Max="-0.01m"
                                      Format="n2"
                                      For="@(() => _model.Amount)" />
                 </MudItem>

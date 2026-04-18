@@ -24,7 +24,7 @@ public class DeleteInvoice
         if (invoice is null)
             return ResultHelper.NotFound(InvoiceErrors.NotFound(id));
 
-        if (invoice.Dues.Any(d => d.PaidAmount > 0))
+        if (invoice.Dues.Any(d => d.HasPayments))
             return ResultHelper.Conflict(InvoiceErrors.HasPayments(id));
 
         await invoiceRepository.RemoveAsync(id);

@@ -22,7 +22,7 @@ public class DeleteCreditNote
         if (creditNote is null)
             return ResultHelper.NotFound(CreditNoteErrors.NotFound(id));
 
-        if (creditNote.Dues.Any(d => d.PaidAmount > 0))
+        if (creditNote.Dues.Any(d => d.HasPayments))
             return ResultHelper.Conflict(CreditNoteErrors.HasPayments(id));
 
         await creditNoteRepository.RemoveAsync(id);

@@ -81,7 +81,7 @@ public class InvoiceDueEditModel
     public bool IsPaid { get; set; }
 
     [Display(Name = "Stato")]
-    public string Status => IsPaid ? "Pagata" : PaidAmount > 0 ? "Parzialmente pagata" : "Non pagata";
+    public string Status => IsPaid ? "Pagata" : PaidAmount != 0m ? "Parzialmente pagata" : "Non pagata";
 
-    public bool HasPayments => PaidAmount > 0;
+    public bool HasPayments => PaidAmount != 0m;
 }

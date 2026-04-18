@@ -5,8 +5,8 @@ using Gdn.Web.Api.Vs.Endpoints;
 namespace Gdn.Web.Api.Vs.Features.Customers;
 
 /// <summary>
-/// Returns the history of all receipts (incassi) registered for a given customer,
-/// with details of the dues covered by each receipt.
+/// Returns the history of all customer payments registered for a given customer,
+/// with details of the dues covered by each payment.
 /// </summary>
 public class GetCustomerReceipts
 {

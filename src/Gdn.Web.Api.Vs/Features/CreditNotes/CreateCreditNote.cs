@@ -52,7 +52,7 @@ public class CreateCreditNote
         var due = new Due
         {
             Date = creditNote.Date,
-            Amount = totalAmount,
+            Amount = ToSignedCreditNoteAmount(totalAmount),
             CreditNoteId = creditNote.Id,
             CustomerId = creditNote.CustomerId
         };
@@ -96,4 +96,6 @@ public class CreateCreditNote
 
     private static ResponseDue MapResponseDue(Due due)
         => new(due.Id, due.Date, due.Amount, due.PaidAmount, due.IsPaid);
+
+    private static decimal ToSignedCreditNoteAmount(decimal amount) => amount > 0m ? -amount : amount;
 }

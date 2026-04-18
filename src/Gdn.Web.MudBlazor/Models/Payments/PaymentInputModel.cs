@@ -10,11 +10,13 @@ public class PaymentInputModel
     public DateTime? DateWithTime
     {
         get => Date.ToDateTime(TimeOnly.MinValue);
-        set { if (value.HasValue) Date = DateOnly.FromDateTime(value.Value); }
+        set
+        {
+            if (value.HasValue)
+                Date = DateOnly.FromDateTime(value.Value);
+        }
     }
 
-    [Required]
-    [Range(0.01, double.MaxValue, ErrorMessage = "Importo deve essere maggiore di zero.")]
     [Display(Name = "Importo")]
     public decimal Amount { get; set; }
 
@@ -32,7 +34,6 @@ public class PaymentAllocationModel
     public decimal DuePaidAmount { get; set; }
     public decimal DueRemainingAmount => DueAmount - DuePaidAmount;
 
-    [Range(0, double.MaxValue)]
     [Display(Name = "Importo allocato")]
     public decimal Amount { get; set; }
 }
