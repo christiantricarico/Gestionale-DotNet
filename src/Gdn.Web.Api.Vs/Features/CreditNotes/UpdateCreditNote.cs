@@ -57,6 +57,8 @@ public class UpdateCreditNote
         if (creditNote is null)
             return ResultHelper.NotFound(CreditNoteErrors.NotFound(request.Id));
 
+        var dueRepository = unitOfWork.GetRepository<IDueRepository>();
+
         creditNote.Number = request.Number.ToString();
         creditNote.Date = request.Date;
         creditNote.CustomerId = request.CustomerId;
@@ -65,7 +67,7 @@ public class UpdateCreditNote
 
         ApplyRowChanges(creditNote, request.Rows);
 
-        var dueValidationError = ApplyDueChanges(creditNote, request.Dues);
+        var dueValidationError = await ApplyDueChangesAsync(creditNote, request.Dues, dueRepository);
         if (dueValidationError is not null)
             return ResultHelper.BadRequest(dueValidationError);
 
@@ -75,7 +77,7 @@ public class UpdateCreditNote
         bool hasDueChanges = request.Dues.Any(d => (int)d.InputStatus != 0);
         if (!hasDueChanges)
         {
-            var reconcileError = ReconcileDues(creditNote);
+            var reconcileError = await ReconcileDuesAsync(creditNote, dueRepository);
             if (reconcileError is not null)
                 return ResultHelper.BadRequest(reconcileError);
         }
@@ -110,7 +112,7 @@ public class UpdateCreditNote
         }
     }
 
-    private static Error? ApplyDueChanges(CreditNote creditNote, IEnumerable<UpdateCreditNoteDueRequest> dues)
+    private static async Task<Error?> ApplyDueChangesAsync(CreditNote creditNote, IEnumerable<UpdateCreditNoteDueRequest> dues, IDueRepository dueRepository)
     {
         foreach (var requestDue in dues)
         {
@@ -141,7 +143,7 @@ public class UpdateCreditNote
                 if (due.PaymentDues.Count > 0)
                     return new Error("Due:HasPayments", $"Cannot delete due {due.Id}: it has associated payments.");
 
-                creditNote.Dues.Remove(due);
+                await DeleteDueAsync(creditNote.Dues, due, dueRepository);
             }
         }
 
@@ -166,7 +168,7 @@ public class UpdateCreditNote
             row.TaxRate = taxRates.GetValueOrDefault(row.TaxRateId!.Value);
     }
 
-    private static Error? ReconcileDues(CreditNote creditNote)
+    private static async Task<Error?> ReconcileDuesAsync(CreditNote creditNote, IDueRepository dueRepository)
     {
         decimal newTotal = ToSignedCreditNoteAmount(CreditNoteAmountCalculator.CalculateTotal(creditNote));
         decimal currentDuesTotal = creditNote.Dues.Sum(d => d.Amount);
@@ -201,7 +203,7 @@ public class UpdateCreditNote
             toReduce -= actual;
 
             if (due.Amount == 0m)
-                creditNote.Dues.Remove(due);
+                await DeleteDueAsync(creditNote.Dues, due, dueRepository);
 
             if (toReduce == 0m)
                 break;
@@ -211,6 +213,12 @@ public class UpdateCreditNote
             return CreditNoteErrors.CannotReduceCreditNoteAmount();
 
         return null;
+    }
+
+    private static async Task DeleteDueAsync(ICollection<Due> dues, Due due, IDueRepository dueRepository)
+    {
+        dues.Remove(due);
+        await dueRepository.RemoveAsync(due.Id);
     }
 
     private static CreditNoteRow MapCreditNoteRow(CreditNoteRow row, UpdateCreditNoteRowRequest request)

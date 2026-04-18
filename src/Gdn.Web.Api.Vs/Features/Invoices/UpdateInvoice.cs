@@ -56,6 +56,8 @@ public class UpdateInvoice
         if (invoice is null)
             return ResultHelper.NotFound(InvoiceErrors.NotFound(request.Id));
 
+        var dueRepository = unitOfWork.GetRepository<IDueRepository>();
+
         invoice.Number = request.Number.ToString();
         invoice.Date = request.Date;
         invoice.CustomerId = request.CustomerId;
@@ -64,7 +66,7 @@ public class UpdateInvoice
 
         ApplyRowChanges(invoice, request.Rows);
 
-        var dueValidationError = ApplyDueChanges(invoice, request.Dues);
+        var dueValidationError = await ApplyDueChangesAsync(invoice, request.Dues, dueRepository);
         if (dueValidationError is not null)
             return ResultHelper.BadRequest(dueValidationError);
 
@@ -74,7 +76,7 @@ public class UpdateInvoice
         bool hasDueChanges = request.Dues.Any(d => (int)d.InputStatus != 0);
         if (!hasDueChanges)
         {
-            var reconcileError = ReconcileDues(invoice);
+            var reconcileError = await ReconcileDuesAsync(invoice, dueRepository);
             if (reconcileError is not null)
                 return ResultHelper.BadRequest(reconcileError);
         }
@@ -108,7 +110,7 @@ public class UpdateInvoice
         }
     }
 
-    private static Error? ApplyDueChanges(Invoice invoice, IEnumerable<UpdateInvoiceDueRequest> dues)
+    private static async Task<Error?> ApplyDueChangesAsync(Invoice invoice, IEnumerable<UpdateInvoiceDueRequest> dues, IDueRepository dueRepository)
     {
         foreach (var requestDue in dues)
         {
@@ -139,7 +141,7 @@ public class UpdateInvoice
                 if (due.PaymentDues.Count > 0)
                     return new Error("Due:HasPayments", $"Cannot delete due {due.Id}: it has associated payments.");
 
-                invoice.Dues.Remove(due);
+                await DeleteDueAsync(invoice.Dues, due, dueRepository);
             }
         }
 
@@ -164,7 +166,7 @@ public class UpdateInvoice
             row.TaxRate = taxRates.GetValueOrDefault(row.TaxRateId!.Value);
     }
 
-    private static Error? ReconcileDues(Invoice invoice)
+    private static async Task<Error?> ReconcileDuesAsync(Invoice invoice, IDueRepository dueRepository)
     {
         decimal newTotal = InvoiceAmountCalculator.CalculateTotal(invoice);
         decimal currentDuesTotal = invoice.Dues.Sum(d => d.Amount);
@@ -199,7 +201,7 @@ public class UpdateInvoice
             toReduce -= actual;
 
             if (due.Amount == 0m)
-                invoice.Dues.Remove(due);
+                await DeleteDueAsync(invoice.Dues, due, dueRepository);
 
             if (toReduce == 0m)
                 break;
@@ -209,6 +211,12 @@ public class UpdateInvoice
             return InvoiceErrors.CannotReduceInvoiceAmount();
 
         return null;
+    }
+
+    private static async Task DeleteDueAsync(ICollection<Due> dues, Due due, IDueRepository dueRepository)
+    {
+        dues.Remove(due);
+        await dueRepository.RemoveAsync(due.Id);
     }
 
     private static InvoiceRow MapInvoiceRow(InvoiceRow row, UpdateInvoiceRowRequest request)
