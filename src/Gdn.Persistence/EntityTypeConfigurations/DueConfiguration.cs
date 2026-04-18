@@ -17,7 +17,7 @@ internal sealed class DueConfiguration : IEntityTypeConfiguration<Due>
         builder.HasOne(e => e.Invoice)
                .WithMany(i => i.Dues)
                .HasForeignKey(e => e.InvoiceId)
-               .OnDelete(DeleteBehavior.Cascade);
+               .OnDelete(DeleteBehavior.ClientCascade);
 
         builder.HasOne(e => e.CreditNote)
                .WithMany(cn => cn.Dues)

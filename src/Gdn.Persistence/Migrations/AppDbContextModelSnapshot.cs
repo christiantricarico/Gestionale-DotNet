@@ -904,7 +904,7 @@ namespace Gdn.Persistence.Migrations
                     b.HasOne("Gdn.Domain.Models.Invoice", "Invoice")
                         .WithMany("Dues")
                         .HasForeignKey("InvoiceId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.ClientCascade);
 
                     b.Navigation("CreditNote");
 

@@ -11,6 +11,10 @@ namespace Gdn.Persistence.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropForeignKey(
+                name: "FK_Dues_Invoices_InvoiceId",
+                table: "Dues");
+
             migrationBuilder.AddColumn<int>(
                 name: "CreditNoteId",
                 table: "Dues",
@@ -112,6 +116,13 @@ namespace Gdn.Persistence.Migrations
                 column: "CreditNoteId",
                 principalTable: "CreditNotes",
                 principalColumn: "Id");
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Dues_Invoices_InvoiceId",
+                table: "Dues",
+                column: "InvoiceId",
+                principalTable: "Invoices",
+                principalColumn: "Id");
         }
 
         /// <inheritdoc />
@@ -119,6 +130,10 @@ namespace Gdn.Persistence.Migrations
         {
             migrationBuilder.DropForeignKey(
                 name: "FK_Dues_CreditNotes_CreditNoteId",
+                table: "Dues");
+
+            migrationBuilder.DropForeignKey(
+                name: "FK_Dues_Invoices_InvoiceId",
                 table: "Dues");
 
             migrationBuilder.DropTable(
@@ -134,6 +149,14 @@ namespace Gdn.Persistence.Migrations
             migrationBuilder.DropColumn(
                 name: "CreditNoteId",
                 table: "Dues");
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Dues_Invoices_InvoiceId",
+                table: "Dues",
+                column: "InvoiceId",
+                principalTable: "Invoices",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.Cascade);
         }
     }
 }
