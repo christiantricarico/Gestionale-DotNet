@@ -23,7 +23,6 @@
                                      Label="Importo"
                                      Value="_payment.Amount"
                                      ValueChanged="OnAmountChanged"
-                                     Min="0.01m"
                                      Format="n2"
                                      HelperText="@($"Residuo totale: {_totalRemaining:C2}")"
                                      For="@(() => _payment.Amount)" />
@@ -41,11 +40,11 @@
             </MudGrid>
         </EditForm>
 
-        @if (_allocations.Any(a => a.Amount > 0))
+        @if (_allocations.Any(a => a.Amount != 0m))
         {
             <MudText Typo="Typo.subtitle2" Class="mt-4 mb-1">Allocazione FIFO</MudText>
             <MudPaper Elevation="0" Class="pa-1">
-                @foreach (var alloc in _allocations.Where(a => a.Amount > 0))
+                @foreach (var alloc in _allocations.Where(a => a.Amount != 0m))
                 {
                     <MudChip T="string" Color="Color.Primary" Variant="Variant.Outlined" Class="ma-1">
                         @alloc.DueDate.ToString("d") — @alloc.Amount.ToString("C2") / @alloc.DueRemainingAmount.ToString("C2")
@@ -65,9 +64,10 @@
 @code {
     [CascadingParameter] private IMudDialogInstance Dialog { get; set; } = default!;
     [Parameter] public int InvoiceId { get; set; }
+    [Parameter] public int? CreditNoteId { get; set; }
     [Parameter] public int? CustomerId { get; set; }
 
-    /// <summary>Scadenze non pagate della fattura, già ordinate per data (più vecchia prima).</summary>
+    /// <summary>Scadenze non pagate del documento, già ordinate per data (più vecchia prima).</summary>
     [Parameter] public List<InvoiceDueEditModel> Dues { get; set; } = [];
 
     private readonly PaymentInputModel _payment = new();
@@ -112,6 +112,8 @@
     /// <summary>
     /// Distributes <see cref="PaymentInputModel.Amount"/> across <see cref="_allocations"/>
     /// in date order (oldest first), capping each slot at its remaining balance.
+    /// When the amount is zero and allocations have mixed signs that perfectly cancel out,
+    /// all slots are allocated to their full remaining amount to perform a compensation.
     /// </summary>
     private void RecalculateAllocations()
     {
@@ -120,12 +122,32 @@
         foreach (var alloc in _allocations)
             alloc.Amount = 0;
 
+        // Special case: when amount is zero, check if there are perfectly offsetting dues.
+        if (remaining == 0m)
+        {
+            if (_allocations.Sum(a => a.DueRemainingAmount) == 0m && _allocations.Any(a => a.DueRemainingAmount != 0m))
+            {
+                foreach (var alloc in _allocations)
+                    alloc.Amount = alloc.DueRemainingAmount;
+            }
+
+            return;
+        }
+
         foreach (var alloc in _allocations)
         {
-            if (remaining <= 0)
+            if (remaining == 0m)
                 break;
 
-            alloc.Amount = Math.Min(alloc.DueRemainingAmount, remaining);
+            if (Math.Sign(alloc.DueRemainingAmount) == Math.Sign(remaining))
+            {
+                alloc.Amount = Math.Min(Math.Abs(alloc.DueRemainingAmount), Math.Abs(remaining)) * Math.Sign(alloc.DueRemainingAmount);
+            }
+            else
+            {
+                alloc.Amount = alloc.DueRemainingAmount;
+            }
+
             remaining -= alloc.Amount;
         }
     }
@@ -137,8 +159,8 @@
 
         RecalculateAllocations();
 
-        var positiveAllocations = _allocations.Where(a => a.Amount > 0).ToList();
-        if (positiveAllocations.Count == 0)
+        var selectedAllocations = _allocations.Where(a => a.Amount != 0m).ToList();
+        if (selectedAllocations.Count == 0)
         {
             Snackbar.Add("Nessuna scadenza da saldare.", Severity.Warning);
             return;
@@ -151,7 +173,7 @@
             _payment.PaymentMethodId,
             CustomerId,
             InvoiceId,
-            Allocations = positiveAllocations.Select(a => new { a.DueId, a.Amount })
+            Allocations = selectedAllocations.Select(a => new { a.DueId, a.Amount })
         };
 
         _isSaving = true;

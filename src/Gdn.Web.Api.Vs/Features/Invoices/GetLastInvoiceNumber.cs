@@ -9,11 +9,11 @@ public class GetLastInvoiceNumber
     {
         public void MapEndpoint(IEndpointRouteBuilder app)
         {
-            app.MapGet("api/invoices/last-number", Handler).WithTags(Tags.Invoices);
+            app.MapGet("api/invoices/last-number", HandlerAsync).WithTags(Tags.Invoices);
         }
     }
 
-    private static async Task<IResult> Handler(IInvoiceRepository invoiceRepository)
+    private static async Task<IResult> HandlerAsync(IInvoiceRepository invoiceRepository)
     {
         var invoices = await invoiceRepository.GetAllAsync();
         var lastNumber = invoices

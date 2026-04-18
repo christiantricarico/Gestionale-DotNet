@@ -1,4 +1,4 @@
-﻿using Gdn.Web.Api.Vs.Endpoints;
+using Gdn.Web.Api.Vs.Endpoints;
 using Gdn.Web.Api.Vs.Features.Invoices.Xml;
 using System.Net.Mime;
 
@@ -10,11 +10,11 @@ public class GenerateInvoiceXml
     {
         public void MapEndpoint(IEndpointRouteBuilder app)
         {
-            app.MapGet("api/invoices/xml/{id:int}", Handler).WithTags(Tags.Invoices);
+            app.MapGet("api/invoices/xml/{id:int}", HandlerAsync).WithTags(Tags.Invoices);
         }
     }
 
-    private static async Task<IResult> Handler(
+    private static async Task<IResult> HandlerAsync(
         int id,
         InvoiceXmlGenerator xmlGenerator,
         InvoiceXmlFileNameGenerator xmlFileNameGenerator)

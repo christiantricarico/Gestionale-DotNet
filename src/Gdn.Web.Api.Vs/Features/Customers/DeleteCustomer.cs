@@ -1,4 +1,4 @@
-﻿using Gdn.Domain.Data;
+using Gdn.Domain.Data;
 using Gdn.Domain.Data.Repositories;
 using Gdn.Web.Api.Vs.Endpoints;
 
@@ -10,11 +10,11 @@ public class DeleteCustomer
     {
         public void MapEndpoint(IEndpointRouteBuilder app)
         {
-            app.MapDelete("api/customers/{id:int}", Handler).WithTags(Tags.Customers);
+            app.MapDelete("api/customers/{id:int}", HandlerAsync).WithTags(Tags.Customers);
         }
     }
 
-    private static async Task<IResult> Handler(int id, IUnitOfWork unitOfWork)
+    private static async Task<IResult> HandlerAsync(int id, IUnitOfWork unitOfWork)
     {
         var customerRepository = unitOfWork.GetRepository<ICustomerRepository>();
         await customerRepository.RemoveAsync(id);

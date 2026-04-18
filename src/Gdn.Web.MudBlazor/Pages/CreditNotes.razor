@@ -1,0 +1,184 @@
+@page "/creditnotes"
+
+@using Gdn.Web.MudBlazor.Models.CreditNotes
+@using Gdn.Web.MudBlazor.Components.CreditNotes
+@inject HttpClient Http
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+@inject IJSRuntime JS
+
+<PageTitle>Note di credito</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
+    <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-4">
+        <MudText Typo="Typo.h5">Note di credito</MudText>
+        <MudSpacer />
+        @if (!_isLoading)
+        {
+            <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.Add"
+                       OnClick="CreateButtonClick">Nuova</MudButton>
+        }
+    </MudStack>
+
+    @if (_isLoading)
+    {
+        <MudProgressLinear Indeterminate="true" />
+    }
+    else
+    {
+        @foreach (var creditNote in _items)
+        {
+            <MudCard Class="mb-2">
+                <MudCardContent Class="pa-3">
+                    <MudGrid>
+                        <MudItem xs="6" sm="2">
+                            <MudText Typo="Typo.caption">Numero</MudText>
+                            <MudText>@creditNote.Number</MudText>
+                        </MudItem>
+                        <MudItem xs="6" sm="2">
+                            <MudText Typo="Typo.caption">Data</MudText>
+                            <MudText>@creditNote.Date.ToString("d")</MudText>
+                        </MudItem>
+                        <MudItem xs="12" sm="4">
+                            <MudText Typo="Typo.caption">Cliente</MudText>
+                            <MudText>@creditNote.CustomerName</MudText>
+                        </MudItem>
+                        <MudItem xs="6" sm="2">
+                            <MudChip T="string" Color="@GetPaymentStatusColor(creditNote.PaymentStatus)" Size="Size.Small">
+                                @creditNote.PaymentStatus
+                            </MudChip>
+                        </MudItem>
+                        <MudItem xs="12" sm="2" Class="d-flex justify-end align-center gap-1">
+                            <MudIconButton Icon="@Icons.Material.Filled.Payments"
+                                           Size="Size.Small"
+                                           title="Pagamenti"
+                                           OnClick="@(() => PaymentsButtonClick(creditNote))" />
+                            <MudIconButton Icon="@Icons.Material.Filled.Print"
+                                           Size="Size.Small"
+                                           title="Stampa PDF"
+                                           OnClick="@(() => PrintButtonClick(creditNote))" />
+                            <MudIconButton Icon="@Icons.Material.Filled.Download"
+                                           Size="Size.Small"
+                                           title="Scarica XML"
+                                           OnClick="@(() => DownloadButtonClick(creditNote))" />
+                            <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                           Size="Size.Small"
+                                           OnClick="@(() => EditButtonClick(creditNote))" />
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                           Size="Size.Small"
+                                           Color="Color.Error"
+                                           OnClick="@(() => DeleteButtonClick(creditNote))" />
+                        </MudItem>
+                    </MudGrid>
+                </MudCardContent>
+            </MudCard>
+        }
+    }
+</MudContainer>
+
+@code {
+    private bool _isLoading = true;
+    private IEnumerable<CreditNoteViewModel> _items = [];
+
+    protected override async Task OnInitializedAsync() => await ReloadAsync();
+
+    private async Task ReloadAsync()
+    {
+        _isLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            _items = await Http.GetFromJsonAsync<IEnumerable<CreditNoteViewModel>>("creditnotes") ?? [];
+        }
+        catch (HttpRequestException)
+        {
+            Snackbar.Add("Errore durante il caricamento dei dati.", Severity.Error);
+            _items = [];
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private async Task CreateButtonClick()
+    {
+        var parameters = new DialogParameters<CreditNoteEditDialog>();
+        parameters.Add(x => x.Content, new DialogContent());
+        var options = new DialogOptions { CloseOnEscapeKey = false, CloseButton = false, BackdropClick = false, MaxWidth = MaxWidth.Large, FullWidth = true };
+        var dialog = await DialogService.ShowAsync<CreditNoteEditDialog>("Nuova nota di credito", parameters, options);
+        var result = await dialog.Result;
+        if (result is not null && !result.Canceled)
+            await ReloadAsync();
+    }
+
+    private async Task EditButtonClick(CreditNoteViewModel creditNote)
+    {
+        var parameters = new DialogParameters<CreditNoteEditDialog>();
+        parameters.Add(x => x.Content, new DialogContent { Id = creditNote.Id });
+        var options = new DialogOptions { CloseOnEscapeKey = false, CloseButton = false, BackdropClick = false, MaxWidth = MaxWidth.Large, FullWidth = true };
+        var dialog = await DialogService.ShowAsync<CreditNoteEditDialog>("Modifica nota di credito", parameters, options);
+        var result = await dialog.Result;
+        if (result is not null && !result.Canceled)
+            await ReloadAsync();
+    }
+
+    private async Task PaymentsButtonClick(CreditNoteViewModel creditNote)
+    {
+        var parameters = new DialogParameters<CreditNotePaymentsDialog>();
+        parameters.Add(x => x.CreditNote, creditNote);
+        var options = new DialogOptions { BackdropClick = false, CloseOnEscapeKey = false, CloseButton = false, MaxWidth = MaxWidth.Medium, FullWidth = true };
+        var dialog = await DialogService.ShowAsync<CreditNotePaymentsDialog>($"Pagamenti — Nota di credito {creditNote.Number}", parameters, options);
+        var result = await dialog.Result;
+        if (result is not null && !result.Canceled && result.Data is true)
+            await ReloadAsync();
+    }
+
+    private async Task PrintButtonClick(CreditNoteViewModel creditNote)
+    {
+        var response = await Http.GetAsync($"creditnotes/pdf/{creditNote.Id}");
+        if (!await Snackbar.ShowResponseErrorAsync(response))
+            return;
+
+        var fileStream = await response.Content.ReadAsStreamAsync();
+        using var streamRef = new DotNetStreamReference(fileStream);
+        await JS.InvokeVoidAsync("openPdfFromStream", streamRef);
+    }
+
+    private async Task DownloadButtonClick(CreditNoteViewModel creditNote)
+    {
+        var response = await Http.GetAsync($"creditnotes/xml/{creditNote.Id}");
+        if (!await Snackbar.ShowResponseErrorAsync(response))
+            return;
+
+        var fileName = response.Content.Headers.ContentDisposition?.FileName?.Trim('"');
+        var fileStream = await response.Content.ReadAsStreamAsync();
+        using var streamRef = new DotNetStreamReference(fileStream);
+        await JS.InvokeVoidAsync("downloadFileFromStream", fileName, streamRef);
+    }
+
+    private async Task DeleteButtonClick(CreditNoteViewModel creditNote)
+    {
+        bool? confirmed = await DialogService.ShowMessageBoxAsync(
+            "Eliminazione",
+            "Sei sicuro di voler eliminare questa nota di credito?",
+            yesText: "Sì", cancelText: "No");
+        if (confirmed is not true)
+            return;
+
+        var response = await Http.DeleteAsync($"creditnotes/{creditNote.Id}");
+        if (!await Snackbar.ShowResponseErrorAsync(response))
+            return;
+
+        await ReloadAsync();
+    }
+
+    private static Color GetPaymentStatusColor(string status) => status switch
+    {
+        "Pagata" => Color.Success,
+        "Parzialmente pagata" => Color.Warning,
+        _ => Color.Default
+    };
+}

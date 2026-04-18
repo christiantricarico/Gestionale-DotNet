@@ -41,12 +41,12 @@ internal sealed class InvoiceDocument : IDocument
             row.RelativeItem().Column(column =>
             {
                 column.Item()
-                    .Text($"Fattura #{Model.Number}")
+                    .Text($"{Model.DocumentTitle} #{Model.Number}")
                     .FontSize(20).SemiBold().FontColor(Colors.Blue.Medium);
 
                 column.Item().Text(text =>
                 {
-                    text.Span("Data fattura: ").SemiBold();
+                    text.Span($"{Model.DateLabel} ").SemiBold();
                     text.Span($"{Model.Date:d}");
                 });
 

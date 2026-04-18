@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 using Gdn.Domain.Data;
 using Gdn.Domain.Data.Repositories;
 using Gdn.Domain.Models;
@@ -15,7 +15,7 @@ public class UpdateMeasurementUnit
     {
         public void MapEndpoint(IEndpointRouteBuilder app)
         {
-            app.MapPut("api/measurementunits", Handler).WithTags(Tags.MeasurementUnits);
+            app.MapPut("api/measurementunits", HandlerAsync).WithTags(Tags.MeasurementUnits);
         }
     }
 
@@ -28,7 +28,7 @@ public class UpdateMeasurementUnit
         }
     }
 
-    private static async Task<IResult> Handler(UpdateMeasurementUnitRequest request, IValidator<UpdateMeasurementUnitRequest> validator, IUnitOfWork unitOfWork)
+    private static async Task<IResult> HandlerAsync(UpdateMeasurementUnitRequest request, IValidator<UpdateMeasurementUnitRequest> validator, IUnitOfWork unitOfWork)
     {
         var validationResult = await validator.ValidateAsync(request);
         if (!validationResult.IsValid)

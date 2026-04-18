@@ -31,7 +31,7 @@ public class UpdateInvoice
     {
         public void MapEndpoint(IEndpointRouteBuilder app)
         {
-            app.MapPut("api/invoices", Handler).WithTags(Tags.Invoices);
+            app.MapPut("api/invoices", HandlerAsync).WithTags(Tags.Invoices);
         }
     }
 
@@ -44,7 +44,7 @@ public class UpdateInvoice
         }
     }
 
-    private static async Task<IResult> Handler(UpdateInvoiceRequest request, IValidator<UpdateInvoiceRequest> validator, IUnitOfWork unitOfWork)
+    private static async Task<IResult> HandlerAsync(UpdateInvoiceRequest request, IValidator<UpdateInvoiceRequest> validator, IUnitOfWork unitOfWork)
     {
         var validationResult = await validator.ValidateAsync(request);
         if (!validationResult.IsValid)
@@ -56,6 +56,8 @@ public class UpdateInvoice
         if (invoice is null)
             return ResultHelper.NotFound(InvoiceErrors.NotFound(request.Id));
 
+        var dueRepository = unitOfWork.GetRepository<IDueRepository>();
+
         invoice.Number = request.Number.ToString();
         invoice.Date = request.Date;
         invoice.CustomerId = request.CustomerId;
@@ -64,16 +66,21 @@ public class UpdateInvoice
 
         ApplyRowChanges(invoice, request.Rows);
 
-        var dueValidationError = ApplyDueChanges(invoice, request.Dues);
+        var dueValidationError = await ApplyDueChangesAsync(invoice, request.Dues, dueRepository);
         if (dueValidationError is not null)
             return ResultHelper.BadRequest(dueValidationError);
 
         var taxRateRepository = unitOfWork.GetRepository<ITaxRateRepository>();
         await PopulateMissingTaxRates(invoice, taxRateRepository);
 
-        var reconcileError = ReconcileDues(invoice);
-        if (reconcileError is not null)
-            return ResultHelper.BadRequest(reconcileError);
+        var hasDueChanges = request.Dues.Any(d => (int)d.InputStatus != 0);
+        if (!hasDueChanges)
+        {
+            var reconcileError = await ReconcileDuesAsync(invoice, dueRepository);
+            if (reconcileError is not null)
+                return ResultHelper.BadRequest(reconcileError);
+        }
+
         await unitOfWork.SaveChangesAsync();
 
         return ResultHelper.Ok(MapResponse(invoice));
@@ -104,7 +111,7 @@ public class UpdateInvoice
         }
     }
 
-    private static Error? ApplyDueChanges(Invoice invoice, IEnumerable<UpdateInvoiceDueRequest> dues)
+    private static async Task<Error?> ApplyDueChangesAsync(Invoice invoice, IEnumerable<UpdateInvoiceDueRequest> dues, IDueRepository dueRepository)
     {
         foreach (var requestDue in dues)
         {
@@ -135,7 +142,7 @@ public class UpdateInvoice
                 if (due.PaymentDues.Count > 0)
                     return new Error("Due:HasPayments", $"Cannot delete due {due.Id}: it has associated payments.");
 
-                invoice.Dues.Remove(due);
+                await DeleteDueAsync(invoice.Dues, due, dueRepository);
             }
         }
 
@@ -160,11 +167,11 @@ public class UpdateInvoice
             row.TaxRate = taxRates.GetValueOrDefault(row.TaxRateId!.Value);
     }
 
-    private static Error? ReconcileDues(Invoice invoice)
+    private static async Task<Error?> ReconcileDuesAsync(Invoice invoice, IDueRepository dueRepository)
     {
-        decimal newTotal = InvoiceAmountCalculator.CalculateTotal(invoice);
-        decimal currentDuesTotal = invoice.Dues.Sum(d => d.Amount);
-        decimal delta = newTotal - currentDuesTotal;
+        var newTotal = InvoiceAmountCalculator.CalculateTotal(invoice);
+        var currentDuesTotal = invoice.Dues.Sum(d => d.Amount);
+        var delta = newTotal - currentDuesTotal;
 
         if (delta == 0m)
             return null;
@@ -184,18 +191,18 @@ public class UpdateInvoice
             return null;
         }
 
-        decimal toReduce = -delta;
+        var toReduce = -delta;
 
         foreach (var due in orderedDues)
         {
-            decimal reducible = due.Amount - due.PaidAmount;
-            decimal actual = Math.Min(toReduce, reducible);
+            var reducible = due.Amount - due.PaidAmount;
+            var actual = Math.Min(toReduce, reducible);
 
             due.Amount -= actual;
             toReduce -= actual;
 
             if (due.Amount == 0m)
-                invoice.Dues.Remove(due);
+                await DeleteDueAsync(invoice.Dues, due, dueRepository);
 
             if (toReduce == 0m)
                 break;
@@ -205,6 +212,12 @@ public class UpdateInvoice
             return InvoiceErrors.CannotReduceInvoiceAmount();
 
         return null;
+    }
+
+    private static async Task DeleteDueAsync(ICollection<Due> dues, Due due, IDueRepository dueRepository)
+    {
+        dues.Remove(due);
+        await dueRepository.RemoveAsync(due.Id);
     }
 
     private static InvoiceRow MapInvoiceRow(InvoiceRow row, UpdateInvoiceRowRequest request)
@@ -239,7 +252,7 @@ public class UpdateInvoice
         if (invoice.IsPaid)
             return PaymentStatus.Paid;
 
-        return invoice.Dues.Any(d => d.PaidAmount > 0)
+        return invoice.Dues.Any(d => d.HasPayments)
             ? PaymentStatus.PartiallyPaid
             : PaymentStatus.NotPaid;
     }

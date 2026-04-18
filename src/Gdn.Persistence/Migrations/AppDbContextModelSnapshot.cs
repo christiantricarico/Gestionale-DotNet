@@ -69,6 +69,101 @@ namespace Gdn.Persistence.Migrations
                     b.ToTable("Addresses");
                 });
 
+            modelBuilder.Entity("Gdn.Domain.Models.CreditNote", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("CustomerId")
+                        .HasColumnType("int");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Number")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<decimal?>("StampDutyAmount")
+                        .HasPrecision(18, 6)
+                        .HasColumnType("decimal(18,6)");
+
+                    b.Property<bool>("StampDutyChargedToCustomer")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CustomerId");
+
+                    b.ToTable("CreditNotes");
+                });
+
+            modelBuilder.Entity("Gdn.Domain.Models.CreditNoteRow", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("CreditNoteId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("MeasurementUnitId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("Quantity")
+                        .HasPrecision(18, 6)
+                        .HasColumnType("decimal(18,6)");
+
+                    b.Property<string>("RowType")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("nvarchar(3)");
+
+                    b.Property<int?>("TaxRateId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("UnitPrice")
+                        .HasPrecision(18, 6)
+                        .HasColumnType("decimal(18,6)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreditNoteId");
+
+                    b.HasIndex("MeasurementUnitId");
+
+                    b.HasIndex("TaxRateId");
+
+                    b.ToTable("CreditNoteRows");
+                });
+
             modelBuilder.Entity("Gdn.Domain.Models.Customer", b =>
                 {
                     b.Property<int>("Id")
@@ -149,6 +244,9 @@ namespace Gdn.Persistence.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<int?>("CreditNoteId")
+                        .HasColumnType("int");
+
                     b.Property<int?>("CustomerId")
                         .HasColumnType("int");
 
@@ -171,6 +269,8 @@ namespace Gdn.Persistence.Migrations
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CreditNoteId");
 
                     b.HasIndex("CustomerId");
 
@@ -755,8 +855,47 @@ namespace Gdn.Persistence.Migrations
                     b.Navigation("Customer");
                 });
 
+            modelBuilder.Entity("Gdn.Domain.Models.CreditNote", b =>
+                {
+                    b.HasOne("Gdn.Domain.Models.Customer", "Customer")
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Customer");
+                });
+
+            modelBuilder.Entity("Gdn.Domain.Models.CreditNoteRow", b =>
+                {
+                    b.HasOne("Gdn.Domain.Models.CreditNote", "CreditNote")
+                        .WithMany("Rows")
+                        .HasForeignKey("CreditNoteId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Gdn.Domain.Models.MeasurementUnit", "MeasurementUnit")
+                        .WithMany()
+                        .HasForeignKey("MeasurementUnitId");
+
+                    b.HasOne("Gdn.Domain.Models.TaxRate", "TaxRate")
+                        .WithMany()
+                        .HasForeignKey("TaxRateId");
+
+                    b.Navigation("CreditNote");
+
+                    b.Navigation("MeasurementUnit");
+
+                    b.Navigation("TaxRate");
+                });
+
             modelBuilder.Entity("Gdn.Domain.Models.Due", b =>
                 {
+                    b.HasOne("Gdn.Domain.Models.CreditNote", "CreditNote")
+                        .WithMany("Dues")
+                        .HasForeignKey("CreditNoteId")
+                        .OnDelete(DeleteBehavior.ClientCascade);
+
                     b.HasOne("Gdn.Domain.Models.Customer", "Customer")
                         .WithMany()
                         .HasForeignKey("CustomerId")
@@ -765,7 +904,9 @@ namespace Gdn.Persistence.Migrations
                     b.HasOne("Gdn.Domain.Models.Invoice", "Invoice")
                         .WithMany("Dues")
                         .HasForeignKey("InvoiceId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.ClientCascade);
+
+                    b.Navigation("CreditNote");
 
                     b.Navigation("Customer");
 
@@ -873,6 +1014,13 @@ namespace Gdn.Persistence.Migrations
                         .HasForeignKey("TaxRateNatureId");
 
                     b.Navigation("TaxRateNature");
+                });
+
+            modelBuilder.Entity("Gdn.Domain.Models.CreditNote", b =>
+                {
+                    b.Navigation("Dues");
+
+                    b.Navigation("Rows");
                 });
 
             modelBuilder.Entity("Gdn.Domain.Models.Customer", b =>

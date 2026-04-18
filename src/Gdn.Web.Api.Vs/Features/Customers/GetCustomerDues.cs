@@ -24,11 +24,11 @@ public class GetCustomerDues
     {
         public void MapEndpoint(IEndpointRouteBuilder app)
         {
-            app.MapGet("api/customers/{customerId:int}/dues", Handler).WithTags(Tags.Customers);
+            app.MapGet("api/customers/{customerId:int}/dues", HandlerAsync).WithTags(Tags.Customers);
         }
     }
 
-    private static async Task<IResult> Handler(int customerId, ICustomerRepository customerRepository, IDueRepository dueRepository)
+    private static async Task<IResult> HandlerAsync(int customerId, ICustomerRepository customerRepository, IDueRepository dueRepository)
     {
         var customer = await customerRepository.GetAsync(customerId);
         if (customer is null)
@@ -36,7 +36,7 @@ public class GetCustomerDues
 
         var allDues = await dueRepository.GetAllAsync(
             predicate: d => d.CustomerId == customerId && !d.IsDeleted,
-            includes: ["Invoice"]);
+            includes: ["Invoice", "CreditNote"]);
 
         var openDues = allDues
             .Where(d => !d.IsPaid)
@@ -48,8 +48,25 @@ public class GetCustomerDues
 
     private static Response MapResponse(Due d)
     {
-        var documentType = d.Invoice is not null ? "Fattura" : "Scadenza";
-        var documentNumber = d.Invoice?.Number;
-        return new Response(d.Id, d.Date, documentNumber, documentType, d.Amount, d.PaidAmount, d.Amount - d.PaidAmount);
+        string documentType;
+        string? documentNumber;
+
+        if (d.Invoice is not null)
+        {
+            documentType = "Fattura";
+            documentNumber = d.Invoice.Number;
+        }
+        else if (d.CreditNote is not null)
+        {
+            documentType = "Nota di credito";
+            documentNumber = d.CreditNote.Number;
+        }
+        else
+        {
+            documentType = "Scadenza";
+            documentNumber = null;
+        }
+
+        return new Response(d.Id, d.Date, documentNumber, documentType, d.Amount, d.PaidAmount, d.RemainingAmount);
     }
 }

@@ -12,6 +12,12 @@ internal sealed class InvoiceReportModel
     public decimal? StampDutyAmount { get; set; }
     public bool StampDutyChargedToCustomer { get; set; }
     public List<DueReportModel> Dues { get; set; } = [];
+
+    /// <summary>The document type label used in the PDF header (e.g., "Fattura" or "Nota di credito").</summary>
+    public string DocumentTitle { get; set; } = "Fattura";
+
+    /// <summary>The date field label used in the PDF header (e.g., "Data fattura:" or "Data nota di credito:").</summary>
+    public string DateLabel { get; set; } = "Data fattura:";
 }
 
 internal sealed class InvoiceRowReportModel

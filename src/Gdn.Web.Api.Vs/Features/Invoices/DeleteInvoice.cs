@@ -1,4 +1,4 @@
-﻿using Gdn.Domain.Data;
+using Gdn.Domain.Data;
 using Gdn.Domain.Data.Repositories;
 using Gdn.Web.Api.Vs.Endpoints;
 
@@ -10,11 +10,11 @@ public class DeleteInvoice
     {
         public void MapEndpoint(IEndpointRouteBuilder app)
         {
-            app.MapDelete("api/invoices/{id:int}", Handler).WithTags(Tags.Invoices);
+            app.MapDelete("api/invoices/{id:int}", HandlerAsync).WithTags(Tags.Invoices);
         }
     }
 
-    private static async Task<IResult> Handler(int id, IUnitOfWork unitOfWork)
+    private static async Task<IResult> HandlerAsync(int id, IUnitOfWork unitOfWork)
     {
         var invoiceRepository = unitOfWork.GetRepository<IInvoiceRepository>();
 
@@ -24,7 +24,7 @@ public class DeleteInvoice
         if (invoice is null)
             return ResultHelper.NotFound(InvoiceErrors.NotFound(id));
 
-        if (invoice.Dues.Any(d => d.PaidAmount > 0))
+        if (invoice.Dues.Any(d => d.HasPayments))
             return ResultHelper.Conflict(InvoiceErrors.HasPayments(id));
 
         await invoiceRepository.RemoveAsync(id);

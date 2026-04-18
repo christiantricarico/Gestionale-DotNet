@@ -13,11 +13,11 @@ public class GetInvoices
     {
         public void MapEndpoint(IEndpointRouteBuilder app)
         {
-            app.MapGet("api/invoices", Handler).WithTags(Tags.Invoices);
+            app.MapGet("api/invoices", HandlerAsync).WithTags(Tags.Invoices);
         }
     }
 
-    private static async Task<IResult> Handler(IInvoiceRepository invoiceRepository)
+    private static async Task<IResult> HandlerAsync(IInvoiceRepository invoiceRepository)
     {
         var data = await invoiceRepository.GetAllAsync(["Customer", "Rows", "Dues"]);
 
@@ -40,7 +40,7 @@ public class GetInvoices
         if (invoice.IsPaid)
             return PaymentStatus.Paid;
 
-        return invoice.Dues.Any(d => d.PaidAmount > 0)
+        return invoice.Dues.Any(d => d.HasPayments)
             ? PaymentStatus.PartiallyPaid
             : PaymentStatus.NotPaid;
     }

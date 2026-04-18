@@ -1,0 +1,70 @@
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.EditCalendar" Class="mr-2" Style="vertical-align:middle" />
+            @(_model.Id.HasValue ? "Modifica scadenza" : "Nuova scadenza")
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <EditForm EditContext="_editContext" FormName="edit-creditnotedue-form">
+            <DataAnnotationsValidator />
+            <MudGrid Spacing="2">
+                <MudItem xs="12" sm="6">
+                    <MudDatePicker Label="Data scadenza"
+                                   @bind-Date="_dateTime"
+                                   Required="true"
+                                   RequiredError="Data scadenza richiesta." />
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudNumericField T="decimal"
+                                     Label="Importo"
+                                     @bind-Value="_model.Amount"
+                                     Max="-0.01m"
+                                     Format="n2"
+                                     For="@(() => _model.Amount)" />
+                </MudItem>
+            </MudGrid>
+        </EditForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Annulla</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Save">Salva</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance Dialog { get; set; } = default!;
+    [Parameter] public CreditNoteDueEditModel Due { get; set; } = default!;
+
+    private CreditNoteDueEditModel _model = default!;
+    private EditContext _editContext = default!;
+    private DateTime? _dateTime;
+
+    protected override void OnInitialized()
+    {
+        _model = new CreditNoteDueEditModel
+        {
+            InputStatus = Due.InputStatus,
+            Id = Due.Id,
+            Date = Due.Date,
+            Amount = Due.Amount,
+            PaidAmount = Due.PaidAmount,
+            IsPaid = Due.IsPaid
+        };
+        _editContext = new EditContext(_model);
+        _dateTime = Due.Date.ToDateTime(TimeOnly.MinValue);
+    }
+
+    private void Save()
+    {
+        if (_dateTime.HasValue)
+            _model.Date = DateOnly.FromDateTime(_dateTime.Value);
+
+        if (!_editContext.Validate())
+            return;
+
+        Dialog.Close(DialogResult.Ok(_model));
+    }
+
+    private void Cancel() => Dialog.Cancel();
+}

@@ -1,0 +1,218 @@
+@inject HttpClient Http
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <TitleContent>
+        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+            <MudIcon Icon="@Icons.Material.Filled.AttachMoney" />
+            <MudStack Spacing="0">
+                <MudText Typo="Typo.h6">Nota di credito @CreditNote.Number &mdash; @CreditNote.CustomerName</MudText>
+                <MudText Typo="Typo.caption">@CreditNote.Date.ToString("d")</MudText>
+            </MudStack>
+        </MudStack>
+    </TitleContent>
+    <DialogContent>
+        @if (_isLoading)
+        {
+            <MudStack AlignItems="AlignItems.Center" Class="pa-8">
+                <MudProgressCircular Indeterminate="true" />
+            </MudStack>
+        }
+        else
+        {
+            <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-3">
+                <MudText Typo="Typo.subtitle1">Scadenze</MudText>
+                <MudSpacer />
+                @if (_dues.Any(d => !d.IsPaid))
+                {
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               Size="Size.Small"
+                               StartIcon="@Icons.Material.Filled.Add"
+                               OnClick="RegisterPaymentClickAsync">
+                        Registra pagamento
+                    </MudButton>
+                }
+            </MudStack>
+
+            <MudStack Spacing="2" Class="mb-4">
+                @foreach (var due in _dues)
+                {
+                    <MudCard>
+                        <MudCardContent Class="pa-3">
+                            <MudGrid>
+                                <MudItem xs="6" sm="3">
+                                    <MudText Typo="Typo.caption">Scadenza</MudText>
+                                    <MudText>@due.Date.ToString("d")</MudText>
+                                </MudItem>
+                                <MudItem xs="6" sm="2">
+                                    <MudText Typo="Typo.caption">Importo</MudText>
+                                    <MudText>@due.Amount.ToString("C2")</MudText>
+                                </MudItem>
+                                <MudItem xs="6" sm="2">
+                                    <MudText Typo="Typo.caption">Pagato</MudText>
+                                    <MudText>@due.PaidAmount.ToString("C2")</MudText>
+                                </MudItem>
+                                <MudItem xs="6" sm="2">
+                                    <MudText Typo="Typo.caption">Residuo</MudText>
+                                    <MudText><strong>@((due.Amount - due.PaidAmount).ToString("C2"))</strong></MudText>
+                                </MudItem>
+                                <MudItem xs="12" sm="3">
+                                    <MudChip T="string" Color="@GetStatusColor(due.Status)" Size="Size.Small">@due.Status</MudChip>
+                                </MudItem>
+                            </MudGrid>
+                        </MudCardContent>
+                    </MudCard>
+                }
+            </MudStack>
+
+            <MudDivider Class="my-3" />
+
+            <MudText Typo="Typo.subtitle1" Class="mb-3">Pagamenti registrati</MudText>
+
+            @if (_payments.Count == 0)
+            {
+                <MudAlert Severity="Severity.Info">Nessun pagamento registrato per questa nota di credito.</MudAlert>
+            }
+            else
+            {
+                <MudStack Spacing="2">
+                    @foreach (var payment in _payments)
+                    {
+                        <MudCard>
+                            <MudCardContent Class="pa-3">
+                                <MudGrid>
+                                    <MudItem xs="6" sm="2">
+                                        <MudText Typo="Typo.caption">Data</MudText>
+                                        <MudText>@payment.Date.ToString("d")</MudText>
+                                    </MudItem>
+                                    <MudItem xs="6" sm="2">
+                                        <MudText Typo="Typo.caption">Importo</MudText>
+                                        <MudText>@payment.Amount.ToString("C2")</MudText>
+                                    </MudItem>
+                                    <MudItem xs="6" sm="3">
+                                        <MudText Typo="Typo.caption">Metodo</MudText>
+                                        <MudText>@(payment.PaymentMethodName ?? "—")</MudText>
+                                    </MudItem>
+                                    <MudItem xs="12" sm="4">
+                                        <MudText Typo="Typo.caption">Allocazioni</MudText>
+                                        <MudStack Row="true" Wrap="Wrap.Wrap" Spacing="1" Class="mt-1">
+                                            @foreach (var a in payment.Allocations)
+                                            {
+                                                <MudChip T="string" Size="Size.Small" Color="Color.Default">
+                                                    Sc. @a.DueDate.ToString("dd/MM") &mdash; @a.AllocationAmount.ToString("C2")
+                                                </MudChip>
+                                            }
+                                        </MudStack>
+                                    </MudItem>
+                                    <MudItem xs="12" sm="1" Class="d-flex justify-end">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                       Size="Size.Small"
+                                                       Color="Color.Error"
+                                                       OnClick="@(() => DeletePaymentClickAsync(payment))" />
+                                    </MudItem>
+                                </MudGrid>
+                            </MudCardContent>
+                        </MudCard>
+                    }
+                </MudStack>
+            }
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Close">Chiudi</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance Dialog { get; set; } = default!;
+    [Parameter] public CreditNoteViewModel CreditNote { get; set; } = default!;
+
+    private bool _isLoading = true;
+    private bool _hasChanges;
+    private List<CreditNoteDueViewModel> _dues = [];
+    private List<PaymentHistoryViewModel> _payments = [];
+
+    protected override async Task OnInitializedAsync() => await LoadDataAsync();
+
+    private async Task LoadDataAsync()
+    {
+        _isLoading = true;
+        StateHasChanged();
+
+        var creditNoteDetail = await Http.GetFromJsonAsync<CreditNoteEditModel>($"creditnotes/{CreditNote.Id}");
+
+        _dues = creditNoteDetail?.Dues
+            .Select(d => new CreditNoteDueViewModel
+            {
+                Id = d.Id!.Value,
+                Date = d.Date,
+                Amount = d.Amount,
+                PaidAmount = d.PaidAmount,
+                IsPaid = d.IsPaid
+            })
+            .OrderBy(d => d.Date)
+            .ToList() ?? [];
+
+        _payments = await Http.GetFromJsonAsync<List<PaymentHistoryViewModel>>($"creditnotes/{CreditNote.Id}/payments") ?? [];
+
+        _isLoading = false;
+    }
+
+    private async Task RegisterPaymentClickAsync()
+    {
+        var creditNoteForPayment = await Http.GetFromJsonAsync<CreditNoteEditModel>($"creditnotes/{CreditNote.Id}");
+        if (creditNoteForPayment is null)
+            return;
+
+        var dues = creditNoteForPayment.Dues.Where(d => !d.IsPaid).OrderBy(d => d.Date).ToList();
+
+        var invoiceDues = dues.Select(d => new InvoiceDueEditModel
+        {
+            Id = d.Id,
+            Date = d.Date,
+            Amount = d.Amount,
+            PaidAmount = d.PaidAmount,
+            IsPaid = d.IsPaid
+        }).ToList();
+
+        var parameters = new DialogParameters<PaymentDialog>();
+        parameters.Add(x => x.CreditNoteId, CreditNote.Id);
+        parameters.Add(x => x.CustomerId, CreditNote.CustomerId);
+        parameters.Add(x => x.Dues, invoiceDues);
+        var options = new DialogOptions { CloseOnEscapeKey = false, CloseButton = false, BackdropClick = false, MaxWidth = MaxWidth.Small, FullWidth = true };
+        var dlg = await DialogService.ShowAsync<PaymentDialog>($"Registra pagamento — Nota di credito {CreditNote.Number}", parameters, options);
+        if (!(await dlg.Result)!.Canceled)
+        {
+            _hasChanges = true;
+            await LoadDataAsync();
+        }
+    }
+
+    private async Task DeletePaymentClickAsync(PaymentHistoryViewModel payment)
+    {
+        bool? confirmed = await DialogService.ShowMessageBoxAsync(
+            "Eliminazione",
+            "Sei sicuro di voler eliminare questo pagamento?",
+            yesText: "Sì", cancelText: "No");
+        if (confirmed is not true)
+            return;
+
+        var response = await Http.DeleteAsync($"payments/{payment.Id}");
+        if (!await Snackbar.ShowResponseErrorAsync(response))
+            return;
+
+        _hasChanges = true;
+        await LoadDataAsync();
+    }
+
+    private void Close() => Dialog.Close(DialogResult.Ok(_hasChanges));
+
+    private static Color GetStatusColor(string status) => status switch
+    {
+        "Pagata" => Color.Success,
+        "Parzialmente pagata" => Color.Warning,
+        _ => Color.Default
+    };
+}

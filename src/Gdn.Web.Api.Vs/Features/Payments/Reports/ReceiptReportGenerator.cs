@@ -5,14 +5,14 @@ using QuestPDF.Fluent;
 namespace Gdn.Web.Api.Vs.Features.Payments.Reports;
 
 /// <summary>
-/// Generates the PDF receipt document (distinta di incasso) for a registered payment.
+/// Generates the PDF payment statement for a registered payment.
 /// </summary>
 public class ReceiptReportGenerator(IOptions<AppSettings> appSettings, IPaymentRepository paymentRepository)
 {
     /// <summary>
     /// Generates PDF bytes for the receipt identified by <paramref name="paymentId"/>.
     /// </summary>
-    /// <param name="paymentId">The ID of the payment (incasso) to generate the PDF for.</param>
+    /// <param name="paymentId">The ID of the payment to generate the PDF for.</param>
     /// <returns>Raw PDF bytes.</returns>
     /// <exception cref="InvalidOperationException">Thrown when the payment is not found.</exception>
     public async Task<byte[]> GeneratePdfBytesAsync(int paymentId)
@@ -25,7 +25,7 @@ public class ReceiptReportGenerator(IOptions<AppSettings> appSettings, IPaymentR
     private async Task<ReceiptReportModel> GetReportDataAsync(int paymentId)
     {
         var payment = await paymentRepository.GetAsync(paymentId,
-            ["PaymentMethod", "Customer.Addresses", "PaymentDues.Due.Invoice"])
+            ["PaymentMethod", "Customer.Addresses", "PaymentDues.Due.Invoice", "PaymentDues.Due.CreditNote"])
             ?? throw new InvalidOperationException($"Payment with ID {paymentId} not found.");
 
         var company = appSettings.Value.CompanyData;
@@ -63,8 +63,8 @@ public class ReceiptReportGenerator(IOptions<AppSettings> appSettings, IPaymentR
                 .Select(pd => new ReceiptDueRowModel
                 {
                     DueDate = pd.Due.Date,
-                    DocumentNumber = pd.Due.Invoice?.Number,
-                    DocumentType = pd.Due.Invoice is not null ? "Fattura" : "Scadenza",
+                    DocumentNumber = pd.Due.CreditNote?.Number ?? pd.Due.Invoice?.Number,
+                    DocumentType = pd.Due.CreditNote is not null ? "Nota di credito" : pd.Due.Invoice is not null ? "Fattura" : "Scadenza",
                     DueAmount = pd.Due.Amount,
                     AllocatedAmount = pd.Amount
                 }).ToList()

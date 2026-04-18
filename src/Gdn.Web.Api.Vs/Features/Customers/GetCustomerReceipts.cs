@@ -5,8 +5,8 @@ using Gdn.Web.Api.Vs.Endpoints;
 namespace Gdn.Web.Api.Vs.Features.Customers;
 
 /// <summary>
-/// Returns the history of all receipts (incassi) registered for a given customer,
-/// with details of the dues covered by each receipt.
+/// Returns the history of all customer payments registered for a given customer,
+/// with details of the dues covered by each payment.
 /// </summary>
 public class GetCustomerReceipts
 {
@@ -28,11 +28,11 @@ public class GetCustomerReceipts
     {
         public void MapEndpoint(IEndpointRouteBuilder app)
         {
-            app.MapGet("api/customers/{customerId:int}/receipts", Handler).WithTags(Tags.Customers);
+            app.MapGet("api/customers/{customerId:int}/receipts", HandlerAsync).WithTags(Tags.Customers);
         }
     }
 
-    private static async Task<IResult> Handler(int customerId, ICustomerRepository customerRepository, IPaymentRepository paymentRepository)
+    private static async Task<IResult> HandlerAsync(int customerId, ICustomerRepository customerRepository, IPaymentRepository paymentRepository)
     {
         var customer = await customerRepository.GetAsync(customerId);
         if (customer is null)
@@ -40,7 +40,7 @@ public class GetCustomerReceipts
 
         var payments = await paymentRepository.GetAllAsync(
             predicate: p => p.CustomerId == customerId && !p.IsDeleted,
-            includes: ["PaymentMethod", "PaymentDues.Due.Invoice"]);
+            includes: ["PaymentMethod", "PaymentDues.Due.Invoice", "PaymentDues.Due.CreditNote"]);
 
         var receipts = payments
             .OrderByDescending(p => p.Date)
@@ -52,8 +52,8 @@ public class GetCustomerReceipts
                 p.PaymentDues.Select(pd => new CoveredDueResponse(
                     pd.DueId,
                     pd.Due.Date,
-                    pd.Due.Invoice?.Number,
-                    pd.Due.Invoice is not null ? "Fattura" : "Scadenza",
+                    pd.Due.CreditNote?.Number ?? pd.Due.Invoice?.Number,
+                    pd.Due.CreditNote is not null ? "Nota di credito" : pd.Due.Invoice is not null ? "Fattura" : "Scadenza",
                     pd.Amount))));
 
         return ResultHelper.Ok(receipts);

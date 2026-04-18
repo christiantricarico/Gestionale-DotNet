@@ -325,10 +325,10 @@
         var options = new DialogOptions { CloseOnEscapeKey = false, CloseButton = false, BackdropClick = false };
         var dialog = await DialogService.ShowAsync<InvoiceDueEditDialog>("Nuova scadenza", parameters, options);
         var result = await dialog.Result;
-        if (result is not null && !result.Canceled)
+        if (result is not null && !result.Canceled && result.Data is InvoiceDueEditModel updatedDue)
         {
-            newDue.InputStatus = 1;
-            _model.Dues.Add(newDue);
+            updatedDue.InputStatus = 1;
+            _model.Dues.Add(updatedDue);
         }
     }
 

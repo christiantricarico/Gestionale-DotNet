@@ -13,7 +13,7 @@
     else
     {
         <MudGrid Class="mt-4">
-            <MudItem xs="12" sm="6">
+            <MudItem xs="12" sm="4">
                 <MudCard>
                     <MudCardContent>
                         <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-2">
@@ -32,7 +32,7 @@
                 </MudCard>
             </MudItem>
 
-            <MudItem xs="12" sm="6">
+            <MudItem xs="12" sm="4">
                 <MudCard>
                     <MudCardContent>
                         <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-2">
@@ -46,6 +46,24 @@
                         <MudButton Href="/invoices" Variant="Variant.Text" Color="Color.Primary"
                                    EndIcon="@Icons.Material.Filled.ArrowForward">
                             Vai alle fatture
+                        </MudButton>
+                    </MudCardActions>
+                </MudCard>
+            </MudItem>
+            <MudItem xs="12" sm="4">
+                <MudCard>
+                    <MudCardContent>
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-2">
+                            <MudIcon Icon="@Icons.Material.Filled.Receipt" Color="Color.Primary" Size="Size.Large" />
+                            <MudText Typo="Typo.h6">Note di credito</MudText>
+                        </MudStack>
+                        <MudText Typo="Typo.h3" Color="Color.Primary">@_stats?.CurrentYearCreditNoteCount</MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">note di credito emesse nel @DateTime.Now.Year</MudText>
+                    </MudCardContent>
+                    <MudCardActions>
+                        <MudButton Href="/creditnotes" Variant="Variant.Text" Color="Color.Primary"
+                                   EndIcon="@Icons.Material.Filled.ArrowForward">
+                            Vai alle note di credito
                         </MudButton>
                     </MudCardActions>
                 </MudCard>

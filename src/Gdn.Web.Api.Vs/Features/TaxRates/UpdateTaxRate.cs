@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 using Gdn.Domain.Data;
 using Gdn.Domain.Data.Repositories;
 using Gdn.Domain.Models;
@@ -15,7 +15,7 @@ public class UpdateTaxRate
     {
         public void MapEndpoint(IEndpointRouteBuilder app)
         {
-            app.MapPut("api/taxrates", Handler).WithTags(Tags.TaxRates);
+            app.MapPut("api/taxrates", HandlerAsync).WithTags(Tags.TaxRates);
         }
     }
 
@@ -28,7 +28,7 @@ public class UpdateTaxRate
         }
     }
 
-    private static async Task<IResult> Handler(UpdateTaxRateRequest request, IValidator<UpdateTaxRateRequest> validator, IUnitOfWork unitOfWork)
+    private static async Task<IResult> HandlerAsync(UpdateTaxRateRequest request, IValidator<UpdateTaxRateRequest> validator, IUnitOfWork unitOfWork)
     {
         var validationResult = await validator.ValidateAsync(request);
         if (!validationResult.IsValid)

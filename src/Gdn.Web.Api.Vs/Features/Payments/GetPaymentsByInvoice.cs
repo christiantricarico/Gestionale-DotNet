@@ -13,11 +13,11 @@ public class GetPaymentsByInvoice
     {
         public void MapEndpoint(IEndpointRouteBuilder app)
         {
-            app.MapGet("api/invoices/{invoiceId:int}/payments", Handler).WithTags(Tags.Payments);
+            app.MapGet("api/invoices/{invoiceId:int}/payments", HandlerAsync).WithTags(Tags.Payments);
         }
     }
 
-    private static async Task<IResult> Handler(int invoiceId, IDueRepository dueRepository)
+    private static async Task<IResult> HandlerAsync(int invoiceId, IDueRepository dueRepository)
     {
         var dues = await dueRepository.GetAllAsync(
             predicate: d => d.InvoiceId == invoiceId,

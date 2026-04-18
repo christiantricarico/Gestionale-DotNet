@@ -15,7 +15,11 @@ public class Payment : TrackedEntity<int>
     /// <summary>The date on which the payment was made.</summary>
     public DateOnly Date { get; set; }
 
-    /// <summary>The total amount of this payment.</summary>
+    /// <summary>
+    /// The signed total amount of this payment.
+    /// Positive amounts identify incoming customer receipts, while negative amounts
+    /// identify outgoing customer payments such as credit-note reimbursements.
+    /// </summary>
     public decimal Amount { get; set; }
 
     /// <summary>FK to the payment method used. <see langword="null"/> if not specified.</summary>
@@ -25,8 +29,8 @@ public class Payment : TrackedEntity<int>
     public PaymentMethod? PaymentMethod { get; set; }
 
     /// <summary>
-    /// FK to the customer who made this payment. Set when registering a customer receipt
-    /// (incasso), allowing the payment to be queried directly by customer.
+    /// FK to the customer associated with this payment. Set when registering a customer-level
+    /// payment so the movement can be queried directly by customer.
     /// <see langword="null"/> for invoice-level payments registered via the invoice workflow.
     /// </summary>
     public int? CustomerId { get; set; }

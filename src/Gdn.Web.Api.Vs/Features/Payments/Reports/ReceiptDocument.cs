@@ -34,12 +34,12 @@ internal sealed class ReceiptDocument(ReceiptReportModel model) : IDocument
             row.RelativeItem().Column(column =>
             {
                 column.Item()
-                    .Text($"Distinta di incasso #{model.PaymentId}")
+                    .Text($"Distinta di pagamento #{model.PaymentId}")
                     .FontSize(20).SemiBold().FontColor(Colors.Green.Medium);
 
                 column.Item().Text(text =>
                 {
-                    text.Span("Data incasso: ").SemiBold();
+                    text.Span("Data pagamento: ").SemiBold();
                     text.Span($"{model.Date:d}");
                 });
 
@@ -85,7 +85,7 @@ internal sealed class ReceiptDocument(ReceiptReportModel model) : IDocument
         {
             column.Spacing(5);
 
-            column.Item().Text("Scadenze coperte dall'incasso")
+            column.Item().Text("Scadenze coperte dal pagamento")
                 .FontSize(14).SemiBold().FontColor(Colors.Green.Medium);
 
             column.Item().Table(table =>
@@ -143,7 +143,7 @@ internal sealed class ReceiptDocument(ReceiptReportModel model) : IDocument
 
             column.Item().Row(row =>
             {
-                row.RelativeItem().Text("Importo incasso");
+                row.RelativeItem().Text("Importo pagamento");
                 row.RelativeItem().AlignRight()
                     .Text($"{model.Amount:C2}").SemiBold();
             });

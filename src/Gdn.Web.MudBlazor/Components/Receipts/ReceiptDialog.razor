@@ -6,7 +6,7 @@
     <TitleContent>
         <MudText Typo="Typo.h6">
             <MudIcon Icon="@Icons.Material.Filled.ReceiptLong" Class="mr-2" Style="vertical-align:middle" />
-            Registra incasso
+            Registra pagamento
         </MudText>
     </TitleContent>
     <DialogContent>
@@ -26,17 +26,16 @@
                 <DataAnnotationsValidator />
                 <MudGrid Spacing="2">
                     <MudItem xs="12" sm="6">
-                        <MudDatePicker Label="Data incasso"
+                        <MudDatePicker Label="Data pagamento"
                                        @bind-Date="_receipt.DateWithTime"
                                        Required="true"
-                                       RequiredError="Data incasso richiesta." />
+                                       RequiredError="Data pagamento richiesta." />
                     </MudItem>
                     <MudItem xs="12" sm="6">
                         <MudNumericField T="decimal"
                                          Label="Importo"
                                          Value="_receipt.Amount"
                                          ValueChanged="OnAmountChanged"
-                                         Min="0.01m"
                                          Format="n2"
                                          HelperText="@($"Residuo totale: {_totalRemaining:C2}")"
                                          For="@(() => _receipt.Amount)" />
@@ -63,11 +62,11 @@
 
             @if (!_advancedMode)
             {
-                @if (_dues.Any(d => d.AllocatedAmount > 0))
+                @if (_dues.Any(d => d.AllocatedAmount != 0m))
                 {
                     <MudText Typo="Typo.subtitle2" Class="mt-4 mb-1">Allocazione FIFO</MudText>
                     <MudPaper Elevation="0" Class="pa-1">
-                        @foreach (var due in _dues.Where(d => d.AllocatedAmount > 0))
+                        @foreach (var due in _dues.Where(d => d.AllocatedAmount != 0m))
                         {
                             <MudChip T="string" Color="Color.Primary" Variant="Variant.Outlined" Class="ma-1">
                                 @(due.DocumentNumber ?? due.DocumentType) @due.DueDate.ToString("d") — @due.AllocatedAmount.ToString("C2") / @due.RemainingAmount.ToString("C2")
@@ -106,13 +105,13 @@
                                     <MudItem xs="12" sm="4">
                                         <MudNumericField T="decimal"
                                                          Label="Importo allocato"
-                                                         Value="due.AllocatedAmount"
-                                                         ValueChanged="@((v) => OnDueAmountChanged(due, v))"
-                                                         Disabled="!due.IsSelected"
-                                                         Min="0m"
-                                                         Max="due.RemainingAmount"
-                                                         Format="n2"
-                                                         Margin="Margin.Dense" />
+                                                          Value="due.AllocatedAmount"
+                                                          ValueChanged="@((v) => OnDueAmountChanged(due, v))"
+                                                          Disabled="!due.IsSelected"
+                                                         Min="@GetAllocationMin(due)"
+                                                         Max="@GetAllocationMax(due)"
+                                                          Format="n2"
+                                                          Margin="Margin.Dense" />
                                     </MudItem>
                                 </MudGrid>
                             </MudCardContent>
@@ -120,10 +119,10 @@
                     }
                 </MudStack>
 
-                @if (_advancedAllocationSum > _receipt.Amount)
+                @if (HasAdvancedAllocationOverflow())
                 {
                     <MudAlert Severity="Severity.Warning" Class="mt-2">
-                        Il totale allocato (@_advancedAllocationSum.ToString("C2")) supera l'importo dell'incasso (@_receipt.Amount.ToString("C2")).
+                        Il totale allocato (@_advancedAllocationSum.ToString("C2")) supera l'importo del pagamento (@_receipt.Amount.ToString("C2")).
                     </MudAlert>
                 }
             }
@@ -168,7 +167,7 @@
         var dues = await Http.GetFromJsonAsync<IEnumerable<CustomerDueViewModel>>($"customers/{CustomerId}/dues") ?? [];
         _dues = dues.ToList();
         _totalRemaining = _dues.Sum(d => d.RemainingAmount);
-        _receipt.Amount = _totalRemaining > 0 ? _totalRemaining : 0;
+        _receipt.Amount = _totalRemaining;
         RecalculateFifoAllocations();
     }
 
@@ -187,6 +186,8 @@
     /// <summary>
     /// Distributes <see cref="ReceiptInputModel.Amount"/> across all open dues
     /// in date order (oldest first), capping each slot at its remaining balance.
+    /// When the amount is zero and dues have mixed signs that perfectly cancel out,
+    /// all dues are allocated to their full remaining amount to perform a compensation.
     /// </summary>
     private void RecalculateFifoAllocations()
     {
@@ -195,12 +196,33 @@
         foreach (var due in _dues)
             due.AllocatedAmount = 0;
 
+        // Special case: when amount is zero, check if there are perfectly offsetting dues.
+        // If so, allocate each due to its full remaining to perform a compensation at zero cost.
+        if (remaining == 0m)
+        {
+            if (_dues.Sum(d => d.RemainingAmount) == 0m && _dues.Any(d => d.RemainingAmount != 0m))
+            {
+                foreach (var due in _dues)
+                    due.AllocatedAmount = due.RemainingAmount;
+            }
+
+            return;
+        }
+
         foreach (var due in _dues)
         {
-            if (remaining <= 0)
+            if (remaining == 0m)
                 break;
 
-            due.AllocatedAmount = Math.Min(due.RemainingAmount, remaining);
+            if (Math.Sign(due.RemainingAmount) == Math.Sign(remaining))
+            {
+                due.AllocatedAmount = Math.Min(Math.Abs(due.RemainingAmount), Math.Abs(remaining)) * Math.Sign(due.RemainingAmount);
+            }
+            else
+            {
+                due.AllocatedAmount = due.RemainingAmount;
+            }
+
             remaining -= due.AllocatedAmount;
         }
     }
@@ -227,6 +249,22 @@
         _advancedAllocationSum = _dues.Where(d => d.IsSelected).Sum(d => d.AllocatedAmount);
     }
 
+    private decimal GetAllocationMin(CustomerDueViewModel due) => due.RemainingAmount < 0m ? due.RemainingAmount : 0m;
+
+    private decimal GetAllocationMax(CustomerDueViewModel due) => due.RemainingAmount > 0m ? due.RemainingAmount : 0m;
+
+    private bool HasAdvancedAllocationOverflow()
+    {
+        if (_advancedAllocationSum == 0m)
+            return false;
+
+        if (Math.Sign(_advancedAllocationSum) != Math.Sign(_receipt.Amount))
+            return true;
+
+        return (_receipt.Amount > 0m && _advancedAllocationSum > _receipt.Amount)
+            || (_receipt.Amount < 0m && _advancedAllocationSum < _receipt.Amount);
+    }
+
     private async Task SaveAsync()
     {
         if (!_editContext.Validate())
@@ -236,7 +274,7 @@
 
         if (_advancedMode)
         {
-            allocations = _dues.Where(d => d.IsSelected && d.AllocatedAmount > 0).ToList();
+            allocations = _dues.Where(d => d.IsSelected && d.AllocatedAmount != 0m).ToList();
 
             if (allocations.Count == 0)
             {
@@ -244,16 +282,16 @@
                 return;
             }
 
-            if (_advancedAllocationSum > _receipt.Amount)
+            if (HasAdvancedAllocationOverflow())
             {
-                Snackbar.Add("Il totale allocato supera l'importo dell'incasso.", Severity.Warning);
+                Snackbar.Add("Il totale allocato supera l'importo del pagamento.", Severity.Warning);
                 return;
             }
         }
         else
         {
             RecalculateFifoAllocations();
-            allocations = _dues.Where(d => d.AllocatedAmount > 0).ToList();
+            allocations = _dues.Where(d => d.AllocatedAmount != 0m).ToList();
 
             if (allocations.Count == 0)
             {

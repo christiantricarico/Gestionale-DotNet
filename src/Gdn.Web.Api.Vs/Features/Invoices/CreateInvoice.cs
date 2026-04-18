@@ -20,7 +20,7 @@ public class CreateInvoice
     {
         public void MapEndpoint(IEndpointRouteBuilder app)
         {
-            app.MapPost("api/invoices", Handler).WithTags(Tags.Invoices);
+            app.MapPost("api/invoices", HandlerAsync).WithTags(Tags.Invoices);
         }
     }
 
@@ -33,7 +33,7 @@ public class CreateInvoice
         }
     }
 
-    private static async Task<IResult> Handler(CreateInvoiceRequest request, IValidator<CreateInvoiceRequest> validator, IUnitOfWork unitOfWork)
+    private static async Task<IResult> HandlerAsync(CreateInvoiceRequest request, IValidator<CreateInvoiceRequest> validator, IUnitOfWork unitOfWork)
     {
         var validationResult = await validator.ValidateAsync(request);
         if (!validationResult.IsValid)
