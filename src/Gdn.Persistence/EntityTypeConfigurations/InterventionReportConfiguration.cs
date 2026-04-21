@@ -18,7 +18,7 @@ internal sealed class InterventionReportConfiguration : IEntityTypeConfiguration
         builder.HasOne(e => e.Invoice)
             .WithMany(i => i.InterventionReports)
             .HasForeignKey(e => e.InvoiceId)
-            .OnDelete(DeleteBehavior.SetNull);
+            .OnDelete(DeleteBehavior.NoAction);
     }
 }
 

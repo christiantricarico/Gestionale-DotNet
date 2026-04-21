@@ -1027,7 +1027,7 @@ namespace Gdn.Persistence.Migrations
                     b.HasOne("Gdn.Domain.Models.Invoice", "Invoice")
                         .WithMany("InterventionReports")
                         .HasForeignKey("InvoiceId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.Navigation("Customer");
 

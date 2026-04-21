@@ -39,13 +39,12 @@ public partial class AddInterventionReportManagement : Migration
                         principalTable: "Customers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_InterventionReports_Invoices_InvoiceId",
-                        column: x => x.InvoiceId,
-                        principalTable: "Invoices",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.SetNull);
-                });
+                     table.ForeignKey(
+                         name: "FK_InterventionReports_Invoices_InvoiceId",
+                         column: x => x.InvoiceId,
+                         principalTable: "Invoices",
+                         principalColumn: "Id");
+                 });
 
             migrationBuilder.CreateTable(
                 name: "InterventionReportRows",
