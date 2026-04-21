@@ -1,5 +1,6 @@
 using Gdn.Web.Api.Vs.Features.CreditNotes.Reports;
 using Gdn.Web.Api.Vs.Features.CreditNotes.Xml;
+using Gdn.Web.Api.Vs.Features.InterventionReports.Reports;
 using Gdn.Web.Api.Vs.Features.Invoices.Reports;
 using Gdn.Web.Api.Vs.Features.Invoices.Xml;
 using Gdn.Web.Api.Vs.Features.Payments.Reports;
@@ -12,6 +13,7 @@ public static class DependencyInjection
     {
         services.AddScoped<InvoiceReportGenerator>();
         services.AddScoped<CreditNoteReportGenerator>();
+        services.AddScoped<InterventionReportReportGenerator>();
         services.AddScoped<ReceiptReportGenerator>();
         return services;
     }

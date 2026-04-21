@@ -1,0 +1,150 @@
+@inject HttpClient Http
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.TableRows" Class="mr-2" Style="vertical-align:middle" />
+            @(Row.Id.HasValue ? "Modifica riga rapporto" : "Nuova riga rapporto")
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <EditForm EditContext="_editContext" FormName="edit-interventionreportrow-form">
+            <DataAnnotationsValidator />
+            <MudGrid Spacing="2" Class="mt-1">
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="_model.Description"
+                                  Label="Descrizione"
+                                  Lines="2"
+                                  For="@(() => _model.Description)" />
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudAutocomplete T="TaxRateViewModel"
+                                     Label="Aliquota IVA"
+                                     Value="_selectedTaxRate"
+                                     ValueChanged="OnTaxRateChanged"
+                                     SearchFunc="SearchTaxRates"
+                                     ToStringFunc="@(t => string.IsNullOrWhiteSpace(t?.Name) ? t?.Code : t?.Name)"
+                                     ResetValueOnEmptyText="true" />
+                    <MudText Typo="Typo.caption" Color="Color.Error">
+                        <ValidationMessage For="@(() => _model.TaxRateId)" />
+                    </MudText>
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudAutocomplete T="MeasurementUnitViewModel"
+                                     Label="Unità di misura"
+                                     Value="_selectedMeasurementUnit"
+                                     ValueChanged="OnMeasurementUnitChanged"
+                                     SearchFunc="SearchMeasurementUnits"
+                                     ToStringFunc="@(u => u?.Name)"
+                                     ResetValueOnEmptyText="true" />
+                </MudItem>
+                <MudItem xs="6" sm="3">
+                    <MudDecimalField Label="Quantità"
+                                     @bind-DecimalValue="_model.Quantity" />
+                </MudItem>
+                <MudItem xs="6" sm="3">
+                    <MudDecimalField Label="Prezzo unitario"
+                                     @bind-DecimalValue="_model.UnitPrice" />
+                </MudItem>
+            </MudGrid>
+        </EditForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Annulla</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Save">Salva</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance Dialog { get; set; } = default!;
+    [Parameter] public InterventionReportRowEditModel Row { get; set; } = default!;
+
+    private InterventionReportRowEditModel _model = default!;
+    private EditContext _editContext = default!;
+
+    private IEnumerable<TaxRateViewModel> _taxRates = [];
+    private IEnumerable<MeasurementUnitViewModel> _measurementUnits = [];
+    private TaxRateViewModel? _selectedTaxRate;
+    private MeasurementUnitViewModel? _selectedMeasurementUnit;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _model = new InterventionReportRowEditModel
+        {
+            InputStatus = Row.InputStatus,
+            Id = Row.Id,
+            Description = Row.Description,
+            TaxRateId = Row.TaxRateId,
+            TaxRateName = Row.TaxRateName,
+            TaxRateValue = Row.TaxRateValue,
+            MeasurementUnitId = Row.MeasurementUnitId,
+            MeasurementUnitName = Row.MeasurementUnitName,
+            Quantity = Row.Quantity,
+            UnitPrice = Row.UnitPrice
+        };
+        _editContext = new EditContext(_model);
+
+        _taxRates = await Http.GetFromJsonAsync<IEnumerable<TaxRateViewModel>>("taxrates") ?? [];
+        _measurementUnits = await Http.GetFromJsonAsync<IEnumerable<MeasurementUnitViewModel>>("measurementunits") ?? [];
+
+        if (_model.TaxRateId.HasValue)
+            _selectedTaxRate = _taxRates.FirstOrDefault(t => t.Id == _model.TaxRateId);
+
+        if (_model.MeasurementUnitId.HasValue)
+            _selectedMeasurementUnit = _measurementUnits.FirstOrDefault(u => u.Id == _model.MeasurementUnitId);
+    }
+
+    private Task<IEnumerable<TaxRateViewModel>> SearchTaxRates(string? text, CancellationToken ct)
+    {
+        var results = string.IsNullOrWhiteSpace(text)
+            ? _taxRates
+            : _taxRates.Where(t => (t.Name?.Contains(text, StringComparison.OrdinalIgnoreCase) ?? false)
+                                || t.Code.Contains(text, StringComparison.OrdinalIgnoreCase));
+        return Task.FromResult(results);
+    }
+
+    private Task<IEnumerable<MeasurementUnitViewModel>> SearchMeasurementUnits(string? text, CancellationToken ct)
+    {
+        var results = string.IsNullOrWhiteSpace(text)
+            ? _measurementUnits
+            : _measurementUnits.Where(u => u.Name?.Contains(text, StringComparison.OrdinalIgnoreCase) ?? false);
+        return Task.FromResult(results);
+    }
+
+    private Task OnTaxRateChanged(TaxRateViewModel? taxRate)
+    {
+        _selectedTaxRate = taxRate;
+        _model.TaxRateId = taxRate?.Id;
+        _model.TaxRateName = string.IsNullOrWhiteSpace(taxRate?.Name) ? taxRate?.Code : taxRate?.Name;
+        _model.TaxRateValue = taxRate?.Rate;
+        return Task.CompletedTask;
+    }
+
+    private Task OnMeasurementUnitChanged(MeasurementUnitViewModel? unit)
+    {
+        _selectedMeasurementUnit = unit;
+        _model.MeasurementUnitId = unit?.Id;
+        _model.MeasurementUnitName = unit?.Name;
+        return Task.CompletedTask;
+    }
+
+    private void Save()
+    {
+        if (!_editContext.Validate())
+            return;
+
+        Row.Description = _model.Description;
+        Row.TaxRateId = _model.TaxRateId;
+        Row.TaxRateName = _model.TaxRateName;
+        Row.TaxRateValue = _model.TaxRateValue;
+        Row.MeasurementUnitId = _model.MeasurementUnitId;
+        Row.MeasurementUnitName = _model.MeasurementUnitName;
+        Row.Quantity = _model.Quantity;
+        Row.UnitPrice = _model.UnitPrice;
+
+        Dialog.Close(DialogResult.Ok(Row));
+    }
+
+    private void Cancel() => Dialog.Cancel();
+}

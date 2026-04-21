@@ -45,6 +45,21 @@
                         </MudText>
                     </MudItem>
                     <MudItem xs="12">
+                        <MudSelect T="int"
+                                   Label="Rapporti di intervento da importare"
+                                   MultiSelection="true"
+                                   SelectedValues="_selectedInterventionReportIds"
+                                   SelectedValuesChanged="OnInterventionReportsChanged"
+                                   Disabled="@(!_model.CustomerId.HasValue)">
+                            @foreach (var report in _availableInterventionReports)
+                            {
+                                <MudSelectItem T="int" Value="@report.Id">
+                                    @($"#{report.Number} - {report.Date:d} - {report.TotalAmount:C}")
+                                </MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudItem>
+                    <MudItem xs="12">
                         <MudButton Variant="Variant.Outlined"
                                    StartIcon="@Icons.Material.Filled.Add"
                                    OnClick="AddRowClick">
@@ -187,6 +202,8 @@
 
     private IEnumerable<CustomerViewModel> _customers = [];
     private CustomerViewModel? _selectedCustomer;
+    private IEnumerable<InterventionReportOptionViewModel> _availableInterventionReports = [];
+    private HashSet<int> _selectedInterventionReportIds = [];
 
     private const decimal StampDutyValue = 2.00m;
     private const decimal StampDutyThreshold = 77.47m;
@@ -227,7 +244,11 @@
         _customers = await Http.GetFromJsonAsync<IEnumerable<CustomerViewModel>>("customers") ?? [];
 
         if (_model.CustomerId.HasValue)
+        {
             _selectedCustomer = _customers.FirstOrDefault(c => c.Id == _model.CustomerId);
+            _selectedInterventionReportIds = _model.InterventionReportIds.ToHashSet();
+            await LoadAvailableInterventionReportsAsync(_model.CustomerId.Value);
+        }
     }
 
     private Task<IEnumerable<CustomerViewModel>> SearchCustomers(string? text, CancellationToken ct)
@@ -238,10 +259,32 @@
         return Task.FromResult(results);
     }
 
-    private void OnCustomerChanged(CustomerViewModel? customer)
+    private async Task OnCustomerChanged(CustomerViewModel? customer)
     {
         _selectedCustomer = customer;
         _model!.CustomerId = customer?.Id;
+        _model.InterventionReportIds.Clear();
+        _selectedInterventionReportIds = [];
+
+        if (customer?.Id is int customerId)
+            await LoadAvailableInterventionReportsAsync(customerId);
+        else
+            _availableInterventionReports = [];
+    }
+
+    private void OnInterventionReportsChanged(IEnumerable<int> ids)
+    {
+        _selectedInterventionReportIds = ids.ToHashSet();
+        _model!.InterventionReportIds = _selectedInterventionReportIds.ToList();
+    }
+
+    private async Task LoadAvailableInterventionReportsAsync(int customerId)
+    {
+        var query = _model?.Id.HasValue == true
+            ? $"interventionreports/customer/{customerId}/available?invoiceId={_model.Id.Value}"
+            : $"interventionreports/customer/{customerId}/available";
+
+        _availableInterventionReports = await Http.GetFromJsonAsync<IEnumerable<InterventionReportOptionViewModel>>(query) ?? [];
     }
 
     private async Task SaveAsync()

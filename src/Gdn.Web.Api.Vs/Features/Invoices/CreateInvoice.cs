@@ -4,17 +4,18 @@ using Gdn.Domain.Data.Repositories;
 using Gdn.Domain.Models;
 using Gdn.Domain.Models.Enums;
 using Gdn.Web.Api.Vs.Endpoints;
+using Gdn.Web.Api.Vs.Features.InterventionReports;
 
 namespace Gdn.Web.Api.Vs.Features.Invoices;
 
 public class CreateInvoice
 {
     public record CreateInvoiceRowRequest(string? Description, decimal? Quantity, decimal? UnitPrice, int? MeasurementUnitId, int? TaxRateId);
-    public record CreateInvoiceRequest(int Number, DateOnly Date, int CustomerId, decimal? StampDutyAmount, bool StampDutyChargedToCustomer, IEnumerable<CreateInvoiceRowRequest> Rows);
+    public record CreateInvoiceRequest(int Number, DateOnly Date, int CustomerId, decimal? StampDutyAmount, bool StampDutyChargedToCustomer, IEnumerable<CreateInvoiceRowRequest> Rows, IEnumerable<int>? InterventionReportIds);
 
     public record ResponseDue(int Id, DateOnly Date, decimal Amount, decimal PaidAmount, bool IsPaid);
     public record ResponseRow(long Id, string RowType, string? Description, decimal? Quantity, decimal? UnitPrice, int? MeasurementUnitId, int? TaxRateId);
-    public record Response(int Id, int Number, DateOnly Date, int CustomerId, decimal? StampDutyAmount, bool StampDutyChargedToCustomer, IEnumerable<ResponseRow> Rows, IEnumerable<ResponseDue> Dues);
+    public record Response(int Id, int Number, DateOnly Date, int CustomerId, decimal? StampDutyAmount, bool StampDutyChargedToCustomer, IEnumerable<ResponseRow> Rows, IEnumerable<ResponseDue> Dues, IEnumerable<int> InterventionReportIds);
 
     public sealed class Endpoint : IEndpoint
     {
@@ -42,9 +43,43 @@ public class CreateInvoice
         var invoice = MapInvoice(request);
 
         var invoiceRepository = unitOfWork.GetRepository<IInvoiceRepository>();
+        var interventionReportRepository = unitOfWork.GetRepository<IInterventionReportRepository>();
+
+        var interventionReportIds = request.InterventionReportIds?.Distinct().ToList() ?? new List<int>();
+        var interventionReports = interventionReportIds.Count == 0
+            ? new List<InterventionReport>()
+            : (await interventionReportRepository.GetAllAsync(r => interventionReportIds.Contains(r.Id), ["Rows"])).ToList();
+
+        if (interventionReports.Count != interventionReportIds.Count)
+        {
+            var missingId = interventionReportIds.First(id => interventionReports.All(r => r.Id != id));
+            return ResultHelper.NotFound(InterventionReportErrors.NotFound(missingId));
+        }
+
+        foreach (var report in interventionReports)
+        {
+            if (report.IsInvoiced)
+                return ResultHelper.Conflict(InterventionReportErrors.AlreadyInvoiced(report.Id));
+
+            if (report.CustomerId != request.CustomerId)
+                return ResultHelper.BadRequest(InterventionReportErrors.InvalidCustomer(report.Id));
+
+            if (!report.Rows.Any())
+                return ResultHelper.BadRequest(InterventionReportErrors.EmptyRows(report.Id));
+
+            foreach (var reportRow in report.Rows)
+                invoice.Rows.Add(MapInvoiceRow(reportRow));
+        }
+
         invoiceRepository.Add(invoice);
 
         await unitOfWork.SaveChangesAsync();
+
+        foreach (var report in interventionReports)
+        {
+            report.IsInvoiced = true;
+            report.InvoiceId = invoice.Id;
+        }
 
         // Reload with tax rates to compute the total for the auto-generated due.
         var invoiceWithDetails = await invoiceRepository.GetAsync(invoice.Id, ["Rows.TaxRate"]);
@@ -63,7 +98,7 @@ public class CreateInvoice
 
         await unitOfWork.SaveChangesAsync();
 
-        return ResultHelper.Created(MapResponse(invoiceWithDetails!, [due]));
+        return ResultHelper.Created(MapResponse(invoiceWithDetails!, [due], interventionReports.Select(r => r.Id)));
     }
 
     private static Invoice MapInvoice(CreateInvoiceRequest request) => new()
@@ -86,11 +121,22 @@ public class CreateInvoice
         TaxRateId = request.TaxRateId
     };
 
-    private static Response MapResponse(Invoice invoice, IEnumerable<Due> dues)
+    private static InvoiceRow MapInvoiceRow(InterventionReportRow reportRow) => new()
+    {
+        RowType = reportRow.RowType,
+        Description = reportRow.Description,
+        Quantity = reportRow.Quantity,
+        UnitPrice = reportRow.UnitPrice,
+        MeasurementUnitId = reportRow.MeasurementUnitId,
+        TaxRateId = reportRow.TaxRateId
+    };
+
+    private static Response MapResponse(Invoice invoice, IEnumerable<Due> dues, IEnumerable<int> interventionReportIds)
         => new(invoice.Id, int.Parse(invoice.Number), invoice.Date, invoice.CustomerId,
                invoice.StampDutyAmount, invoice.StampDutyChargedToCustomer,
-               invoice.Rows.Select(MapResponseRow),
-               dues.Select(MapResponseDue));
+                invoice.Rows.Select(MapResponseRow),
+               dues.Select(MapResponseDue),
+               interventionReportIds);
 
     private static ResponseRow MapResponseRow(InvoiceRow row)
         => new(row.Id, row.RowType, row.Description, row.Quantity, row.UnitPrice, row.MeasurementUnitId, row.TaxRateId);

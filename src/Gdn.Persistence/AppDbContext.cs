@@ -14,6 +14,8 @@ public class AppDbContext : DbContext
     public DbSet<Due> Dues { get; set; }
     public DbSet<Invoice> Invoices { get; set; }
     public DbSet<InvoiceRow> InvoiceRows { get; set; }
+    public DbSet<InterventionReport> InterventionReports { get; set; }
+    public DbSet<InterventionReportRow> InterventionReportRows { get; set; }
     public DbSet<MeasurementUnit> MeasurementUnits { get; set; }
     public DbSet<Payment> Payments { get; set; }
     public DbSet<PaymentDue> PaymentDues { get; set; }
