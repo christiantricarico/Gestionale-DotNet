@@ -6,10 +6,14 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Gdn.Persistence.Migrations
 {
     /// <inheritdoc />
-    public partial class AddInterventionReportManagement : Migration
-    {
-        /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
+public partial class AddInterventionReportManagement : Migration
+{
+    /// <summary>
+    /// Adds intervention report management persistence by creating intervention report header and row tables,
+    /// with links to customer, invoice, measurement unit, and tax rate data.
+    /// </summary>
+    /// <inheritdoc />
+    protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
                 name: "InterventionReports",
