@@ -20,7 +20,7 @@ public class Invoice : TrackedEntity<int>
     public ICollection<Due> Dues { get; set; } = [];
 
     /// <summary>The intervention reports that have been invoiced and linked to this invoice.</summary>
-    public ICollection<InterventionReport> InterventionReports { get; set; } = [];
+    public ICollection<Intervention> Interventions { get; set; } = [];
 
     /// <summary>
     /// Returns <see langword="true"/> when all dues are fully paid.

@@ -1,8 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Gdn.Web.MudBlazor.Models.InterventionReports;
+namespace Gdn.Web.MudBlazor.Models.Interventions;
 
-public class InterventionReportEditModel
+public class InterventionEditModel
 {
     public int? Id { get; set; }
 
@@ -24,10 +24,10 @@ public class InterventionReportEditModel
     public bool IsInvoiced { get; set; }
     public int? InvoiceId { get; set; }
 
-    public ICollection<InterventionReportRowEditModel> Rows { get; set; } = [];
+    public ICollection<InterventionRowEditModel> Rows { get; set; } = [];
 }
 
-public class InterventionReportRowEditModel
+public class InterventionRowEditModel
 {
     public int InputStatus { get; set; }
     public long? Id { get; set; }

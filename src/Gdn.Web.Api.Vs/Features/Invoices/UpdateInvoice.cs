@@ -3,7 +3,7 @@ using Gdn.Domain.Data;
 using Gdn.Domain.Data.Repositories;
 using Gdn.Domain.Models;
 using Gdn.Web.Api.Vs.Endpoints;
-using Gdn.Web.Api.Vs.Features.InterventionReports;
+using Gdn.Web.Api.Vs.Features.Interventions;
 
 namespace Gdn.Web.Api.Vs.Features.Invoices;
 
@@ -19,7 +19,7 @@ public class UpdateInvoice
         decimal? StampDutyAmount, bool StampDutyChargedToCustomer,
         IEnumerable<UpdateInvoiceRowRequest> Rows,
         IEnumerable<UpdateInvoiceDueRequest> Dues,
-        IEnumerable<int>? InterventionReportIds);
+        IEnumerable<int>? InterventionIds);
 
     public record ResponseRow(long Id, string RowType, string? Description, decimal? Quantity, decimal? UnitPrice, int? MeasurementUnitId, int? TaxRateId);
     public record ResponseDue(int Id, DateOnly Date, decimal Amount, decimal PaidAmount, bool IsPaid);
@@ -28,7 +28,7 @@ public class UpdateInvoice
         string PaymentStatus,
         IEnumerable<ResponseRow> Rows,
         IEnumerable<ResponseDue> Dues,
-        IEnumerable<int> InterventionReportIds);
+        IEnumerable<int> InterventionIds);
 
     public sealed class Endpoint : IEndpoint
     {
@@ -55,7 +55,7 @@ public class UpdateInvoice
 
         var invoiceRepository = unitOfWork.GetRepository<IInvoiceRepository>();
 
-        var invoice = await invoiceRepository.GetAsync(request.Id, ["Rows.TaxRate", "Dues.PaymentDues", "InterventionReports"]);
+        var invoice = await invoiceRepository.GetAsync(request.Id, ["Rows.TaxRate", "Dues.PaymentDues", "Interventions"]);
         if (invoice is null)
             return ResultHelper.NotFound(InvoiceErrors.NotFound(request.Id));
 
@@ -67,8 +67,8 @@ public class UpdateInvoice
         invoice.StampDutyAmount = request.StampDutyAmount;
         invoice.StampDutyChargedToCustomer = request.StampDutyChargedToCustomer;
 
-        var interventionReportRepository = unitOfWork.GetRepository<IInterventionReportRepository>();
-        var interventionReportValidationError = await ApplyInterventionReportChangesAsync(invoice, request.CustomerId, request.InterventionReportIds ?? Array.Empty<int>(), interventionReportRepository);
+        var interventionReportRepository = unitOfWork.GetRepository<IInterventionRepository>();
+        var interventionReportValidationError = await ApplyInterventionChangesAsync(invoice, request.CustomerId, request.InterventionIds ?? Array.Empty<int>(), interventionReportRepository);
         if (interventionReportValidationError is not null)
             return interventionReportValidationError;
 
@@ -245,7 +245,7 @@ public class UpdateInvoice
                 ResolvePaymentStatus(invoice),
                 invoice.Rows.Select(MapResponseRow),
                invoice.Dues.Select(MapResponseDue),
-               invoice.InterventionReports.Select(ir => ir.Id));
+               invoice.Interventions.Select(ir => ir.Id));
 
     private static ResponseRow MapResponseRow(InvoiceRow row)
         => new(row.Id, row.RowType, row.Description, row.Quantity, row.UnitPrice, row.MeasurementUnitId, row.TaxRateId);
@@ -266,18 +266,18 @@ public class UpdateInvoice
             : PaymentStatus.NotPaid;
     }
 
-    private static async Task<IResult?> ApplyInterventionReportChangesAsync(Invoice invoice, int customerId, IEnumerable<int> requestedIds, IInterventionReportRepository interventionReportRepository)
+    private static async Task<IResult?> ApplyInterventionChangesAsync(Invoice invoice, int customerId, IEnumerable<int> requestedIds, IInterventionRepository interventionReportRepository)
     {
         var requestedIdSet = requestedIds.Distinct().ToHashSet();
-        var currentIdSet = invoice.InterventionReports.Select(r => r.Id).ToHashSet();
+        var currentIdSet = invoice.Interventions.Select(r => r.Id).ToHashSet();
 
         var toAdd = requestedIdSet.Except(currentIdSet).ToList();
         var toRemove = currentIdSet.Except(requestedIdSet).ToList();
 
-        foreach (var linkedReport in invoice.InterventionReports.Where(r => requestedIdSet.Contains(r.Id)))
+        foreach (var linkedReport in invoice.Interventions.Where(r => requestedIdSet.Contains(r.Id)))
         {
             if (linkedReport.CustomerId != customerId)
-                return ResultHelper.BadRequest(InterventionReportErrors.InvalidCustomer(linkedReport.Id));
+                return ResultHelper.BadRequest(InterventionErrors.InvalidCustomer(linkedReport.Id));
         }
 
         if (toAdd.Count > 0)
@@ -286,19 +286,19 @@ public class UpdateInvoice
             if (reportsToAdd.Count != toAdd.Count)
             {
                 var missingId = toAdd.First(id => reportsToAdd.All(r => r.Id != id));
-                return ResultHelper.NotFound(InterventionReportErrors.NotFound(missingId));
+                return ResultHelper.NotFound(InterventionErrors.NotFound(missingId));
             }
 
             foreach (var report in reportsToAdd)
             {
                 if (report.IsInvoiced && report.InvoiceId != invoice.Id)
-                    return ResultHelper.Conflict(InterventionReportErrors.AlreadyInvoiced(report.Id));
+                    return ResultHelper.Conflict(InterventionErrors.AlreadyInvoiced(report.Id));
 
                 if (report.CustomerId != customerId)
-                    return ResultHelper.BadRequest(InterventionReportErrors.InvalidCustomer(report.Id));
+                    return ResultHelper.BadRequest(InterventionErrors.InvalidCustomer(report.Id));
 
                 if (!report.Rows.Any())
-                    return ResultHelper.BadRequest(InterventionReportErrors.EmptyRows(report.Id));
+                    return ResultHelper.BadRequest(InterventionErrors.EmptyRows(report.Id));
 
                 foreach (var reportRow in report.Rows)
                     invoice.Rows.Add(new InvoiceRow
@@ -313,15 +313,15 @@ public class UpdateInvoice
 
                 report.IsInvoiced = true;
                 report.InvoiceId = invoice.Id;
-                invoice.InterventionReports.Add(report);
+                invoice.Interventions.Add(report);
             }
         }
 
-        foreach (var report in invoice.InterventionReports.Where(r => toRemove.Contains(r.Id)).ToList())
+        foreach (var report in invoice.Interventions.Where(r => toRemove.Contains(r.Id)).ToList())
         {
             report.IsInvoiced = false;
             report.InvoiceId = null;
-            invoice.InterventionReports.Remove(report);
+            invoice.Interventions.Remove(report);
         }
 
         return null;

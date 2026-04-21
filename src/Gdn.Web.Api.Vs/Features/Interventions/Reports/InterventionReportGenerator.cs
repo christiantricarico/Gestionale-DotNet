@@ -3,9 +3,9 @@ using Gdn.Web.Api.Vs.Features.Invoices.Reports;
 using Microsoft.Extensions.Options;
 using QuestPDF.Fluent;
 
-namespace Gdn.Web.Api.Vs.Features.InterventionReports.Reports;
+namespace Gdn.Web.Api.Vs.Features.Interventions.Reports;
 
-public class InterventionReportReportGenerator(IOptions<AppSettings> appSettings, IInterventionReportRepository reportRepository)
+public class InterventionReportGenerator(IOptions<AppSettings> appSettings, IInterventionRepository reportRepository)
 {
     public async Task<byte[]> GeneratePdfBytesAsync(int reportId)
     {

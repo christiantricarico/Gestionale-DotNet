@@ -2,9 +2,9 @@ using Gdn.Domain.Data.Repositories;
 using Gdn.Domain.Models;
 using Gdn.Web.Api.Vs.Endpoints;
 
-namespace Gdn.Web.Api.Vs.Features.InterventionReports;
+namespace Gdn.Web.Api.Vs.Features.Interventions;
 
-public class GetInterventionReports
+public class GetInterventions
 {
     public record Response(int Id, string Number, DateOnly Date, int CustomerId, string? CustomerName, bool IsInvoiced, int? InvoiceId, string? InvoiceNumber, decimal TotalAmount);
 
@@ -12,11 +12,11 @@ public class GetInterventionReports
     {
         public void MapEndpoint(IEndpointRouteBuilder app)
         {
-            app.MapGet("api/interventionreports", HandlerAsync).WithTags(Tags.InterventionReports);
+            app.MapGet("api/interventions", HandlerAsync).WithTags(Tags.Interventions);
         }
     }
 
-    private static async Task<IResult> HandlerAsync(int? customerId, bool? isInvoiced, IInterventionReportRepository reportRepository)
+    private static async Task<IResult> HandlerAsync(int? customerId, bool? isInvoiced, IInterventionRepository reportRepository)
     {
         var data = await reportRepository.GetAllAsync(
             includes: ["Customer", "Rows.TaxRate", "Invoice"],
@@ -26,7 +26,7 @@ public class GetInterventionReports
         return ResultHelper.Ok(data.Select(MapResponse));
     }
 
-    private static Response MapResponse(InterventionReport report)
+    private static Response MapResponse(Intervention report)
         => new(
             report.Id,
             report.Number,
@@ -36,5 +36,5 @@ public class GetInterventionReports
             report.IsInvoiced,
             report.InvoiceId,
             report.Invoice?.Number,
-            InterventionReportAmountCalculator.CalculateTotal(report));
+            InterventionAmountCalculator.CalculateTotal(report));
 }

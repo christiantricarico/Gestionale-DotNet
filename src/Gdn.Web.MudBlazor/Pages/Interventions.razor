@@ -1,4 +1,4 @@
-@page "/interventionreports"
+@page "/interventions"
 
 @inject HttpClient Http
 @inject IDialogService DialogService
@@ -75,7 +75,7 @@
 
 @code {
     private bool _isLoading = true;
-    private IEnumerable<InterventionReportViewModel> _items = [];
+    private IEnumerable<InterventionViewModel> _items = [];
 
     protected override async Task OnInitializedAsync() => await ReloadAsync();
 
@@ -86,7 +86,7 @@
 
         try
         {
-            _items = await Http.GetFromJsonAsync<IEnumerable<InterventionReportViewModel>>("interventionreports") ?? [];
+            _items = await Http.GetFromJsonAsync<IEnumerable<InterventionViewModel>>("interventions") ?? [];
         }
         catch (HttpRequestException)
         {
@@ -101,29 +101,29 @@
 
     private async Task CreateButtonClick()
     {
-        var parameters = new DialogParameters<InterventionReportEditDialog>();
+        var parameters = new DialogParameters<InterventionEditDialog>();
         parameters.Add(x => x.Content, new DialogContent());
         var options = new DialogOptions { CloseOnEscapeKey = false, CloseButton = false, BackdropClick = false, MaxWidth = MaxWidth.Large, FullWidth = true };
-        var dialog = await DialogService.ShowAsync<InterventionReportEditDialog>("Nuovo rapporto di intervento", parameters, options);
+        var dialog = await DialogService.ShowAsync<InterventionEditDialog>("Nuovo rapporto di intervento", parameters, options);
         var result = await dialog.Result;
         if (result is not null && !result.Canceled)
             await ReloadAsync();
     }
 
-    private async Task EditButtonClick(InterventionReportViewModel report)
+    private async Task EditButtonClick(InterventionViewModel report)
     {
-        var parameters = new DialogParameters<InterventionReportEditDialog>();
+        var parameters = new DialogParameters<InterventionEditDialog>();
         parameters.Add(x => x.Content, new DialogContent { Id = report.Id });
         var options = new DialogOptions { CloseOnEscapeKey = false, CloseButton = false, BackdropClick = false, MaxWidth = MaxWidth.Large, FullWidth = true };
-        var dialog = await DialogService.ShowAsync<InterventionReportEditDialog>("Modifica rapporto di intervento", parameters, options);
+        var dialog = await DialogService.ShowAsync<InterventionEditDialog>("Modifica rapporto di intervento", parameters, options);
         var result = await dialog.Result;
         if (result is not null && !result.Canceled)
             await ReloadAsync();
     }
 
-    private async Task PrintButtonClick(InterventionReportViewModel report)
+    private async Task PrintButtonClick(InterventionViewModel report)
     {
-        var response = await Http.GetAsync($"interventionreports/pdf/{report.Id}");
+        var response = await Http.GetAsync($"interventions/pdf/{report.Id}");
         if (!await Snackbar.ShowResponseErrorAsync(response))
             return;
 
@@ -132,7 +132,7 @@
         await JS.InvokeVoidAsync("openPdfFromStream", streamRef);
     }
 
-    private async Task DeleteButtonClick(InterventionReportViewModel report)
+    private async Task DeleteButtonClick(InterventionViewModel report)
     {
         bool? confirmed = await DialogService.ShowMessageBoxAsync(
             "Eliminazione",
@@ -141,7 +141,7 @@
         if (confirmed is not true)
             return;
 
-        var response = await Http.DeleteAsync($"interventionreports/{report.Id}");
+        var response = await Http.DeleteAsync($"interventions/{report.Id}");
         if (!await Snackbar.ShowResponseErrorAsync(response))
             return;
 

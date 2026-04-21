@@ -1,19 +1,19 @@
 using Gdn.Web.Api.Vs.Endpoints;
-using Gdn.Web.Api.Vs.Features.InterventionReports.Reports;
+using Gdn.Web.Api.Vs.Features.Interventions.Reports;
 
-namespace Gdn.Web.Api.Vs.Features.InterventionReports;
+namespace Gdn.Web.Api.Vs.Features.Interventions;
 
-public class GenerateInterventionReportPdf
+public class GenerateInterventionPdf
 {
     public sealed class Endpoint : IEndpoint
     {
         public void MapEndpoint(IEndpointRouteBuilder app)
         {
-            app.MapGet("api/interventionreports/pdf/{id:int}", HandlerAsync).WithTags(Tags.InterventionReports);
+            app.MapGet("api/interventions/pdf/{id:int}", HandlerAsync).WithTags(Tags.Interventions);
         }
     }
 
-    private static async Task<IResult> HandlerAsync(int id, InterventionReportReportGenerator reportGenerator)
+    private static async Task<IResult> HandlerAsync(int id, InterventionReportGenerator reportGenerator)
     {
         var pdfBytes = await reportGenerator.GeneratePdfBytesAsync(id);
         var pdfStream = new MemoryStream(pdfBytes);

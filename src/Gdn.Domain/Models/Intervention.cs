@@ -3,7 +3,7 @@ using Gdn.Domain.Models.Enums;
 
 namespace Gdn.Domain.Models;
 
-public class InterventionReport : TrackedEntity<int>
+public class Intervention : TrackedEntity<int>
 {
     public string Number { get; set; } = default!;
     public DateOnly Date { get; set; }
@@ -16,18 +16,18 @@ public class InterventionReport : TrackedEntity<int>
     public int? InvoiceId { get; set; }
     public Invoice? Invoice { get; set; }
 
-    public ICollection<InterventionReportRow> Rows { get; set; } = [];
+    public ICollection<InterventionRow> Rows { get; set; } = [];
 }
 
-public class InterventionReportRow : TrackedEntity<long>
+public class InterventionRow : TrackedEntity<long>
 {
     public string RowType { get; set; } = DocumentRowType.DESCRIPTIVE;
     public string? Description { get; set; }
     public decimal? Quantity { get; set; }
     public decimal? UnitPrice { get; set; }
 
-    public int InterventionReportId { get; set; }
-    public InterventionReport InterventionReport { get; set; } = default!;
+    public int InterventionId { get; set; }
+    public Intervention Intervention { get; set; } = default!;
 
     public int? MeasurementUnitId { get; set; }
     public MeasurementUnit? MeasurementUnit { get; set; }

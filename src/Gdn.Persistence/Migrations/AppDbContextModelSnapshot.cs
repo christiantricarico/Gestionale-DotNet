@@ -279,7 +279,7 @@ namespace Gdn.Persistence.Migrations
                     b.ToTable("Dues");
                 });
 
-            modelBuilder.Entity("Gdn.Domain.Models.InterventionReport", b =>
+            modelBuilder.Entity("Gdn.Domain.Models.Intervention", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -323,10 +323,10 @@ namespace Gdn.Persistence.Migrations
 
                     b.HasIndex("IsInvoiced");
 
-                    b.ToTable("InterventionReports");
+                    b.ToTable("Interventions");
                 });
 
-            modelBuilder.Entity("Gdn.Domain.Models.InterventionReportRow", b =>
+            modelBuilder.Entity("Gdn.Domain.Models.InterventionRow", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -340,7 +340,7 @@ namespace Gdn.Persistence.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("InterventionReportId")
+                    b.Property<int>("InterventionId")
                         .HasColumnType("int");
 
                     b.Property<bool>("IsDeleted")
@@ -370,13 +370,13 @@ namespace Gdn.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("InterventionReportId");
+                    b.HasIndex("InterventionId");
 
                     b.HasIndex("MeasurementUnitId");
 
                     b.HasIndex("TaxRateId");
 
-                    b.ToTable("InterventionReportRows");
+                    b.ToTable("InterventionRows");
                 });
 
             modelBuilder.Entity("Gdn.Domain.Models.Invoice", b =>
@@ -1013,7 +1013,7 @@ namespace Gdn.Persistence.Migrations
                     b.Navigation("Invoice");
                 });
 
-            modelBuilder.Entity("Gdn.Domain.Models.InterventionReport", b =>
+            modelBuilder.Entity("Gdn.Domain.Models.Intervention", b =>
                 {
                     b.HasOne("Gdn.Domain.Models.Customer", "Customer")
                         .WithMany()
@@ -1022,7 +1022,7 @@ namespace Gdn.Persistence.Migrations
                         .IsRequired();
 
                     b.HasOne("Gdn.Domain.Models.Invoice", "Invoice")
-                        .WithMany("InterventionReports")
+                        .WithMany("Interventions")
                         .HasForeignKey("InvoiceId")
                         .OnDelete(DeleteBehavior.NoAction);
 
@@ -1031,11 +1031,11 @@ namespace Gdn.Persistence.Migrations
                     b.Navigation("Invoice");
                 });
 
-            modelBuilder.Entity("Gdn.Domain.Models.InterventionReportRow", b =>
+            modelBuilder.Entity("Gdn.Domain.Models.InterventionRow", b =>
                 {
-                    b.HasOne("Gdn.Domain.Models.InterventionReport", "InterventionReport")
+                    b.HasOne("Gdn.Domain.Models.Intervention", "Intervention")
                         .WithMany("Rows")
-                        .HasForeignKey("InterventionReportId")
+                        .HasForeignKey("InterventionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -1047,7 +1047,7 @@ namespace Gdn.Persistence.Migrations
                         .WithMany()
                         .HasForeignKey("TaxRateId");
 
-                    b.Navigation("InterventionReport");
+                    b.Navigation("Intervention");
 
                     b.Navigation("MeasurementUnit");
 
@@ -1174,7 +1174,7 @@ namespace Gdn.Persistence.Migrations
                     b.Navigation("PaymentDues");
                 });
 
-            modelBuilder.Entity("Gdn.Domain.Models.InterventionReport", b =>
+            modelBuilder.Entity("Gdn.Domain.Models.Intervention", b =>
                 {
                     b.Navigation("Rows");
                 });
@@ -1183,7 +1183,7 @@ namespace Gdn.Persistence.Migrations
                 {
                     b.Navigation("Dues");
 
-                    b.Navigation("InterventionReports");
+                    b.Navigation("Interventions");
 
                     b.Navigation("Rows");
                 });

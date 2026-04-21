@@ -1,10 +1,10 @@
 using Gdn.Domain.Models;
 
-namespace Gdn.Web.Api.Vs.Features.InterventionReports;
+namespace Gdn.Web.Api.Vs.Features.Interventions;
 
-public static class InterventionReportAmountCalculator
+public static class InterventionAmountCalculator
 {
-    public static decimal CalculateTotal(InterventionReport report)
+    public static decimal CalculateTotal(Intervention report)
     {
         decimal netAmount = CalculateNetAmount(report);
         decimal taxAmount = CalculateTaxAmount(report);
@@ -12,7 +12,7 @@ public static class InterventionReportAmountCalculator
         return netAmount + taxAmount;
     }
 
-    private static decimal CalculateNetAmount(InterventionReport report)
+    private static decimal CalculateNetAmount(Intervention report)
     {
         decimal netAmount = 0m;
 
@@ -25,7 +25,7 @@ public static class InterventionReportAmountCalculator
         return netAmount;
     }
 
-    private static decimal CalculateTaxAmount(InterventionReport report)
+    private static decimal CalculateTaxAmount(Intervention report)
     {
         decimal taxAmount = 0m;
 

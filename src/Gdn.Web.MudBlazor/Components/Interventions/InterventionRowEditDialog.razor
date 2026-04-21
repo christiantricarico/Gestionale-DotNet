@@ -58,9 +58,9 @@
 
 @code {
     [CascadingParameter] private IMudDialogInstance Dialog { get; set; } = default!;
-    [Parameter] public InterventionReportRowEditModel Row { get; set; } = default!;
+    [Parameter] public InterventionRowEditModel Row { get; set; } = default!;
 
-    private InterventionReportRowEditModel _model = default!;
+    private InterventionRowEditModel _model = default!;
     private EditContext _editContext = default!;
 
     private IEnumerable<TaxRateViewModel> _taxRates = [];
@@ -70,7 +70,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        _model = new InterventionReportRowEditModel
+        _model = new InterventionRowEditModel
         {
             InputStatus = Row.InputStatus,
             Id = Row.Id,

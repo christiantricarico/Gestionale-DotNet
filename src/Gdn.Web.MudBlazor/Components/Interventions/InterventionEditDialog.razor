@@ -114,7 +114,7 @@
     [CascadingParameter] private IMudDialogInstance Dialog { get; set; } = default!;
     [Parameter] public DialogContent Content { get; set; } = new();
 
-    private InterventionReportEditModel? _model;
+    private InterventionEditModel? _model;
     private EditContext _editContext = default!;
     private bool _saving;
 
@@ -125,12 +125,12 @@
     {
         if (Content.Id == 0)
         {
-            var lastNumber = await Http.GetFromJsonAsync<int>("interventionreports/last-number");
-            _model = new InterventionReportEditModel { Number = lastNumber + 1 };
+            var lastNumber = await Http.GetFromJsonAsync<int>("interventions/last-number");
+            _model = new InterventionEditModel { Number = lastNumber + 1 };
         }
         else
         {
-            _model = await Http.GetFromJsonAsync<InterventionReportEditModel>($"interventionreports/{Content.Id}") ?? new();
+            _model = await Http.GetFromJsonAsync<InterventionEditModel>($"interventions/{Content.Id}") ?? new();
             _model.DateWithTime = _model.Date.ToDateTime(TimeOnly.MinValue);
         }
 
@@ -172,9 +172,9 @@
         {
             HttpResponseMessage response;
             if (!_model.Id.HasValue)
-                response = await Http.PostAsJsonAsync("interventionreports", _model);
+                response = await Http.PostAsJsonAsync("interventions", _model);
             else
-                response = await Http.PutAsJsonAsync("interventionreports", _model);
+                response = await Http.PutAsJsonAsync("interventions", _model);
 
             if (!await Snackbar.ShowResponseErrorAsync(response))
                 return;
@@ -189,11 +189,11 @@
 
     private async Task AddRowClick()
     {
-        var newRow = new InterventionReportRowEditModel();
-        var parameters = new DialogParameters<InterventionReportRowEditDialog>();
+        var newRow = new InterventionRowEditModel();
+        var parameters = new DialogParameters<InterventionRowEditDialog>();
         parameters.Add(x => x.Row, newRow);
         var options = new DialogOptions { CloseOnEscapeKey = false, CloseButton = false, BackdropClick = false, MaxWidth = MaxWidth.Medium, FullWidth = true };
-        var dialog = await DialogService.ShowAsync<InterventionReportRowEditDialog>("Nuova riga rapporto", parameters, options);
+        var dialog = await DialogService.ShowAsync<InterventionRowEditDialog>("Nuova riga rapporto", parameters, options);
         var result = await dialog.Result;
         if (result is not null && !result.Canceled)
         {
@@ -202,18 +202,18 @@
         }
     }
 
-    private async Task EditRowClick(InterventionReportRowEditModel row)
+    private async Task EditRowClick(InterventionRowEditModel row)
     {
-        var parameters = new DialogParameters<InterventionReportRowEditDialog>();
+        var parameters = new DialogParameters<InterventionRowEditDialog>();
         parameters.Add(x => x.Row, row);
         var options = new DialogOptions { CloseOnEscapeKey = false, CloseButton = false, BackdropClick = false, MaxWidth = MaxWidth.Medium, FullWidth = true };
-        var dialog = await DialogService.ShowAsync<InterventionReportRowEditDialog>("Modifica riga rapporto", parameters, options);
+        var dialog = await DialogService.ShowAsync<InterventionRowEditDialog>("Modifica riga rapporto", parameters, options);
         var result = await dialog.Result;
         if (result is not null && !result.Canceled && row.InputStatus == 0)
             row.InputStatus = 2;
     }
 
-    private async Task DeleteRowClick(InterventionReportRowEditModel row)
+    private async Task DeleteRowClick(InterventionRowEditModel row)
     {
         bool? confirmed = await DialogService.ShowMessageBoxAsync(
             "Eliminazione",

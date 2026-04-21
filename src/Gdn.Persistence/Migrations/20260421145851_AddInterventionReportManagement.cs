@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Gdn.Persistence.Migrations
 {
     /// <inheritdoc />
-public partial class AddInterventionReportManagement : Migration
+public partial class AddInterventionManagement : Migration
 {
     /// <summary>
     /// Adds intervention report management persistence by creating intervention report header and row tables,
@@ -16,7 +16,7 @@ public partial class AddInterventionReportManagement : Migration
     protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "InterventionReports",
+                name: "Interventions",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
@@ -32,22 +32,22 @@ public partial class AddInterventionReportManagement : Migration
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_InterventionReports", x => x.Id);
+                    table.PrimaryKey("PK_Interventions", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_InterventionReports_Customers_CustomerId",
+                        name: "FK_Interventions_Customers_CustomerId",
                         column: x => x.CustomerId,
                         principalTable: "Customers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                      table.ForeignKey(
-                         name: "FK_InterventionReports_Invoices_InvoiceId",
+                         name: "FK_Interventions_Invoices_InvoiceId",
                          column: x => x.InvoiceId,
                          principalTable: "Invoices",
                          principalColumn: "Id");
                  });
 
             migrationBuilder.CreateTable(
-                name: "InterventionReportRows",
+                name: "InterventionRows",
                 columns: table => new
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false)
@@ -56,7 +56,7 @@ public partial class AddInterventionReportManagement : Migration
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Quantity = table.Column<decimal>(type: "decimal(18,6)", precision: 18, scale: 6, nullable: true),
                     UnitPrice = table.Column<decimal>(type: "decimal(18,6)", precision: 18, scale: 6, nullable: true),
-                    InterventionReportId = table.Column<int>(type: "int", nullable: false),
+                    InterventionId = table.Column<int>(type: "int", nullable: false),
                     MeasurementUnitId = table.Column<int>(type: "int", nullable: true),
                     TaxRateId = table.Column<int>(type: "int", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
@@ -65,58 +65,58 @@ public partial class AddInterventionReportManagement : Migration
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_InterventionReportRows", x => x.Id);
+                    table.PrimaryKey("PK_InterventionRows", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_InterventionReportRows_InterventionReports_InterventionReportId",
-                        column: x => x.InterventionReportId,
-                        principalTable: "InterventionReports",
+                        name: "FK_InterventionRows_Interventions_InterventionId",
+                        column: x => x.InterventionId,
+                        principalTable: "Interventions",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_InterventionReportRows_MeasurementUnits_MeasurementUnitId",
+                        name: "FK_InterventionRows_MeasurementUnits_MeasurementUnitId",
                         column: x => x.MeasurementUnitId,
                         principalTable: "MeasurementUnits",
                         principalColumn: "Id");
                     table.ForeignKey(
-                        name: "FK_InterventionReportRows_TaxRates_TaxRateId",
+                        name: "FK_InterventionRows_TaxRates_TaxRateId",
                         column: x => x.TaxRateId,
                         principalTable: "TaxRates",
                         principalColumn: "Id");
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_InterventionReportRows_InterventionReportId",
-                table: "InterventionReportRows",
-                column: "InterventionReportId");
+                name: "IX_InterventionRows_InterventionId",
+                table: "InterventionRows",
+                column: "InterventionId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_InterventionReportRows_MeasurementUnitId",
-                table: "InterventionReportRows",
+                name: "IX_InterventionRows_MeasurementUnitId",
+                table: "InterventionRows",
                 column: "MeasurementUnitId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_InterventionReportRows_TaxRateId",
-                table: "InterventionReportRows",
+                name: "IX_InterventionRows_TaxRateId",
+                table: "InterventionRows",
                 column: "TaxRateId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_InterventionReports_CustomerId",
-                table: "InterventionReports",
+                name: "IX_Interventions_CustomerId",
+                table: "Interventions",
                 column: "CustomerId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_InterventionReports_Date",
-                table: "InterventionReports",
+                name: "IX_Interventions_Date",
+                table: "Interventions",
                 column: "Date");
 
             migrationBuilder.CreateIndex(
-                name: "IX_InterventionReports_InvoiceId",
-                table: "InterventionReports",
+                name: "IX_Interventions_InvoiceId",
+                table: "Interventions",
                 column: "InvoiceId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_InterventionReports_IsInvoiced",
-                table: "InterventionReports",
+                name: "IX_Interventions_IsInvoiced",
+                table: "Interventions",
                 column: "IsInvoiced");
         }
 
@@ -124,10 +124,10 @@ public partial class AddInterventionReportManagement : Migration
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "InterventionReportRows");
+                name: "InterventionRows");
 
             migrationBuilder.DropTable(
-                name: "InterventionReports");
+                name: "Interventions");
         }
     }
 }

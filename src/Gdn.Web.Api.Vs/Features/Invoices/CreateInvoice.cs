@@ -4,18 +4,18 @@ using Gdn.Domain.Data.Repositories;
 using Gdn.Domain.Models;
 using Gdn.Domain.Models.Enums;
 using Gdn.Web.Api.Vs.Endpoints;
-using Gdn.Web.Api.Vs.Features.InterventionReports;
+using Gdn.Web.Api.Vs.Features.Interventions;
 
 namespace Gdn.Web.Api.Vs.Features.Invoices;
 
 public class CreateInvoice
 {
     public record CreateInvoiceRowRequest(string? Description, decimal? Quantity, decimal? UnitPrice, int? MeasurementUnitId, int? TaxRateId);
-    public record CreateInvoiceRequest(int Number, DateOnly Date, int CustomerId, decimal? StampDutyAmount, bool StampDutyChargedToCustomer, IEnumerable<CreateInvoiceRowRequest> Rows, IEnumerable<int>? InterventionReportIds);
+    public record CreateInvoiceRequest(int Number, DateOnly Date, int CustomerId, decimal? StampDutyAmount, bool StampDutyChargedToCustomer, IEnumerable<CreateInvoiceRowRequest> Rows, IEnumerable<int>? InterventionIds);
 
     public record ResponseDue(int Id, DateOnly Date, decimal Amount, decimal PaidAmount, bool IsPaid);
     public record ResponseRow(long Id, string RowType, string? Description, decimal? Quantity, decimal? UnitPrice, int? MeasurementUnitId, int? TaxRateId);
-    public record Response(int Id, int Number, DateOnly Date, int CustomerId, decimal? StampDutyAmount, bool StampDutyChargedToCustomer, IEnumerable<ResponseRow> Rows, IEnumerable<ResponseDue> Dues, IEnumerable<int> InterventionReportIds);
+    public record Response(int Id, int Number, DateOnly Date, int CustomerId, decimal? StampDutyAmount, bool StampDutyChargedToCustomer, IEnumerable<ResponseRow> Rows, IEnumerable<ResponseDue> Dues, IEnumerable<int> InterventionIds);
 
     public sealed class Endpoint : IEndpoint
     {
@@ -43,29 +43,29 @@ public class CreateInvoice
         var invoice = MapInvoice(request);
 
         var invoiceRepository = unitOfWork.GetRepository<IInvoiceRepository>();
-        var interventionReportRepository = unitOfWork.GetRepository<IInterventionReportRepository>();
+        var interventionReportRepository = unitOfWork.GetRepository<IInterventionRepository>();
 
-        var interventionReportIds = request.InterventionReportIds?.Distinct().ToList() ?? new List<int>();
+        var interventionReportIds = request.InterventionIds?.Distinct().ToList() ?? new List<int>();
         var interventionReports = interventionReportIds.Count == 0
-            ? new List<InterventionReport>()
+            ? new List<Intervention>()
             : (await interventionReportRepository.GetAllAsync(r => interventionReportIds.Contains(r.Id), ["Rows"])).ToList();
 
         if (interventionReports.Count != interventionReportIds.Count)
         {
             var missingId = interventionReportIds.First(id => interventionReports.All(r => r.Id != id));
-            return ResultHelper.NotFound(InterventionReportErrors.NotFound(missingId));
+            return ResultHelper.NotFound(InterventionErrors.NotFound(missingId));
         }
 
         foreach (var report in interventionReports)
         {
             if (report.IsInvoiced)
-                return ResultHelper.Conflict(InterventionReportErrors.AlreadyInvoiced(report.Id));
+                return ResultHelper.Conflict(InterventionErrors.AlreadyInvoiced(report.Id));
 
             if (report.CustomerId != request.CustomerId)
-                return ResultHelper.BadRequest(InterventionReportErrors.InvalidCustomer(report.Id));
+                return ResultHelper.BadRequest(InterventionErrors.InvalidCustomer(report.Id));
 
             if (!report.Rows.Any())
-                return ResultHelper.BadRequest(InterventionReportErrors.EmptyRows(report.Id));
+                return ResultHelper.BadRequest(InterventionErrors.EmptyRows(report.Id));
 
             foreach (var reportRow in report.Rows)
                 invoice.Rows.Add(MapInvoiceRow(reportRow));
@@ -121,7 +121,7 @@ public class CreateInvoice
         TaxRateId = request.TaxRateId
     };
 
-    private static InvoiceRow MapInvoiceRow(InterventionReportRow reportRow) => new()
+    private static InvoiceRow MapInvoiceRow(InterventionRow reportRow) => new()
     {
         RowType = reportRow.RowType,
         Description = reportRow.Description,

@@ -23,13 +23,13 @@ public class InvoiceEditModel
 
     public decimal? StampDutyAmount { get; set; }
     public bool StampDutyChargedToCustomer { get; set; }
-    public ICollection<int> InterventionReportIds { get; set; } = [];
+    public ICollection<int> InterventionIds { get; set; } = [];
 
     public ICollection<InvoiceRowEditModel> Rows { get; set; } = [];
     public ICollection<InvoiceDueEditModel> Dues { get; set; } = [];
 }
 
-public class InterventionReportOptionViewModel
+public class InterventionOptionViewModel
 {
     public int Id { get; set; }
     public string Number { get; set; } = default!;

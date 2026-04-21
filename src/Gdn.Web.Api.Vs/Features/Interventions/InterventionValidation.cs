@@ -1,8 +1,8 @@
 using Gdn.Domain.Data.Repositories;
 
-namespace Gdn.Web.Api.Vs.Features.InterventionReports;
+namespace Gdn.Web.Api.Vs.Features.Interventions;
 
-internal static class InterventionReportValidation
+internal static class InterventionValidation
 {
     public static async Task<Error?> ValidateRowReferencesAsync(IEnumerable<int?> measurementUnitIds, IEnumerable<int?> taxRateIds, IMeasurementUnitRepository measurementUnitRepository, ITaxRateRepository taxRateRepository)
     {
@@ -18,7 +18,7 @@ internal static class InterventionReportValidation
             var foundMeasurementUnitIds = measurementUnits.Select(mu => mu.Id).ToHashSet();
             var invalidMeasurementUnitId = measurementUnitIdSet.FirstOrDefault(id => !foundMeasurementUnitIds.Contains(id));
             if (invalidMeasurementUnitId != 0)
-                return InterventionReportErrors.InvalidMeasurementUnit(invalidMeasurementUnitId);
+                return InterventionErrors.InvalidMeasurementUnit(invalidMeasurementUnitId);
         }
 
         var taxRateIdSet = taxRateIds
@@ -33,7 +33,7 @@ internal static class InterventionReportValidation
             var foundTaxRateIds = taxRates.Select(tr => tr.Id).ToHashSet();
             var invalidTaxRateId = taxRateIdSet.FirstOrDefault(id => !foundTaxRateIds.Contains(id));
             if (invalidTaxRateId != 0)
-                return InterventionReportErrors.InvalidTaxRate(invalidTaxRateId);
+                return InterventionErrors.InvalidTaxRate(invalidTaxRateId);
         }
 
         return null;

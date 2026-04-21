@@ -1,8 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Gdn.Web.MudBlazor.Models.InterventionReports;
+namespace Gdn.Web.MudBlazor.Models.Interventions;
 
-public class InterventionReportViewModel
+public class InterventionViewModel
 {
     public int Id { get; set; }
 
@@ -22,10 +22,10 @@ public class InterventionReportViewModel
     public string? InvoiceNumber { get; set; }
     public decimal TotalAmount { get; set; }
 
-    public IEnumerable<InterventionReportRowViewModel> Rows { get; set; } = [];
+    public IEnumerable<InterventionRowViewModel> Rows { get; set; } = [];
 }
 
-public class InterventionReportRowViewModel
+public class InterventionRowViewModel
 {
     public long Id { get; set; }
 
