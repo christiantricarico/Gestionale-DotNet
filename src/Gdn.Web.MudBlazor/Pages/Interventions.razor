@@ -1,0 +1,150 @@
+@page "/interventions"
+
+@inject HttpClient Http
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+@inject IJSRuntime JS
+
+<PageTitle>Rapporti di intervento</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
+    <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-4">
+        <MudText Typo="Typo.h5">Rapporti di intervento</MudText>
+        <MudSpacer />
+        @if (!_isLoading)
+        {
+            <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.Add"
+                       OnClick="CreateButtonClick">Nuovo</MudButton>
+        }
+    </MudStack>
+
+    @if (_isLoading)
+    {
+        <MudProgressLinear Indeterminate="true" />
+    }
+    else
+    {
+        @foreach (var report in _items)
+        {
+            <MudCard Class="mb-2">
+                <MudCardContent Class="pa-3">
+                    <MudGrid>
+                        <MudItem xs="6" sm="2">
+                            <MudText Typo="Typo.caption">Numero</MudText>
+                            <MudText>@report.Number</MudText>
+                        </MudItem>
+                        <MudItem xs="6" sm="2">
+                            <MudText Typo="Typo.caption">Data</MudText>
+                            <MudText>@report.Date.ToString("d")</MudText>
+                        </MudItem>
+                        <MudItem xs="12" sm="3">
+                            <MudText Typo="Typo.caption">Cliente</MudText>
+                            <MudText>@report.CustomerName</MudText>
+                        </MudItem>
+                        <MudItem xs="6" sm="2">
+                            <MudText Typo="Typo.caption">Totale</MudText>
+                            <MudText>@report.TotalAmount.ToString("C")</MudText>
+                        </MudItem>
+                        <MudItem xs="6" sm="1">
+                            <MudChip T="string" Color="@(report.IsInvoiced ? Color.Success : Color.Warning)" Size="Size.Small">
+                                @(report.IsInvoiced ? "Fatturato" : "Da fatturare")
+                            </MudChip>
+                        </MudItem>
+                        <MudItem xs="12" sm="2" Class="d-flex justify-end align-center gap-1">
+                            <MudIconButton Icon="@Icons.Material.Filled.Print"
+                                           Size="Size.Small"
+                                           title="Stampa PDF"
+                                           OnClick="@(() => PrintButtonClick(report))" />
+                            <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                           Size="Size.Small"
+                                           Disabled="@report.IsInvoiced"
+                                           OnClick="@(() => EditButtonClick(report))" />
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                           Size="Size.Small"
+                                           Color="Color.Error"
+                                           Disabled="@report.IsInvoiced"
+                                           OnClick="@(() => DeleteButtonClick(report))" />
+                        </MudItem>
+                    </MudGrid>
+                </MudCardContent>
+            </MudCard>
+        }
+    }
+</MudContainer>
+
+@code {
+    private bool _isLoading = true;
+    private IEnumerable<InterventionViewModel> _items = [];
+
+    protected override async Task OnInitializedAsync() => await ReloadAsync();
+
+    private async Task ReloadAsync()
+    {
+        _isLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            _items = await Http.GetFromJsonAsync<IEnumerable<InterventionViewModel>>("interventions") ?? [];
+        }
+        catch (HttpRequestException)
+        {
+            Snackbar.Add("Errore durante il caricamento dei dati.", Severity.Error);
+            _items = [];
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private async Task CreateButtonClick()
+    {
+        var parameters = new DialogParameters<InterventionEditDialog>();
+        parameters.Add(x => x.Content, new DialogContent());
+        var options = new DialogOptions { CloseOnEscapeKey = false, CloseButton = false, BackdropClick = false, MaxWidth = MaxWidth.Large, FullWidth = true };
+        var dialog = await DialogService.ShowAsync<InterventionEditDialog>("Nuovo rapporto di intervento", parameters, options);
+        var result = await dialog.Result;
+        if (result is not null && !result.Canceled)
+            await ReloadAsync();
+    }
+
+    private async Task EditButtonClick(InterventionViewModel report)
+    {
+        var parameters = new DialogParameters<InterventionEditDialog>();
+        parameters.Add(x => x.Content, new DialogContent { Id = report.Id });
+        var options = new DialogOptions { CloseOnEscapeKey = false, CloseButton = false, BackdropClick = false, MaxWidth = MaxWidth.Large, FullWidth = true };
+        var dialog = await DialogService.ShowAsync<InterventionEditDialog>("Modifica rapporto di intervento", parameters, options);
+        var result = await dialog.Result;
+        if (result is not null && !result.Canceled)
+            await ReloadAsync();
+    }
+
+    private async Task PrintButtonClick(InterventionViewModel report)
+    {
+        var response = await Http.GetAsync($"interventions/pdf/{report.Id}");
+        if (!await Snackbar.ShowResponseErrorAsync(response))
+            return;
+
+        var fileStream = await response.Content.ReadAsStreamAsync();
+        using var streamRef = new DotNetStreamReference(fileStream);
+        await JS.InvokeVoidAsync("openPdfFromStream", streamRef);
+    }
+
+    private async Task DeleteButtonClick(InterventionViewModel report)
+    {
+        bool? confirmed = await DialogService.ShowMessageBoxAsync(
+            "Eliminazione",
+            "Sei sicuro di voler eliminare questo rapporto?",
+            yesText: "Sì", cancelText: "No");
+        if (confirmed is not true)
+            return;
+
+        var response = await Http.DeleteAsync($"interventions/{report.Id}");
+        if (!await Snackbar.ShowResponseErrorAsync(response))
+            return;
+
+        await ReloadAsync();
+    }
+}

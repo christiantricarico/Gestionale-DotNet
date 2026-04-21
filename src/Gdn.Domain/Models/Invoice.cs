@@ -19,6 +19,9 @@ public class Invoice : TrackedEntity<int>
     /// <summary>The dues (payment deadlines) associated with this invoice.</summary>
     public ICollection<Due> Dues { get; set; } = [];
 
+    /// <summary>The intervention reports that have been invoiced and linked to this invoice.</summary>
+    public ICollection<Intervention> Interventions { get; set; } = [];
+
     /// <summary>
     /// Returns <see langword="true"/> when all dues are fully paid.
     /// Returns <see langword="false"/> if there are no dues.

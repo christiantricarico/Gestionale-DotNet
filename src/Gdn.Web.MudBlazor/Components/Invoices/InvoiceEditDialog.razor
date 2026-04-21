@@ -45,6 +45,21 @@
                         </MudText>
                     </MudItem>
                     <MudItem xs="12">
+                        <MudSelect T="int"
+                                   Label="Rapporti di intervento da importare"
+                                   MultiSelection="true"
+                                   SelectedValues="_selectedInterventionIds"
+                                   SelectedValuesChanged="OnInterventionsChanged"
+                                   Disabled="@(!_model.CustomerId.HasValue)">
+                            @foreach (var report in _availableInterventions)
+                            {
+                                <MudSelectItem T="int" Value="@report.Id">
+                                    @($"#{report.Number} - {report.Date:d} - {report.TotalAmount:C}")
+                                </MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudItem>
+                    <MudItem xs="12">
                         <MudButton Variant="Variant.Outlined"
                                    StartIcon="@Icons.Material.Filled.Add"
                                    OnClick="AddRowClick">
@@ -187,14 +202,36 @@
 
     private IEnumerable<CustomerViewModel> _customers = [];
     private CustomerViewModel? _selectedCustomer;
+    private IEnumerable<InterventionOptionViewModel> _availableInterventions = [];
+    private HashSet<int> _selectedInterventionIds = [];
+    private HashSet<int> _originalInterventionIds = [];
 
     private const decimal StampDutyValue = 2.00m;
     private const decimal StampDutyThreshold = 77.47m;
 
-    private decimal ExemptVatTotal =>
-        _model?.Rows
-            .Where(r => r.InputStatus != 3 && r.TaxRateValue == 0)
-            .Sum(r => r.TotalAmount) ?? 0m;
+    private decimal ExemptVatTotal
+    {
+        get
+        {
+            // Exempt VAT from invoice rows already in the model (manual rows, plus rows from original
+            // interventions when editing an existing invoice — they were copied to Rows on save).
+            decimal rowsExemptVat = _model?.Rows
+                .Where(r => r.InputStatus != 3 && r.TaxRateValue == 0)
+                .Sum(r => r.TotalAmount) ?? 0m;
+
+            // For newly selected interventions whose rows are not yet in _model.Rows, add their exempt totals.
+            decimal addedExemptVat = _availableInterventions
+                .Where(i => _selectedInterventionIds.Contains(i.Id) && !_originalInterventionIds.Contains(i.Id))
+                .Sum(i => i.ExemptVatTotal);
+
+            // For deselected interventions whose rows are still in _model.Rows (removed only on save), subtract.
+            decimal removedExemptVat = _availableInterventions
+                .Where(i => _originalInterventionIds.Contains(i.Id) && !_selectedInterventionIds.Contains(i.Id))
+                .Sum(i => i.ExemptVatTotal);
+
+            return rowsExemptVat + addedExemptVat - removedExemptVat;
+        }
+    }
 
     private bool StampDutyEnabled
     {
@@ -227,7 +264,12 @@
         _customers = await Http.GetFromJsonAsync<IEnumerable<CustomerViewModel>>("customers") ?? [];
 
         if (_model.CustomerId.HasValue)
+        {
             _selectedCustomer = _customers.FirstOrDefault(c => c.Id == _model.CustomerId);
+            _selectedInterventionIds = _model.InterventionIds.ToHashSet();
+            _originalInterventionIds = _model.InterventionIds.ToHashSet();
+            await LoadAvailableInterventionsAsync(_model.CustomerId.Value);
+        }
     }
 
     private Task<IEnumerable<CustomerViewModel>> SearchCustomers(string? text, CancellationToken ct)
@@ -238,10 +280,33 @@
         return Task.FromResult(results);
     }
 
-    private void OnCustomerChanged(CustomerViewModel? customer)
+    private async Task OnCustomerChanged(CustomerViewModel? customer)
     {
         _selectedCustomer = customer;
         _model!.CustomerId = customer?.Id;
+        _model.InterventionIds.Clear();
+        _selectedInterventionIds = [];
+        _originalInterventionIds = [];
+
+        if (customer?.Id is int customerId)
+            await LoadAvailableInterventionsAsync(customerId);
+        else
+            _availableInterventions = [];
+    }
+
+    private void OnInterventionsChanged(IEnumerable<int> ids)
+    {
+        _selectedInterventionIds = ids.ToHashSet();
+        _model!.InterventionIds = _selectedInterventionIds.ToList();
+    }
+
+    private async Task LoadAvailableInterventionsAsync(int customerId)
+    {
+        var query = _model?.Id.HasValue == true
+            ? $"interventions/customer/{customerId}/available?invoiceId={_model.Id.Value}"
+            : $"interventions/customer/{customerId}/available";
+
+        _availableInterventions = await Http.GetFromJsonAsync<IEnumerable<InterventionOptionViewModel>>(query) ?? [];
     }
 
     private async Task SaveAsync()

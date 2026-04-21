@@ -20,12 +20,18 @@ public class DeleteInvoice
 
         // Load with Dues so EF Core can cascade the in-memory delete, and to validate
         // that no due already has recorded payments before attempting deletion.
-        var invoice = await invoiceRepository.GetAsync(id, ["Dues"]);
+        var invoice = await invoiceRepository.GetAsync(id, ["Dues", "Interventions"]);
         if (invoice is null)
             return ResultHelper.NotFound(InvoiceErrors.NotFound(id));
 
         if (invoice.Dues.Any(d => d.HasPayments))
             return ResultHelper.Conflict(InvoiceErrors.HasPayments(id));
+
+        foreach (var interventionReport in invoice.Interventions)
+        {
+            interventionReport.IsInvoiced = false;
+            interventionReport.InvoiceId = null;
+        }
 
         await invoiceRepository.RemoveAsync(id);
         await unitOfWork.SaveChangesAsync();

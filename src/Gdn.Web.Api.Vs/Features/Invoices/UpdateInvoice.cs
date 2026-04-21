@@ -3,6 +3,7 @@ using Gdn.Domain.Data;
 using Gdn.Domain.Data.Repositories;
 using Gdn.Domain.Models;
 using Gdn.Web.Api.Vs.Endpoints;
+using Gdn.Web.Api.Vs.Features.Interventions;
 
 namespace Gdn.Web.Api.Vs.Features.Invoices;
 
@@ -17,7 +18,8 @@ public class UpdateInvoice
     public record UpdateInvoiceRequest(int Id, int Number, DateOnly Date, int CustomerId,
         decimal? StampDutyAmount, bool StampDutyChargedToCustomer,
         IEnumerable<UpdateInvoiceRowRequest> Rows,
-        IEnumerable<UpdateInvoiceDueRequest> Dues);
+        IEnumerable<UpdateInvoiceDueRequest> Dues,
+        IEnumerable<int>? InterventionIds);
 
     public record ResponseRow(long Id, string RowType, string? Description, decimal? Quantity, decimal? UnitPrice, int? MeasurementUnitId, int? TaxRateId);
     public record ResponseDue(int Id, DateOnly Date, decimal Amount, decimal PaidAmount, bool IsPaid);
@@ -25,7 +27,8 @@ public class UpdateInvoice
         decimal? StampDutyAmount, bool StampDutyChargedToCustomer,
         string PaymentStatus,
         IEnumerable<ResponseRow> Rows,
-        IEnumerable<ResponseDue> Dues);
+        IEnumerable<ResponseDue> Dues,
+        IEnumerable<int> InterventionIds);
 
     public sealed class Endpoint : IEndpoint
     {
@@ -52,7 +55,7 @@ public class UpdateInvoice
 
         var invoiceRepository = unitOfWork.GetRepository<IInvoiceRepository>();
 
-        var invoice = await invoiceRepository.GetAsync(request.Id, ["Rows.TaxRate", "Dues.PaymentDues"]);
+        var invoice = await invoiceRepository.GetAsync(request.Id, ["Rows.TaxRate", "Dues.PaymentDues", "Interventions"]);
         if (invoice is null)
             return ResultHelper.NotFound(InvoiceErrors.NotFound(request.Id));
 
@@ -63,6 +66,11 @@ public class UpdateInvoice
         invoice.CustomerId = request.CustomerId;
         invoice.StampDutyAmount = request.StampDutyAmount;
         invoice.StampDutyChargedToCustomer = request.StampDutyChargedToCustomer;
+
+        var interventionReportRepository = unitOfWork.GetRepository<IInterventionRepository>();
+        var interventionReportValidationError = await ApplyInterventionChangesAsync(invoice, request.CustomerId, request.InterventionIds ?? Array.Empty<int>(), interventionReportRepository);
+        if (interventionReportValidationError is not null)
+            return interventionReportValidationError;
 
         ApplyRowChanges(invoice, request.Rows);
 
@@ -234,9 +242,10 @@ public class UpdateInvoice
     private static Response MapResponse(Invoice invoice)
         => new(invoice.Id, int.Parse(invoice.Number), invoice.Date, invoice.CustomerId,
                invoice.StampDutyAmount, invoice.StampDutyChargedToCustomer,
-               ResolvePaymentStatus(invoice),
-               invoice.Rows.Select(MapResponseRow),
-               invoice.Dues.Select(MapResponseDue));
+                ResolvePaymentStatus(invoice),
+                invoice.Rows.Select(MapResponseRow),
+               invoice.Dues.Select(MapResponseDue),
+               invoice.Interventions.Select(ir => ir.Id));
 
     private static ResponseRow MapResponseRow(InvoiceRow row)
         => new(row.Id, row.RowType, row.Description, row.Quantity, row.UnitPrice, row.MeasurementUnitId, row.TaxRateId);
@@ -255,5 +264,66 @@ public class UpdateInvoice
         return invoice.Dues.Any(d => d.HasPayments)
             ? PaymentStatus.PartiallyPaid
             : PaymentStatus.NotPaid;
+    }
+
+    private static async Task<IResult?> ApplyInterventionChangesAsync(Invoice invoice, int customerId, IEnumerable<int> requestedIds, IInterventionRepository interventionReportRepository)
+    {
+        var requestedIdSet = requestedIds.Distinct().ToHashSet();
+        var currentIdSet = invoice.Interventions.Select(r => r.Id).ToHashSet();
+
+        var toAdd = requestedIdSet.Except(currentIdSet).ToList();
+        var toRemove = currentIdSet.Except(requestedIdSet).ToList();
+
+        foreach (var linkedReport in invoice.Interventions.Where(r => requestedIdSet.Contains(r.Id)))
+        {
+            if (linkedReport.CustomerId != customerId)
+                return ResultHelper.BadRequest(InterventionErrors.InvalidCustomer(linkedReport.Id));
+        }
+
+        if (toAdd.Count > 0)
+        {
+            var reportsToAdd = (await interventionReportRepository.GetAllAsync(r => toAdd.Contains(r.Id), ["Rows"])).ToList();
+            if (reportsToAdd.Count != toAdd.Count)
+            {
+                var missingId = toAdd.First(id => reportsToAdd.All(r => r.Id != id));
+                return ResultHelper.NotFound(InterventionErrors.NotFound(missingId));
+            }
+
+            foreach (var report in reportsToAdd)
+            {
+                if (report.IsInvoiced && report.InvoiceId != invoice.Id)
+                    return ResultHelper.Conflict(InterventionErrors.AlreadyInvoiced(report.Id));
+
+                if (report.CustomerId != customerId)
+                    return ResultHelper.BadRequest(InterventionErrors.InvalidCustomer(report.Id));
+
+                if (!report.Rows.Any())
+                    return ResultHelper.BadRequest(InterventionErrors.EmptyRows(report.Id));
+
+                foreach (var reportRow in report.Rows)
+                    invoice.Rows.Add(new InvoiceRow
+                    {
+                        RowType = reportRow.RowType,
+                        Description = reportRow.Description,
+                        Quantity = reportRow.Quantity,
+                        UnitPrice = reportRow.UnitPrice,
+                        MeasurementUnitId = reportRow.MeasurementUnitId,
+                        TaxRateId = reportRow.TaxRateId
+                    });
+
+                report.IsInvoiced = true;
+                report.InvoiceId = invoice.Id;
+                invoice.Interventions.Add(report);
+            }
+        }
+
+        foreach (var report in invoice.Interventions.Where(r => toRemove.Contains(r.Id)).ToList())
+        {
+            report.IsInvoiced = false;
+            report.InvoiceId = null;
+            invoice.Interventions.Remove(report);
+        }
+
+        return null;
     }
 }

@@ -23,9 +23,19 @@ public class InvoiceEditModel
 
     public decimal? StampDutyAmount { get; set; }
     public bool StampDutyChargedToCustomer { get; set; }
+    public ICollection<int> InterventionIds { get; set; } = [];
 
     public ICollection<InvoiceRowEditModel> Rows { get; set; } = [];
     public ICollection<InvoiceDueEditModel> Dues { get; set; } = [];
+}
+
+public class InterventionOptionViewModel
+{
+    public int Id { get; set; }
+    public string Number { get; set; } = default!;
+    public DateOnly Date { get; set; }
+    public decimal TotalAmount { get; set; }
+    public decimal ExemptVatTotal { get; set; }
 }
 
 public class InvoiceRowEditModel

@@ -16,7 +16,8 @@ public class GetInvoiceById
         decimal? StampDutyAmount, bool StampDutyChargedToCustomer,
         string PaymentStatus,
         IEnumerable<GetInvoiceByIdResponseRow> Rows,
-        IEnumerable<GetInvoiceByIdResponseDue> Dues);
+        IEnumerable<GetInvoiceByIdResponseDue> Dues,
+        IEnumerable<int> InterventionIds);
 
     public sealed class Endpoint : IEndpoint
     {
@@ -28,7 +29,7 @@ public class GetInvoiceById
 
     private static async Task<IResult> HandlerAsync(int id, IInvoiceRepository invoiceRepository)
     {
-        var data = await invoiceRepository.GetAsync(id, ["Rows.TaxRate", "Rows.MeasurementUnit", "Dues"]);
+        var data = await invoiceRepository.GetAsync(id, ["Rows.TaxRate", "Rows.MeasurementUnit", "Dues", "Interventions"]);
 
         return data is not null
             ? ResultHelper.Ok(MapResponse(data))
@@ -37,10 +38,11 @@ public class GetInvoiceById
 
     private static GetInvoiceByIdResponse MapResponse(Invoice invoice)
         => new(invoice.Id, invoice.Number, invoice.Date, invoice.CustomerId,
-               invoice.StampDutyAmount, invoice.StampDutyChargedToCustomer,
-               ResolvePaymentStatus(invoice),
-               invoice.Rows.Select(MapResponseRow),
-               invoice.Dues.Select(MapResponseDue));
+                invoice.StampDutyAmount, invoice.StampDutyChargedToCustomer,
+                ResolvePaymentStatus(invoice),
+                invoice.Rows.Select(MapResponseRow),
+                invoice.Dues.Select(MapResponseDue),
+                invoice.Interventions.Select(ir => ir.Id));
 
     private static GetInvoiceByIdResponseRow MapResponseRow(InvoiceRow row)
         => new(row.Id, row.RowType, row.Description, row.Quantity, row.UnitPrice,
