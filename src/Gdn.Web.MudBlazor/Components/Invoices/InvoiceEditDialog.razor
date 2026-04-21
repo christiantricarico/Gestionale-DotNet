@@ -204,14 +204,34 @@
     private CustomerViewModel? _selectedCustomer;
     private IEnumerable<InterventionOptionViewModel> _availableInterventions = [];
     private HashSet<int> _selectedInterventionIds = [];
+    private HashSet<int> _originalInterventionIds = [];
 
     private const decimal StampDutyValue = 2.00m;
     private const decimal StampDutyThreshold = 77.47m;
 
-    private decimal ExemptVatTotal =>
-        _model?.Rows
-            .Where(r => r.InputStatus != 3 && r.TaxRateValue == 0)
-            .Sum(r => r.TotalAmount) ?? 0m;
+    private decimal ExemptVatTotal
+    {
+        get
+        {
+            // Exempt VAT from invoice rows already in the model (manual rows, plus rows from original
+            // interventions when editing an existing invoice — they were copied to Rows on save).
+            decimal rowsExemptVat = _model?.Rows
+                .Where(r => r.InputStatus != 3 && r.TaxRateValue == 0)
+                .Sum(r => r.TotalAmount) ?? 0m;
+
+            // For newly selected interventions whose rows are not yet in _model.Rows, add their exempt totals.
+            decimal addedExemptVat = _availableInterventions
+                .Where(i => _selectedInterventionIds.Contains(i.Id) && !_originalInterventionIds.Contains(i.Id))
+                .Sum(i => i.ExemptVatTotal);
+
+            // For deselected interventions whose rows are still in _model.Rows (removed only on save), subtract.
+            decimal removedExemptVat = _availableInterventions
+                .Where(i => _originalInterventionIds.Contains(i.Id) && !_selectedInterventionIds.Contains(i.Id))
+                .Sum(i => i.ExemptVatTotal);
+
+            return rowsExemptVat + addedExemptVat - removedExemptVat;
+        }
+    }
 
     private bool StampDutyEnabled
     {
@@ -247,6 +267,7 @@
         {
             _selectedCustomer = _customers.FirstOrDefault(c => c.Id == _model.CustomerId);
             _selectedInterventionIds = _model.InterventionIds.ToHashSet();
+            _originalInterventionIds = _model.InterventionIds.ToHashSet();
             await LoadAvailableInterventionsAsync(_model.CustomerId.Value);
         }
     }
@@ -265,6 +286,7 @@
         _model!.CustomerId = customer?.Id;
         _model.InterventionIds.Clear();
         _selectedInterventionIds = [];
+        _originalInterventionIds = [];
 
         if (customer?.Id is int customerId)
             await LoadAvailableInterventionsAsync(customerId);

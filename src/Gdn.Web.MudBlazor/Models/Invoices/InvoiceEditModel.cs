@@ -35,6 +35,7 @@ public class InterventionOptionViewModel
     public string Number { get; set; } = default!;
     public DateOnly Date { get; set; }
     public decimal TotalAmount { get; set; }
+    public decimal ExemptVatTotal { get; set; }
 }
 
 public class InvoiceRowEditModel

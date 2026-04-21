@@ -5,7 +5,7 @@ namespace Gdn.Web.Api.Vs.Features.Interventions;
 
 public class GetAvailableInterventionsByCustomer
 {
-    public record Response(int Id, string Number, DateOnly Date, decimal TotalAmount);
+    public record Response(int Id, string Number, DateOnly Date, decimal TotalAmount, decimal ExemptVatTotal);
 
     public sealed class Endpoint : IEndpoint
     {
@@ -22,6 +22,6 @@ public class GetAvailableInterventionsByCustomer
             predicate: report => report.CustomerId == customerId
                 && (!report.IsInvoiced || report.InvoiceId == invoiceId));
 
-        return ResultHelper.Ok(reports.Select(r => new Response(r.Id, r.Number, r.Date, InterventionAmountCalculator.CalculateTotal(r))));
+        return ResultHelper.Ok(reports.Select(r => new Response(r.Id, r.Number, r.Date, InterventionAmountCalculator.CalculateTotal(r), InterventionAmountCalculator.CalculateExemptVatTotal(r))));
     }
 }

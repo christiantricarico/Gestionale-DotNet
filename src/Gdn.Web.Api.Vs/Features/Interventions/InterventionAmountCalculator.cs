@@ -25,6 +25,22 @@ public static class InterventionAmountCalculator
         return netAmount;
     }
 
+    public static decimal CalculateExemptVatTotal(Intervention intervention)
+    {
+        decimal exemptTotal = 0m;
+
+        foreach (var row in intervention.Rows)
+        {
+            if (row.TaxRate?.Rate == 0m)
+            {
+                var rowAmount = Math.Round((row.UnitPrice * row.Quantity) ?? 0m, 2, MidpointRounding.AwayFromZero);
+                exemptTotal += rowAmount;
+            }
+        }
+
+        return exemptTotal;
+    }
+
     private static decimal CalculateTaxAmount(Intervention report)
     {
         decimal taxAmount = 0m;
