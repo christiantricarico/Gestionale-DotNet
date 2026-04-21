@@ -22,6 +22,9 @@ public class GetAvailableInterventionsByCustomer
             predicate: report => report.CustomerId == customerId
                 && (!report.IsInvoiced || report.InvoiceId == invoiceId));
 
-        return ResultHelper.Ok(reports.Select(r => new Response(r.Id, r.Number, r.Date, InterventionAmountCalculator.CalculateTotal(r), InterventionAmountCalculator.CalculateExemptVatTotal(r))));
+        return ResultHelper.Ok(reports.Select(r => new Response(
+            r.Id, r.Number, r.Date,
+            InterventionAmountCalculator.CalculateTotal(r),
+            InterventionAmountCalculator.CalculateExemptVatTotal(r))));
     }
 }
