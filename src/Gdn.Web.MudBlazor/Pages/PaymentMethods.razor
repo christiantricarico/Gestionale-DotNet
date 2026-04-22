@@ -18,13 +18,26 @@
         }
     </MudStack>
 
+    <MudGrid Spacing="2" Class="mb-4">
+        <MudItem xs="12" sm="6" md="4">
+            <MudTextField T="string"
+                          Label="Filtro"
+                          Value="@_filterText"
+                          ValueChanged="OnFilterTextChanged"
+                          Immediate="true"
+                          Clearable="true"
+                          Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Filled.Search" />
+        </MudItem>
+    </MudGrid>
+
     @if (_isLoading)
     {
         <MudProgressLinear Indeterminate="true" />
     }
     else
     {
-        @foreach (var item in _items)
+        @foreach (var item in _filteredItems)
         {
             <MudCard Class="mb-2">
                 <MudCardContent Class="pa-3">
@@ -64,6 +77,8 @@
 @code {
     private bool _isLoading = true;
     private IEnumerable<PaymentMethodViewModel> _items = [];
+    private List<PaymentMethodViewModel> _filteredItems = [];
+    private string _filterText = string.Empty;
 
     protected override async Task OnInitializedAsync() => await ReloadAsync();
 
@@ -74,11 +89,13 @@
         try
         {
             _items = await Http.GetFromJsonAsync<IEnumerable<PaymentMethodViewModel>>("paymentmethods") ?? [];
+            ApplyFilter();
         }
         catch (HttpRequestException)
         {
             Snackbar.Add("Errore durante il caricamento dei dati.", Severity.Error);
             _items = [];
+            ApplyFilter();
         }
         finally
         {
@@ -123,4 +140,23 @@
 
         await ReloadAsync();
     }
+
+    private void OnFilterTextChanged(string? value)
+    {
+        _filterText = value ?? string.Empty;
+        ApplyFilter();
+    }
+
+    private void ApplyFilter()
+    {
+        _filteredItems = string.IsNullOrWhiteSpace(_filterText)
+            ? [.. _items]
+            : [.. _items.Where(item =>
+                ContainsText(item.Code) ||
+                ContainsText(item.Name) ||
+                ContainsText(item.Description))];
+    }
+
+    private bool ContainsText(string? value) =>
+        value?.Contains(_filterText, StringComparison.OrdinalIgnoreCase) is true;
 }
