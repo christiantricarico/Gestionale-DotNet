@@ -37,7 +37,7 @@
     }
     else
     {
-        @foreach (var item in GetFilteredItems())
+        @foreach (var item in _filteredItems)
         {
             <MudCard Class="mb-2">
                 <MudCardContent Class="pa-3">
@@ -77,6 +77,7 @@
 @code {
     private bool _isLoading = true;
     private IEnumerable<CustomerViewModel> _items = [];
+    private List<CustomerViewModel> _filteredItems = [];
     private string _filterText = string.Empty;
 
     protected override async Task OnInitializedAsync() => await ReloadAsync();
@@ -88,11 +89,13 @@
         try
         {
             _items = await Http.GetFromJsonAsync<IEnumerable<CustomerViewModel>>("customers") ?? [];
+            ApplyFilter();
         }
         catch (HttpRequestException)
         {
             Snackbar.Add("Errore durante il caricamento dei dati.", Severity.Error);
             _items = [];
+            ApplyFilter();
         }
         finally
         {
@@ -138,19 +141,21 @@
         await ReloadAsync();
     }
 
-    private IEnumerable<CustomerViewModel> GetFilteredItems() =>
-        string.IsNullOrWhiteSpace(_filterText)
-            ? _items
-            : _items.Where(item =>
+    private void OnFilterTextChanged(string? value)
+    {
+        _filterText = value ?? string.Empty;
+        ApplyFilter();
+    }
+
+    private void ApplyFilter()
+    {
+        _filteredItems = string.IsNullOrWhiteSpace(_filterText)
+            ? [.. _items]
+            : [.. _items.Where(item =>
                 ContainsText(item.Code) ||
                 ContainsText(item.Description) ||
                 ContainsText(item.FiscalCode) ||
-                ContainsText(item.VatNumber));
-
-    private Task OnFilterTextChanged(string? value)
-    {
-        _filterText = value ?? string.Empty;
-        return Task.CompletedTask;
+                ContainsText(item.VatNumber))];
     }
 
     private bool ContainsText(string? value) =>
