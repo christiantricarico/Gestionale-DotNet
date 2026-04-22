@@ -153,6 +153,7 @@
             ? [.. _items]
             : [.. _items.Where(item =>
                 ContainsText(item.Code) ||
+                ContainsText(item.Name) ||
                 ContainsText(item.Description) ||
                 ContainsText(item.FiscalCode) ||
                 ContainsText(item.VatNumber))];
