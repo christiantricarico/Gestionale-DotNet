@@ -1,5 +1,6 @@
 @page "/creditnotes"
 
+@using System.Text.Json
 @using Gdn.Web.MudBlazor.Models.CreditNotes
 @using Gdn.Web.MudBlazor.Components.CreditNotes
 @inject HttpClient Http
@@ -126,7 +127,20 @@
 
     private async Task LoadCustomersAsync()
     {
-        _customers = await Http.GetFromJsonAsync<IEnumerable<CustomerViewModel>>("customers") ?? [];
+        try
+        {
+            _customers = await Http.GetFromJsonAsync<IEnumerable<CustomerViewModel>>("customers").ConfigureAwait(false) ?? [];
+        }
+        catch (HttpRequestException)
+        {
+            Snackbar.Add("Errore durante il caricamento dei clienti.", Severity.Error);
+            _customers = [];
+        }
+        catch (JsonException)
+        {
+            Snackbar.Add("Dati clienti non validi ricevuti dal server.", Severity.Error);
+            _customers = [];
+        }
     }
 
     private async Task ReloadAsync()
@@ -136,7 +150,7 @@
 
         try
         {
-            _allItems = (await Http.GetFromJsonAsync<IEnumerable<CreditNoteViewModel>>("creditnotes") ?? []).ToList();
+            _allItems = (await Http.GetFromJsonAsync<IEnumerable<CreditNoteViewModel>>("creditnotes").ConfigureAwait(false) ?? []).ToList();
             ApplyFilters();
         }
         catch (HttpRequestException)

@@ -1,5 +1,6 @@
 @page "/invoices"
 
+@using System.Text.Json
 @inject HttpClient Http
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
@@ -124,7 +125,20 @@
 
     private async Task LoadCustomersAsync()
     {
-        _customers = await Http.GetFromJsonAsync<IEnumerable<CustomerViewModel>>("customers") ?? [];
+        try
+        {
+            _customers = await Http.GetFromJsonAsync<IEnumerable<CustomerViewModel>>("customers").ConfigureAwait(false) ?? [];
+        }
+        catch (HttpRequestException)
+        {
+            Snackbar.Add("Errore durante il caricamento dei clienti.", Severity.Error);
+            _customers = [];
+        }
+        catch (JsonException)
+        {
+            Snackbar.Add("Dati clienti non validi ricevuti dal server.", Severity.Error);
+            _customers = [];
+        }
     }
 
     private async Task ReloadAsync()
@@ -134,7 +148,7 @@
 
         try
         {
-            _allItems = (await Http.GetFromJsonAsync<IEnumerable<InvoiceViewModel>>("invoices") ?? []).ToList();
+            _allItems = (await Http.GetFromJsonAsync<IEnumerable<InvoiceViewModel>>("invoices").ConfigureAwait(false) ?? []).ToList();
             ApplyFilters();
         }
         catch (HttpRequestException)
