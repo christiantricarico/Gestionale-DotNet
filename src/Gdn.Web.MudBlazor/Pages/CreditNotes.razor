@@ -1,5 +1,6 @@
 @page "/creditnotes"
 
+@using System.Text.Json
 @using Gdn.Web.MudBlazor.Models.CreditNotes
 @using Gdn.Web.MudBlazor.Components.CreditNotes
 @inject HttpClient Http
@@ -21,13 +22,44 @@
         }
     </MudStack>
 
+    <MudGrid Spacing="2" Class="mb-4">
+        <MudItem xs="12" sm="6" md="4">
+            <MudSelect T="int?"
+                       Label="Cliente"
+                       @bind-Value="_selectedCustomerId"
+                       Clearable="true">
+                @foreach (var c in _customers)
+                {
+                    <MudSelectItem T="int?" Value="@((int?)c.Id)">@c.Name</MudSelectItem>
+                }
+            </MudSelect>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="3">
+            <MudDatePicker Label="Da data"
+                           @bind-Date="_filterFromDate"
+                           Clearable="true" />
+        </MudItem>
+        <MudItem xs="12" sm="6" md="3">
+            <MudDatePicker Label="A data"
+                           @bind-Date="_filterToDate"
+                           Clearable="true" />
+        </MudItem>
+        <MudItem xs="12" sm="6" md="2" Class="d-flex align-end">
+            <MudButton Variant="Variant.Outlined"
+                       FullWidth="true"
+                       OnClick="ApplyFilters">
+                Filtra
+            </MudButton>
+        </MudItem>
+    </MudGrid>
+
     @if (_isLoading)
     {
         <MudProgressLinear Indeterminate="true" />
     }
     else
     {
-        @foreach (var creditNote in _items)
+        @foreach (var creditNote in _filteredItems)
         {
             <MudCard Class="mb-2">
                 <MudCardContent Class="pa-3">
@@ -79,9 +111,37 @@
 
 @code {
     private bool _isLoading = true;
-    private IEnumerable<CreditNoteViewModel> _items = [];
+    private IEnumerable<CustomerViewModel> _customers = [];
+    private List<CreditNoteViewModel> _allItems = [];
+    private List<CreditNoteViewModel> _filteredItems = [];
 
-    protected override async Task OnInitializedAsync() => await ReloadAsync();
+    private int? _selectedCustomerId;
+    private DateTime? _filterFromDate;
+    private DateTime? _filterToDate;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCustomersAsync();
+        await ReloadAsync();
+    }
+
+    private async Task LoadCustomersAsync()
+    {
+        try
+        {
+            _customers = await Http.GetFromJsonAsync<IEnumerable<CustomerViewModel>>("customers").ConfigureAwait(false) ?? [];
+        }
+        catch (HttpRequestException)
+        {
+            Snackbar.Add("Errore durante il caricamento dei clienti.", Severity.Error);
+            _customers = [];
+        }
+        catch (JsonException)
+        {
+            Snackbar.Add("Dati clienti non validi ricevuti dal server.", Severity.Error);
+            _customers = [];
+        }
+    }
 
     private async Task ReloadAsync()
     {
@@ -90,17 +150,29 @@
 
         try
         {
-            _items = await Http.GetFromJsonAsync<IEnumerable<CreditNoteViewModel>>("creditnotes") ?? [];
+            _allItems = (await Http.GetFromJsonAsync<IEnumerable<CreditNoteViewModel>>("creditnotes").ConfigureAwait(false) ?? []).ToList();
+            ApplyFilters();
         }
         catch (HttpRequestException)
         {
             Snackbar.Add("Errore durante il caricamento dei dati.", Severity.Error);
-            _items = [];
+            _allItems = [];
+            _filteredItems = [];
         }
         finally
         {
             _isLoading = false;
         }
+    }
+
+    private void ApplyFilters()
+    {
+        _filteredItems = _allItems
+            .Where(cn =>
+                (!_selectedCustomerId.HasValue || cn.CustomerId == _selectedCustomerId) &&
+                (!_filterFromDate.HasValue || cn.Date >= DateOnly.FromDateTime(_filterFromDate.Value)) &&
+                (!_filterToDate.HasValue || cn.Date <= DateOnly.FromDateTime(_filterToDate.Value)))
+            .ToList();
     }
 
     private async Task CreateButtonClick()
