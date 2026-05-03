@@ -33,16 +33,9 @@
                                        RequiredError="Data richiesta." />
                     </MudItem>
                     <MudItem xs="12" sm="6">
-                        <MudAutocomplete T="CustomerViewModel"
-                                         Label="Cliente"
-                                         Value="_selectedCustomer"
-                                         ValueChanged="OnCustomerChanged"
-                                         SearchFunc="SearchCustomers"
-                                         ToStringFunc="@(c => c?.Name)"
-                                         ResetValueOnEmptyText="true" />
-                        <MudText Typo="Typo.caption" Color="Color.Error">
-                            <ValidationMessage For="@(() => _model.CustomerId)" />
-                        </MudText>
+                        <CustomerPicker CustomerId="_model.CustomerId"
+                                        CustomerIdChanged="OnCustomerChanged"
+                                        ValidationFor="@(() => _model.CustomerId)" />
                     </MudItem>
                     <MudItem xs="12">
                         <MudSelect T="int"
@@ -200,8 +193,6 @@
     private EditContext _editContext = default!;
     private bool _saving;
 
-    private IEnumerable<CustomerViewModel> _customers = [];
-    private CustomerViewModel? _selectedCustomer;
     private IEnumerable<InterventionOptionViewModel> _availableInterventions = [];
     private HashSet<int> _selectedInterventionIds = [];
     private HashSet<int> _originalInterventionIds = [];
@@ -261,35 +252,23 @@
 
         _editContext = new EditContext(_model);
 
-        _customers = await Http.GetFromJsonAsync<IEnumerable<CustomerViewModel>>("customers") ?? [];
-
         if (_model.CustomerId.HasValue)
         {
-            _selectedCustomer = _customers.FirstOrDefault(c => c.Id == _model.CustomerId);
             _selectedInterventionIds = _model.InterventionIds.ToHashSet();
             _originalInterventionIds = _model.InterventionIds.ToHashSet();
             await LoadAvailableInterventionsAsync(_model.CustomerId.Value);
         }
     }
 
-    private Task<IEnumerable<CustomerViewModel>> SearchCustomers(string? text, CancellationToken ct)
+    private async Task OnCustomerChanged(int? customerId)
     {
-        var results = string.IsNullOrWhiteSpace(text)
-            ? _customers
-            : _customers.Where(c => c.Name?.Contains(text, StringComparison.OrdinalIgnoreCase) ?? false);
-        return Task.FromResult(results);
-    }
-
-    private async Task OnCustomerChanged(CustomerViewModel? customer)
-    {
-        _selectedCustomer = customer;
-        _model!.CustomerId = customer?.Id;
+        _model!.CustomerId = customerId;
         _model.InterventionIds.Clear();
         _selectedInterventionIds = [];
         _originalInterventionIds = [];
 
-        if (customer?.Id is int customerId)
-            await LoadAvailableInterventionsAsync(customerId);
+        if (customerId.HasValue)
+            await LoadAvailableInterventionsAsync(customerId.Value);
         else
             _availableInterventions = [];
     }
