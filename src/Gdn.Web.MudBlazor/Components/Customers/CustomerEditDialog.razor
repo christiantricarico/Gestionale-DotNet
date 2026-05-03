@@ -152,6 +152,20 @@
             response = await Http.PutAsJsonAsync("customers", _model);
 
         if (await Snackbar.ShowResponseErrorAsync(response))
-            Dialog.Close(DialogResult.Ok(_model));
+        {
+            var savedCustomer = await response.Content.ReadFromJsonAsync<CustomerViewModel>() ?? MapCustomerViewModel(_model);
+            _model.Id = savedCustomer.Id;
+            Dialog.Close(DialogResult.Ok(savedCustomer));
+        }
     }
+
+    private static CustomerViewModel MapCustomerViewModel(CustomerEditModel model) => new()
+    {
+        Id = model.Id ?? 0,
+        Code = model.Code,
+        Name = model.Name,
+        Description = model.Description,
+        FiscalCode = model.FiscalCode,
+        VatNumber = model.VatNumber
+    };
 }
