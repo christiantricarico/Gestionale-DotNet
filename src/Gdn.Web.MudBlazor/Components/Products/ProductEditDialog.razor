@@ -1,3 +1,4 @@
+@using Gdn.Web.MudBlazor.Components.ProductCategories
 @inject HttpClient Http
 @inject ISnackbar Snackbar
 
@@ -31,17 +32,10 @@
                                   For="@(() => _model.Description)" />
                 </MudItem>
                 <MudItem xs="12" sm="6">
-                    <MudSelect @bind-Value="_model.ProductCategoryId"
-                               T="int?"
-                               Label="Categoria"
-                               Clearable="true"
-                               For="@(() => _model.ProductCategoryId)"
-                               ToStringFunc="@(id => _categories.FirstOrDefault(c => c.Id == id)?.Name ?? string.Empty)">
-                        @foreach (var cat in _categories)
-                        {
-                            <MudSelectItem T="int?" Value="@((int?)cat.Id)">@cat.Name</MudSelectItem>
-                        }
-                    </MudSelect>
+                    <ProductCategoryPicker Label="Categoria"
+                                           ProductCategoryId="_model.ProductCategoryId"
+                                           ProductCategoryIdChanged="OnProductCategoryChangedAsync"
+                                           ValidationFor="@(() => _model.ProductCategoryId)" />
                 </MudItem>
                 <MudItem xs="12" sm="6">
                     <MudAutocomplete T="MeasurementUnitViewModel"
@@ -86,7 +80,6 @@
 
     private ProductInputModel _model = new();
     private EditContext _editContext = null!;
-    private List<ProductCategoryViewModel> _categories = [];
     private IEnumerable<TaxRateViewModel> _taxRates = [];
     private IEnumerable<MeasurementUnitViewModel> _measurementUnits = [];
     private TaxRateViewModel? _selectedTaxRate;
@@ -97,13 +90,11 @@
     {
         _editContext = new EditContext(_model);
 
-        var categoriesTask = Http.GetFromJsonAsync<List<ProductCategoryViewModel>>("productcategories");
         var taxRatesTask = Http.GetFromJsonAsync<IEnumerable<TaxRateViewModel>>("taxrates");
         var measurementUnitsTask = Http.GetFromJsonAsync<IEnumerable<MeasurementUnitViewModel>>("measurementunits");
 
-        await Task.WhenAll(categoriesTask, taxRatesTask, measurementUnitsTask);
+        await Task.WhenAll(taxRatesTask, measurementUnitsTask);
 
-        _categories = categoriesTask.Result ?? [];
         _taxRates = taxRatesTask.Result ?? [];
         _measurementUnits = measurementUnitsTask.Result ?? [];
 
@@ -159,6 +150,12 @@
     {
         _selectedMeasurementUnit = unit;
         _model.MeasurementUnitId = unit?.Id;
+    }
+
+    private Task OnProductCategoryChangedAsync(int? productCategoryId)
+    {
+        _model.ProductCategoryId = productCategoryId;
+        return Task.CompletedTask;
     }
 
     private async Task SaveAsync()

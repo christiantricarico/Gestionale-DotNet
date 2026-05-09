@@ -32,17 +32,11 @@
                                      For="@(() => _model.Level)" />
                 </MudItem>
                 <MudItem xs="12" sm="8">
-                    <MudSelect @bind-Value="_model.ParentCategoryId"
-                               T="int?"
-                               Label="Categoria padre"
-                               Clearable="true"
-                               For="@(() => _model.ParentCategoryId)"
-                               ToStringFunc="@(id => _categories.FirstOrDefault(c => c.Id == id)?.Name ?? string.Empty)">
-                        @foreach (var cat in _categories)
-                        {
-                            <MudSelectItem T="int?" Value="@((int?)cat.Id)">@cat.Name</MudSelectItem>
-                        }
-                    </MudSelect>
+                    <ProductCategoryPicker Label="Categoria padre"
+                                           ProductCategoryId="_model.ParentCategoryId"
+                                           ProductCategoryIdChanged="OnParentCategoryChangedAsync"
+                                           ExcludedProductCategoryId="_content.Id"
+                                           ValidationFor="@(() => _model.ParentCategoryId)" />
                 </MudItem>
                 <MudItem xs="12">
                     <MudTextField @bind-Value="_model.Description"
@@ -75,18 +69,11 @@
 
     private ProductCategoryInputModel _model = new();
     private EditContext _editContext = null!;
-    private List<ProductCategoryViewModel> _categories = [];
     private bool _saving;
 
     protected override async Task OnInitializedAsync()
     {
         _editContext = new EditContext(_model);
-
-        var categoriesResponse = await Http.GetAsync("productcategories");
-        if (await Snackbar.ShowResponseErrorAsync(categoriesResponse))
-        {
-            _categories = await categoriesResponse.Content.ReadFromJsonAsync<List<ProductCategoryViewModel>>() ?? [];
-        }
 
         if (_content.Id > 0)
         {
@@ -104,6 +91,12 @@
                 }
             }
         }
+    }
+
+    private Task OnParentCategoryChangedAsync(int? parentCategoryId)
+    {
+        _model.ParentCategoryId = parentCategoryId;
+        return Task.CompletedTask;
     }
 
     private async Task SaveAsync()
@@ -133,7 +126,19 @@
 
         if (await Snackbar.ShowResponseErrorAsync(response))
         {
-            Dialog.Close(DialogResult.Ok(true));
+            var savedCategory = await response.Content.ReadFromJsonAsync<ProductCategoryViewModel>() ?? MapProductCategoryViewModel(_model, _content.Id);
+            _model.Id = savedCategory.Id;
+            Dialog.Close(DialogResult.Ok(savedCategory));
         }
     }
+
+    private static ProductCategoryViewModel MapProductCategoryViewModel(ProductCategoryInputModel model, int contentId) => new()
+    {
+        Id = model.Id ?? contentId,
+        Code = model.Code,
+        Name = model.Name,
+        Description = model.Description,
+        Level = model.Level,
+        ParentCategoryId = model.ParentCategoryId
+    };
 }
