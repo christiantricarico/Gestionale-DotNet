@@ -12,7 +12,6 @@ public class CreateProductCategory
         string Code,
         string? Name,
         string? Description,
-        int Level,
         int? ParentCategoryId);
 
     public record CreateProductCategoryResponse(int Id, string Code, string? Name, string? Description, int Level);
@@ -44,7 +43,14 @@ public class CreateProductCategory
         if (!validationResult.IsValid)
             return ResultHelper.BadRequest(validationResult.Errors);
 
-        var category = MapCategory(request);
+        var categoryRepository = unitOfWork.GetRepository<IProductCategoryRepository>();
+        var levelResult = await ResolveLevelAsync(request.ParentCategoryId, categoryRepository);
+        if (levelResult.IsFailure)
+        {
+            return ResultHelper.BadRequest(levelResult.Error);
+        }
+
+        var category = MapCategory(request, levelResult.Value);
         unitOfWork.GetRepository<IProductCategoryRepository>().Add(category);
 
         await unitOfWork.SaveChangesAsync();
@@ -53,12 +59,38 @@ public class CreateProductCategory
             category.Id, category.Code, category.Name, category.Description, category.Level));
     }
 
-    private static ProductCategory MapCategory(CreateProductCategoryRequest request) => new()
+    private static ProductCategory MapCategory(CreateProductCategoryRequest request, int level) => new()
     {
         Code = request.Code,
         Name = request.Name,
         Description = request.Description,
-        Level = request.Level,
+        Level = level,
         ParentCategoryId = request.ParentCategoryId
     };
+
+    private static async Task<LevelResult> ResolveLevelAsync(
+        int? parentCategoryId,
+        IProductCategoryRepository categoryRepository)
+    {
+        if (parentCategoryId is null)
+        {
+            return LevelResult.Success(0);
+        }
+
+        var parentCategory = await categoryRepository.GetAsync(parentCategoryId.Value);
+        if (parentCategory is null)
+        {
+            return LevelResult.Failure(ProductCategoryErrors.ParentNotFound(parentCategoryId.Value));
+        }
+
+        return LevelResult.Success(parentCategory.Level + 1);
+    }
+
+    private readonly record struct LevelResult(int Value, Error? Error)
+    {
+        public bool IsFailure => Error is not null;
+
+        public static LevelResult Success(int value) => new(value, null);
+        public static LevelResult Failure(Error error) => new(default, error);
+    }
 }

@@ -15,7 +15,5 @@ public class ProductCategoryInputModel
 
     public string? Description { get; set; }
 
-    public int Level { get; set; }
-
     public int? ParentCategoryId { get; set; }
 }

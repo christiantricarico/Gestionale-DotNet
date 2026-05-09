@@ -24,14 +24,7 @@
                                   MaxLength="255"
                                   For="@(() => _model.Name)" />
                 </MudItem>
-                <MudItem xs="12" sm="4">
-                    <MudNumericField T="int"
-                                     @bind-Value="_model.Level"
-                                     Label="Livello"
-                                     Min="0"
-                                     For="@(() => _model.Level)" />
-                </MudItem>
-                <MudItem xs="12" sm="8">
+                <MudItem xs="12">
                     <ProductCategoryPicker Label="Categoria padre"
                                            ProductCategoryId="_model.ParentCategoryId"
                                            ProductCategoryIdChanged="OnParentCategoryChangedAsync"
@@ -86,7 +79,6 @@
                     _model.Code = data.Code;
                     _model.Name = data.Name;
                     _model.Description = data.Description;
-                    _model.Level = data.Level;
                     _model.ParentCategoryId = data.ParentCategoryId;
                 }
             }
@@ -110,7 +102,7 @@
             response = await Http.PutAsJsonAsync("productcategories", new
             {
                 _content.Id, _model.Code, _model.Name, _model.Description,
-                _model.Level, _model.ParentCategoryId
+                _model.ParentCategoryId
             });
         }
         else
@@ -118,7 +110,7 @@
             response = await Http.PostAsJsonAsync("productcategories", new
             {
                 _model.Code, _model.Name, _model.Description,
-                _model.Level, _model.ParentCategoryId
+                _model.ParentCategoryId
             });
         }
 
@@ -138,7 +130,6 @@
         Code = model.Code,
         Name = model.Name,
         Description = model.Description,
-        Level = model.Level,
         ParentCategoryId = model.ParentCategoryId
     };
 }
