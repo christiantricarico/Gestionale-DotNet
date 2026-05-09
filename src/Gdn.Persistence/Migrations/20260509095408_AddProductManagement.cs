@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -7,13 +7,17 @@ namespace Gdn.Persistence.Migrations
     /// <inheritdoc />
     public partial class AddProductManagement : Migration
     {
-        /// <summary>
-        /// Applies the product management schema changes: updates the Products table (adds Type and MeasurementUnit,
-        /// removes Name and Stock, widens Code and Description), and adds ProductId FK to the three row tables.
-        /// </summary>
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropForeignKey(
+                name: "FK_Products_ProductCategories_ProductCategoryId",
+                table: "Products");
+
+            migrationBuilder.DropForeignKey(
+                name: "FK_Products_TaxRates_TaxRateId",
+                table: "Products");
+
             migrationBuilder.DropColumn(
                 name: "Name",
                 table: "Products");
@@ -54,7 +58,7 @@ namespace Gdn.Persistence.Migrations
                 type: "nvarchar(3)",
                 maxLength: 3,
                 nullable: false,
-                defaultValue: "PRD");
+                defaultValue: "");
 
             migrationBuilder.AddColumn<int>(
                 name: "ProductId",
@@ -100,16 +104,8 @@ namespace Gdn.Persistence.Migrations
                 column: "ProductId");
 
             migrationBuilder.AddForeignKey(
-                name: "FK_Products_MeasurementUnits_MeasurementUnitId",
-                table: "Products",
-                column: "MeasurementUnitId",
-                principalTable: "MeasurementUnits",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.SetNull);
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_InvoiceRows_Products_ProductId",
-                table: "InvoiceRows",
+                name: "FK_CreditNoteRows_Products_ProductId",
+                table: "CreditNoteRows",
                 column: "ProductId",
                 principalTable: "Products",
                 principalColumn: "Id",
@@ -124,10 +120,34 @@ namespace Gdn.Persistence.Migrations
                 onDelete: ReferentialAction.SetNull);
 
             migrationBuilder.AddForeignKey(
-                name: "FK_CreditNoteRows_Products_ProductId",
-                table: "CreditNoteRows",
+                name: "FK_InvoiceRows_Products_ProductId",
+                table: "InvoiceRows",
                 column: "ProductId",
                 principalTable: "Products",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.SetNull);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Products_MeasurementUnits_MeasurementUnitId",
+                table: "Products",
+                column: "MeasurementUnitId",
+                principalTable: "MeasurementUnits",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.SetNull);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Products_ProductCategories_ProductCategoryId",
+                table: "Products",
+                column: "ProductCategoryId",
+                principalTable: "ProductCategories",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.SetNull);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Products_TaxRates_TaxRateId",
+                table: "Products",
+                column: "TaxRateId",
+                principalTable: "TaxRates",
                 principalColumn: "Id",
                 onDelete: ReferentialAction.SetNull);
         }
@@ -136,20 +156,28 @@ namespace Gdn.Persistence.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropForeignKey(
-                name: "FK_Products_MeasurementUnits_MeasurementUnitId",
-                table: "Products");
-
-            migrationBuilder.DropForeignKey(
-                name: "FK_InvoiceRows_Products_ProductId",
-                table: "InvoiceRows");
+                name: "FK_CreditNoteRows_Products_ProductId",
+                table: "CreditNoteRows");
 
             migrationBuilder.DropForeignKey(
                 name: "FK_InterventionRows_Products_ProductId",
                 table: "InterventionRows");
 
             migrationBuilder.DropForeignKey(
-                name: "FK_CreditNoteRows_Products_ProductId",
-                table: "CreditNoteRows");
+                name: "FK_InvoiceRows_Products_ProductId",
+                table: "InvoiceRows");
+
+            migrationBuilder.DropForeignKey(
+                name: "FK_Products_MeasurementUnits_MeasurementUnitId",
+                table: "Products");
+
+            migrationBuilder.DropForeignKey(
+                name: "FK_Products_ProductCategories_ProductCategoryId",
+                table: "Products");
+
+            migrationBuilder.DropForeignKey(
+                name: "FK_Products_TaxRates_TaxRateId",
+                table: "Products");
 
             migrationBuilder.DropIndex(
                 name: "IX_Products_Code",
@@ -226,6 +254,20 @@ namespace Gdn.Persistence.Migrations
                 scale: 6,
                 nullable: false,
                 defaultValue: 0m);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Products_ProductCategories_ProductCategoryId",
+                table: "Products",
+                column: "ProductCategoryId",
+                principalTable: "ProductCategories",
+                principalColumn: "Id");
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Products_TaxRates_TaxRateId",
+                table: "Products",
+                column: "TaxRateId",
+                principalTable: "TaxRates",
+                principalColumn: "Id");
         }
     }
 }
