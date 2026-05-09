@@ -9,7 +9,7 @@ namespace Gdn.Web.Api.Vs.Features.Interventions;
 
 public class CreateIntervention
 {
-    public record CreateInterventionRowRequest(string? Description, decimal? Quantity, decimal? UnitPrice, int? MeasurementUnitId, int? TaxRateId, int? ProductId, string? RowType);
+    public record CreateInterventionRowRequest(string? Description, decimal? Quantity, decimal? UnitPrice, int? MeasurementUnitId, int? TaxRateId, int? ProductId);
     public record CreateInterventionRequest(int Number, DateOnly Date, int CustomerId, IEnumerable<CreateInterventionRowRequest> Rows);
 
     public record ResponseRow(long Id, string RowType, string? Description, decimal? Quantity, decimal? UnitPrice, int? MeasurementUnitId, int? TaxRateId, int? ProductId);
@@ -70,7 +70,7 @@ public class CreateIntervention
 
     private static InterventionRow MapRow(CreateInterventionRowRequest request) => new()
     {
-        RowType = request.RowType ?? DocumentRowType.DESCRIPTIVE,
+        RowType = ResolveRowType(request.ProductId),
         Description = request.Description,
         Quantity = request.Quantity,
         UnitPrice = request.UnitPrice,
@@ -84,4 +84,7 @@ public class CreateIntervention
 
     private static ResponseRow MapResponseRow(InterventionRow row)
         => new(row.Id, row.RowType, row.Description, row.Quantity, row.UnitPrice, row.MeasurementUnitId, row.TaxRateId, row.ProductId);
+
+    private static string ResolveRowType(int? productId)
+        => productId.HasValue ? DocumentRowType.PRODUCT : DocumentRowType.DESCRIPTIVE;
 }

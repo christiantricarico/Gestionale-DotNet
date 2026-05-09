@@ -10,7 +10,7 @@ namespace Gdn.Web.Api.Vs.Features.Invoices;
 
 public class CreateInvoice
 {
-    public record CreateInvoiceRowRequest(string? Description, decimal? Quantity, decimal? UnitPrice, int? MeasurementUnitId, int? TaxRateId, int? ProductId, string? RowType);
+    public record CreateInvoiceRowRequest(string? Description, decimal? Quantity, decimal? UnitPrice, int? MeasurementUnitId, int? TaxRateId, int? ProductId);
     public record CreateInvoiceRequest(int Number, DateOnly Date, int CustomerId, decimal? StampDutyAmount, bool StampDutyChargedToCustomer, IEnumerable<CreateInvoiceRowRequest> Rows, IEnumerable<int>? InterventionIds);
 
     public record ResponseDue(int Id, DateOnly Date, decimal Amount, decimal PaidAmount, bool IsPaid);
@@ -113,7 +113,7 @@ public class CreateInvoice
 
     private static InvoiceRow MapInvoiceRow(CreateInvoiceRowRequest request) => new()
     {
-        RowType = request.RowType ?? DocumentRowType.DESCRIPTIVE,
+        RowType = ResolveRowType(request.ProductId),
         Description = request.Description,
         Quantity = request.Quantity,
         UnitPrice = request.UnitPrice,
@@ -145,4 +145,7 @@ public class CreateInvoice
 
     private static ResponseDue MapResponseDue(Due due)
         => new(due.Id, due.Date, due.Amount, due.PaidAmount, due.IsPaid);
+
+    private static string ResolveRowType(int? productId)
+        => productId.HasValue ? DocumentRowType.PRODUCT : DocumentRowType.DESCRIPTIVE;
 }

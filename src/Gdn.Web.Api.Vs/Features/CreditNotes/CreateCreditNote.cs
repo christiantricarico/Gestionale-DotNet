@@ -9,7 +9,7 @@ namespace Gdn.Web.Api.Vs.Features.CreditNotes;
 
 public class CreateCreditNote
 {
-    public record CreateCreditNoteRowRequest(string? Description, decimal? Quantity, decimal? UnitPrice, int? MeasurementUnitId, int? TaxRateId, int? ProductId, string? RowType);
+    public record CreateCreditNoteRowRequest(string? Description, decimal? Quantity, decimal? UnitPrice, int? MeasurementUnitId, int? TaxRateId, int? ProductId);
     public record CreateCreditNoteRequest(int Number, DateOnly Date, int CustomerId, decimal? StampDutyAmount, bool StampDutyChargedToCustomer, IEnumerable<CreateCreditNoteRowRequest> Rows);
 
     public record ResponseDue(int Id, DateOnly Date, decimal Amount, decimal PaidAmount, bool IsPaid);
@@ -77,7 +77,7 @@ public class CreateCreditNote
 
     private static CreditNoteRow MapCreditNoteRow(CreateCreditNoteRowRequest request) => new()
     {
-        RowType = request.RowType ?? DocumentRowType.DESCRIPTIVE,
+        RowType = ResolveRowType(request.ProductId),
         Description = request.Description,
         Quantity = request.Quantity,
         UnitPrice = request.UnitPrice,
@@ -99,4 +99,7 @@ public class CreateCreditNote
         => new(due.Id, due.Date, due.Amount, due.PaidAmount, due.IsPaid);
 
     private static decimal ToSignedCreditNoteAmount(decimal amount) => amount > 0m ? -amount : amount;
+
+    private static string ResolveRowType(int? productId)
+        => productId.HasValue ? DocumentRowType.PRODUCT : DocumentRowType.DESCRIPTIVE;
 }

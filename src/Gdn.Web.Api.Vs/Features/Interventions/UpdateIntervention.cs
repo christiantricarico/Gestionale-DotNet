@@ -2,13 +2,14 @@ using FluentValidation;
 using Gdn.Domain.Data;
 using Gdn.Domain.Data.Repositories;
 using Gdn.Domain.Models;
+using Gdn.Domain.Models.Enums;
 using Gdn.Web.Api.Vs.Endpoints;
 
 namespace Gdn.Web.Api.Vs.Features.Interventions;
 
 public class UpdateIntervention
 {
-    public record UpdateInterventionRowRequest(InputStatus InputStatus, long? Id, string RowType, string? Description,
+    public record UpdateInterventionRowRequest(InputStatus InputStatus, long? Id, string? Description,
         decimal? Quantity, decimal? UnitPrice,
         int? MeasurementUnitId, int? TaxRateId, int? ProductId);
 
@@ -97,7 +98,7 @@ public class UpdateIntervention
 
     private static InterventionRow MapRow(InterventionRow row, UpdateInterventionRowRequest request)
     {
-        row.RowType = request.RowType;
+        row.RowType = ResolveRowType(request.ProductId);
         row.Description = request.Description;
         row.Quantity = request.Quantity;
         row.UnitPrice = request.UnitPrice;
@@ -113,4 +114,7 @@ public class UpdateIntervention
 
     private static ResponseRow MapResponseRow(InterventionRow row)
         => new(row.Id, row.RowType, row.Description, row.Quantity, row.UnitPrice, row.MeasurementUnitId, row.TaxRateId, row.ProductId);
+
+    private static string ResolveRowType(int? productId)
+        => productId.HasValue ? DocumentRowType.PRODUCT : DocumentRowType.DESCRIPTIVE;
 }
