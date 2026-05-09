@@ -1,0 +1,135 @@
+@inject HttpClient Http
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.Category" Class="mr-2" Style="vertical-align:middle" />
+            @(_content.Id > 0 ? "Modifica categoria prodotto" : "Nuova categoria prodotto")
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <EditForm id="productCategoryForm" EditContext="@_editContext" OnValidSubmit="@SaveAsync">
+            <DataAnnotationsValidator />
+            <MudGrid Class="mt-2">
+                <MudItem xs="12" sm="4">
+                    <MudTextField @bind-Value="_model.Code"
+                                  Label="Codice"
+                                  MaxLength="10"
+                                  For="@(() => _model.Code)" />
+                </MudItem>
+                <MudItem xs="12" sm="8">
+                    <MudTextField @bind-Value="_model.Name"
+                                  Label="Nome"
+                                  MaxLength="255"
+                                  For="@(() => _model.Name)" />
+                </MudItem>
+                <MudItem xs="12">
+                    <ProductCategoryPicker Label="Categoria padre"
+                                           ProductCategoryId="_model.ParentCategoryId"
+                                           ProductCategoryIdChanged="OnParentCategoryChangedAsync"
+                                           ExcludedProductCategoryId="_content.Id"
+                                           ValidationFor="@(() => _model.ParentCategoryId)" />
+                </MudItem>
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="_model.Description"
+                                  Label="Descrizione"
+                                  Lines="3"
+                                  For="@(() => _model.Description)" />
+                </MudItem>
+            </MudGrid>
+        </EditForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="@(() => Dialog.Cancel())">Annulla</MudButton>
+        <MudButton ButtonType="ButtonType.Submit"
+                   form="productCategoryForm"
+                   Color="Color.Primary"
+                   Variant="Variant.Filled"
+                   Disabled="@_saving">
+            @if (_saving)
+            {
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+            }
+            Salva
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance Dialog { get; set; } = null!;
+    [Parameter] public DialogContent _content { get; set; } = new();
+
+    private ProductCategoryInputModel _model = new();
+    private EditContext _editContext = null!;
+    private bool _saving;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _editContext = new EditContext(_model);
+
+        if (_content.Id > 0)
+        {
+            var response = await Http.GetAsync($"productcategories/{_content.Id}");
+            if (await Snackbar.ShowResponseErrorAsync(response))
+            {
+                var data = await response.Content.ReadFromJsonAsync<ProductCategoryViewModel>();
+                if (data is not null)
+                {
+                    _model.Code = data.Code;
+                    _model.Name = data.Name;
+                    _model.Description = data.Description;
+                    _model.ParentCategoryId = data.ParentCategoryId;
+                }
+            }
+        }
+    }
+
+    private Task OnParentCategoryChangedAsync(int? parentCategoryId)
+    {
+        _model.ParentCategoryId = parentCategoryId;
+        return Task.CompletedTask;
+    }
+
+    private async Task SaveAsync()
+    {
+        _saving = true;
+
+        HttpResponseMessage response;
+
+        if (_content.Id > 0)
+        {
+            response = await Http.PutAsJsonAsync("productcategories", new
+            {
+                _content.Id, _model.Code, _model.Name, _model.Description,
+                _model.ParentCategoryId
+            });
+        }
+        else
+        {
+            response = await Http.PostAsJsonAsync("productcategories", new
+            {
+                _model.Code, _model.Name, _model.Description,
+                _model.ParentCategoryId
+            });
+        }
+
+        _saving = false;
+
+        if (await Snackbar.ShowResponseErrorAsync(response))
+        {
+            var savedCategory = await response.Content.ReadFromJsonAsync<ProductCategoryViewModel>() ?? MapProductCategoryViewModel(_model, _content.Id);
+            _model.Id = savedCategory.Id;
+            Dialog.Close(DialogResult.Ok(savedCategory));
+        }
+    }
+
+    private static ProductCategoryViewModel MapProductCategoryViewModel(ProductCategoryInputModel model, int contentId) => new()
+    {
+        Id = model.Id ?? contentId,
+        Code = model.Code,
+        Name = model.Name,
+        Description = model.Description,
+        ParentCategoryId = model.ParentCategoryId
+    };
+}

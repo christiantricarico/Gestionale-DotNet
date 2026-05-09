@@ -9,11 +9,11 @@ namespace Gdn.Web.Api.Vs.Features.CreditNotes;
 
 public class CreateCreditNote
 {
-    public record CreateCreditNoteRowRequest(string? Description, decimal? Quantity, decimal? UnitPrice, int? MeasurementUnitId, int? TaxRateId);
+    public record CreateCreditNoteRowRequest(string? Description, decimal? Quantity, decimal? UnitPrice, int? MeasurementUnitId, int? TaxRateId, int? ProductId);
     public record CreateCreditNoteRequest(int Number, DateOnly Date, int CustomerId, decimal? StampDutyAmount, bool StampDutyChargedToCustomer, IEnumerable<CreateCreditNoteRowRequest> Rows);
 
     public record ResponseDue(int Id, DateOnly Date, decimal Amount, decimal PaidAmount, bool IsPaid);
-    public record ResponseRow(long Id, string RowType, string? Description, decimal? Quantity, decimal? UnitPrice, int? MeasurementUnitId, int? TaxRateId);
+    public record ResponseRow(long Id, string RowType, string? Description, decimal? Quantity, decimal? UnitPrice, int? MeasurementUnitId, int? TaxRateId, int? ProductId);
     public record Response(int Id, int Number, DateOnly Date, int CustomerId, decimal? StampDutyAmount, bool StampDutyChargedToCustomer, IEnumerable<ResponseRow> Rows, IEnumerable<ResponseDue> Dues);
 
     public sealed class Endpoint : IEndpoint
@@ -77,12 +77,13 @@ public class CreateCreditNote
 
     private static CreditNoteRow MapCreditNoteRow(CreateCreditNoteRowRequest request) => new()
     {
-        RowType = DocumentRowType.DESCRIPTIVE,
+        RowType = ResolveRowType(request.ProductId),
         Description = request.Description,
         Quantity = request.Quantity,
         UnitPrice = request.UnitPrice,
         MeasurementUnitId = request.MeasurementUnitId,
-        TaxRateId = request.TaxRateId
+        TaxRateId = request.TaxRateId,
+        ProductId = request.ProductId
     };
 
     private static Response MapResponse(CreditNote creditNote, IEnumerable<Due> dues)
@@ -92,10 +93,13 @@ public class CreateCreditNote
                dues.Select(MapResponseDue));
 
     private static ResponseRow MapResponseRow(CreditNoteRow row)
-        => new(row.Id, row.RowType, row.Description, row.Quantity, row.UnitPrice, row.MeasurementUnitId, row.TaxRateId);
+        => new(row.Id, row.RowType, row.Description, row.Quantity, row.UnitPrice, row.MeasurementUnitId, row.TaxRateId, row.ProductId);
 
     private static ResponseDue MapResponseDue(Due due)
         => new(due.Id, due.Date, due.Amount, due.PaidAmount, due.IsPaid);
 
     private static decimal ToSignedCreditNoteAmount(decimal amount) => amount > 0m ? -amount : amount;
+
+    private static string ResolveRowType(int? productId)
+        => productId.HasValue ? DocumentRowType.PRODUCT : DocumentRowType.DESCRIPTIVE;
 }

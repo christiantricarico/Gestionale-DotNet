@@ -9,10 +9,10 @@ namespace Gdn.Web.Api.Vs.Features.Interventions;
 
 public class CreateIntervention
 {
-    public record CreateInterventionRowRequest(string? Description, decimal? Quantity, decimal? UnitPrice, int? MeasurementUnitId, int? TaxRateId);
+    public record CreateInterventionRowRequest(string? Description, decimal? Quantity, decimal? UnitPrice, int? MeasurementUnitId, int? TaxRateId, int? ProductId);
     public record CreateInterventionRequest(int Number, DateOnly Date, int CustomerId, IEnumerable<CreateInterventionRowRequest> Rows);
 
-    public record ResponseRow(long Id, string RowType, string? Description, decimal? Quantity, decimal? UnitPrice, int? MeasurementUnitId, int? TaxRateId);
+    public record ResponseRow(long Id, string RowType, string? Description, decimal? Quantity, decimal? UnitPrice, int? MeasurementUnitId, int? TaxRateId, int? ProductId);
     public record Response(int Id, int Number, DateOnly Date, int CustomerId, bool IsInvoiced, int? InvoiceId, IEnumerable<ResponseRow> Rows);
 
     public sealed class Endpoint : IEndpoint
@@ -70,17 +70,21 @@ public class CreateIntervention
 
     private static InterventionRow MapRow(CreateInterventionRowRequest request) => new()
     {
-        RowType = DocumentRowType.DESCRIPTIVE,
+        RowType = ResolveRowType(request.ProductId),
         Description = request.Description,
         Quantity = request.Quantity,
         UnitPrice = request.UnitPrice,
         MeasurementUnitId = request.MeasurementUnitId,
-        TaxRateId = request.TaxRateId
+        TaxRateId = request.TaxRateId,
+        ProductId = request.ProductId
     };
 
     private static Response MapResponse(Intervention report)
         => new(report.Id, int.Parse(report.Number), report.Date, report.CustomerId, report.IsInvoiced, report.InvoiceId, report.Rows.Select(MapResponseRow));
 
     private static ResponseRow MapResponseRow(InterventionRow row)
-        => new(row.Id, row.RowType, row.Description, row.Quantity, row.UnitPrice, row.MeasurementUnitId, row.TaxRateId);
+        => new(row.Id, row.RowType, row.Description, row.Quantity, row.UnitPrice, row.MeasurementUnitId, row.TaxRateId, row.ProductId);
+
+    private static string ResolveRowType(int? productId)
+        => productId.HasValue ? DocumentRowType.PRODUCT : DocumentRowType.DESCRIPTIVE;
 }

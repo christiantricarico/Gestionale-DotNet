@@ -8,7 +8,7 @@ public class GetInvoiceById
 {
     public record GetInvoiceByIdResponseRow(long Id, string RowType, string? Description, decimal? Quantity, decimal? UnitPrice,
         int? MeasurementUnitId, string? MeasurementUnitCode, string? MeasurementUnitName,
-        int? TaxRateId, string? TaxRateName, decimal? TaxRateValue);
+        int? TaxRateId, string? TaxRateName, decimal? TaxRateValue, int? ProductId);
 
     public record GetInvoiceByIdResponseDue(int Id, DateOnly Date, decimal Amount, decimal PaidAmount, bool IsPaid);
 
@@ -29,7 +29,7 @@ public class GetInvoiceById
 
     private static async Task<IResult> HandlerAsync(int id, IInvoiceRepository invoiceRepository)
     {
-        var data = await invoiceRepository.GetAsync(id, ["Rows.TaxRate", "Rows.MeasurementUnit", "Dues", "Interventions"]);
+        var data = await invoiceRepository.GetAsync(id, ["Rows.TaxRate", "Rows.MeasurementUnit", "Rows.Product", "Dues", "Interventions"]);
 
         return data is not null
             ? ResultHelper.Ok(MapResponse(data))
@@ -49,7 +49,7 @@ public class GetInvoiceById
                row.MeasurementUnitId, row.MeasurementUnit?.Code, row.MeasurementUnit?.Name,
                row.TaxRateId,
                string.IsNullOrWhiteSpace(row.TaxRate?.Name) ? row.TaxRate?.Code : row.TaxRate.Name,
-               row.TaxRate?.Rate);
+               row.TaxRate?.Rate, row.ProductId);
 
     private static GetInvoiceByIdResponseDue MapResponseDue(Due due)
         => new(due.Id, due.Date, due.Amount, due.PaidAmount, due.IsPaid);

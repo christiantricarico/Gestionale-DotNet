@@ -1,0 +1,146 @@
+@inject HttpClient Http
+@inject IDialogService DialogService
+
+<MudAutocomplete T="ProductViewModel"
+                 Label="@Label"
+                 Value="_selectedProduct"
+                 ValueChanged="OnSelectedProductChangedAsync"
+                 SearchFunc="SearchProductsAsync"
+                 ToStringFunc="FormatProduct"
+                 ResetValueOnEmptyText="true"
+                 Disabled="@Disabled"
+                 Adornment="Adornment.End"
+                 AdornmentIcon="@Icons.Material.Filled.Add"
+                 AdornmentColor="Color.Primary"
+                 OnAdornmentClick="OnAdornmentClickAsync" />
+@if (ValidationFor is not null)
+{
+    <MudText Typo="Typo.caption" Color="Color.Error">
+        <ValidationMessage For="ValidationFor" />
+    </MudText>
+}
+
+@code {
+    [Parameter]
+    public string Label { get; set; } = "Prodotto/Servizio";
+
+    [Parameter]
+    public int? ProductId { get; set; }
+
+    [Parameter]
+    public EventCallback<int?> ProductIdChanged { get; set; }
+
+    [Parameter]
+    public EventCallback<ProductViewModel?> ProductChanged { get; set; }
+
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    [Parameter]
+    public System.Linq.Expressions.Expression<Func<int?>>? ValidationFor { get; set; }
+
+    private List<ProductViewModel> _products = [];
+    private ProductViewModel? _selectedProduct;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _products = await Http.GetFromJsonAsync<List<ProductViewModel>>("products") ?? [];
+        SyncSelectedProduct();
+    }
+
+    protected override void OnParametersSet()
+    {
+        SyncSelectedProduct();
+    }
+
+    private void SyncSelectedProduct()
+    {
+        if (_selectedProduct?.Id == ProductId)
+        {
+            return;
+        }
+
+        _selectedProduct = ProductId.HasValue
+            ? _products.FirstOrDefault(product => product.Id == ProductId.Value)
+            : null;
+    }
+
+    private Task<IEnumerable<ProductViewModel>> SearchProductsAsync(string? text, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        IEnumerable<ProductViewModel> results = string.IsNullOrWhiteSpace(text)
+            ? _products
+            : _products.Where(product =>
+                product.Code.Contains(text, StringComparison.OrdinalIgnoreCase) ||
+                product.Description?.Contains(text, StringComparison.OrdinalIgnoreCase) == true);
+
+        return Task.FromResult(results);
+    }
+
+    private async Task OnSelectedProductChangedAsync(ProductViewModel? product)
+    {
+        _selectedProduct = product;
+        await ProductIdChanged.InvokeAsync(product?.Id);
+        await ProductChanged.InvokeAsync(product);
+    }
+
+    private Task OnAdornmentClickAsync(MouseEventArgs args)
+    {
+        return CreateProductAsync();
+    }
+
+    private async Task CreateProductAsync()
+    {
+        var parameters = new DialogParameters<ProductEditDialog>();
+        parameters.Add(dialog => dialog._content, new DialogContent());
+
+        var options = new DialogOptions
+        {
+            CloseOnEscapeKey = false,
+            CloseButton = false,
+            BackdropClick = false,
+            MaxWidth = MaxWidth.Medium,
+            FullWidth = true
+        };
+
+        var dialog = await DialogService.ShowAsync<ProductEditDialog>("Nuovo prodotto/servizio", parameters, options);
+        var result = await dialog.Result;
+        if (result is null || result.Canceled || result.Data is not ProductViewModel product)
+        {
+            return;
+        }
+
+        var existingProduct = _products.FirstOrDefault(currentProduct => currentProduct.Id == product.Id);
+        if (existingProduct is null)
+        {
+            _products.Add(product);
+        }
+        else
+        {
+            existingProduct.Code = product.Code;
+            existingProduct.Description = product.Description;
+            existingProduct.Type = product.Type;
+            existingProduct.MeasurementUnitId = product.MeasurementUnitId;
+            existingProduct.MeasurementUnitName = product.MeasurementUnitName;
+            existingProduct.TaxRateId = product.TaxRateId;
+            existingProduct.TaxRateCode = product.TaxRateCode;
+            existingProduct.TaxRateValue = product.TaxRateValue;
+            existingProduct.ProductCategoryId = product.ProductCategoryId;
+            existingProduct.ProductCategoryName = product.ProductCategoryName;
+        }
+
+        _selectedProduct = product;
+        await ProductIdChanged.InvokeAsync(product.Id);
+        await ProductChanged.InvokeAsync(product);
+    }
+
+    private static string? FormatProduct(ProductViewModel? product)
+    {
+        return product is null
+            ? null
+            : string.IsNullOrWhiteSpace(product.Description)
+                ? product.Code
+                : $"{product.Code} - {product.Description}";
+    }
+}

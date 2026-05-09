@@ -17,7 +17,7 @@ namespace Gdn.Persistence.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.5")
+                .HasAnnotation("ProductVersion", "10.0.7")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -134,6 +134,9 @@ namespace Gdn.Persistence.Migrations
                     b.Property<int?>("MeasurementUnitId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("ProductId")
+                        .HasColumnType("int");
+
                     b.Property<decimal?>("Quantity")
                         .HasPrecision(18, 6)
                         .HasColumnType("decimal(18,6)");
@@ -158,6 +161,8 @@ namespace Gdn.Persistence.Migrations
                     b.HasIndex("CreditNoteId");
 
                     b.HasIndex("MeasurementUnitId");
+
+                    b.HasIndex("ProductId");
 
                     b.HasIndex("TaxRateId");
 
@@ -349,6 +354,9 @@ namespace Gdn.Persistence.Migrations
                     b.Property<int?>("MeasurementUnitId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("ProductId")
+                        .HasColumnType("int");
+
                     b.Property<decimal?>("Quantity")
                         .HasPrecision(18, 6)
                         .HasColumnType("decimal(18,6)");
@@ -373,6 +381,8 @@ namespace Gdn.Persistence.Migrations
                     b.HasIndex("InterventionId");
 
                     b.HasIndex("MeasurementUnitId");
+
+                    b.HasIndex("ProductId");
 
                     b.HasIndex("TaxRateId");
 
@@ -444,6 +454,9 @@ namespace Gdn.Persistence.Migrations
                     b.Property<int?>("MeasurementUnitId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("ProductId")
+                        .HasColumnType("int");
+
                     b.Property<decimal?>("Quantity")
                         .HasPrecision(18, 6)
                         .HasColumnType("decimal(18,6)");
@@ -468,6 +481,8 @@ namespace Gdn.Persistence.Migrations
                     b.HasIndex("InvoiceId");
 
                     b.HasIndex("MeasurementUnitId");
+
+                    b.HasIndex("ProductId");
 
                     b.HasIndex("TaxRateId");
 
@@ -625,36 +640,41 @@ namespace Gdn.Persistence.Migrations
 
                     b.Property<string>("Code")
                         .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<string>("Name")
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
+                    b.Property<int?>("MeasurementUnitId")
+                        .HasColumnType("int");
 
                     b.Property<int?>("ProductCategoryId")
                         .HasColumnType("int");
 
-                    b.Property<decimal>("Stock")
-                        .HasPrecision(18, 6)
-                        .HasColumnType("decimal(18,6)");
-
                     b.Property<int?>("TaxRateId")
                         .HasColumnType("int");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("nvarchar(3)");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Code");
+
+                    b.HasIndex("MeasurementUnitId");
 
                     b.HasIndex("ProductCategoryId");
 
@@ -978,6 +998,11 @@ namespace Gdn.Persistence.Migrations
                         .WithMany()
                         .HasForeignKey("MeasurementUnitId");
 
+                    b.HasOne("Gdn.Domain.Models.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("Gdn.Domain.Models.TaxRate", "TaxRate")
                         .WithMany()
                         .HasForeignKey("TaxRateId");
@@ -985,6 +1010,8 @@ namespace Gdn.Persistence.Migrations
                     b.Navigation("CreditNote");
 
                     b.Navigation("MeasurementUnit");
+
+                    b.Navigation("Product");
 
                     b.Navigation("TaxRate");
                 });
@@ -1043,6 +1070,11 @@ namespace Gdn.Persistence.Migrations
                         .WithMany()
                         .HasForeignKey("MeasurementUnitId");
 
+                    b.HasOne("Gdn.Domain.Models.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("Gdn.Domain.Models.TaxRate", "TaxRate")
                         .WithMany()
                         .HasForeignKey("TaxRateId");
@@ -1050,6 +1082,8 @@ namespace Gdn.Persistence.Migrations
                     b.Navigation("Intervention");
 
                     b.Navigation("MeasurementUnit");
+
+                    b.Navigation("Product");
 
                     b.Navigation("TaxRate");
                 });
@@ -1077,6 +1111,11 @@ namespace Gdn.Persistence.Migrations
                         .WithMany()
                         .HasForeignKey("MeasurementUnitId");
 
+                    b.HasOne("Gdn.Domain.Models.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("Gdn.Domain.Models.TaxRate", "TaxRate")
                         .WithMany()
                         .HasForeignKey("TaxRateId");
@@ -1084,6 +1123,8 @@ namespace Gdn.Persistence.Migrations
                     b.Navigation("Invoice");
 
                     b.Navigation("MeasurementUnit");
+
+                    b.Navigation("Product");
 
                     b.Navigation("TaxRate");
                 });
@@ -1126,13 +1167,22 @@ namespace Gdn.Persistence.Migrations
 
             modelBuilder.Entity("Gdn.Domain.Models.Product", b =>
                 {
+                    b.HasOne("Gdn.Domain.Models.MeasurementUnit", "MeasurementUnit")
+                        .WithMany()
+                        .HasForeignKey("MeasurementUnitId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("Gdn.Domain.Models.ProductCategory", "ProductCategory")
                         .WithMany()
-                        .HasForeignKey("ProductCategoryId");
+                        .HasForeignKey("ProductCategoryId")
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("Gdn.Domain.Models.TaxRate", "TaxRate")
                         .WithMany()
-                        .HasForeignKey("TaxRateId");
+                        .HasForeignKey("TaxRateId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("MeasurementUnit");
 
                     b.Navigation("ProductCategory");
 

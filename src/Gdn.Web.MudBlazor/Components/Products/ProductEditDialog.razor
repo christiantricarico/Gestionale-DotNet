@@ -1,0 +1,230 @@
+@using Gdn.Web.MudBlazor.Components.ProductCategories
+@inject HttpClient Http
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.Inventory2" Class="mr-2" Style="vertical-align:middle" />
+            @(_content.Id > 0 ? "Modifica prodotto/servizio" : "Nuovo prodotto/servizio")
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <EditForm id="productForm" EditContext="@_editContext" OnValidSubmit="@SaveAsync">
+            <DataAnnotationsValidator />
+            <MudGrid Class="mt-2">
+                <MudItem xs="12" sm="4">
+                    <MudTextField @bind-Value="_model.Code"
+                                  Label="Codice"
+                                  MaxLength="50"
+                                  For="@(() => _model.Code)" />
+                </MudItem>
+                <MudItem xs="12" sm="8">
+                    <MudRadioGroup @bind-Value="_model.Type">
+                        <MudRadio T="string" Value="@("PRD")">Prodotto</MudRadio>
+                        <MudRadio T="string" Value="@("SRV")">Servizio</MudRadio>
+                    </MudRadioGroup>
+                </MudItem>
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="_model.Description"
+                                  Label="Descrizione"
+                                  Lines="3"
+                                  For="@(() => _model.Description)" />
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <ProductCategoryPicker Label="Categoria"
+                                           ProductCategoryId="_model.ProductCategoryId"
+                                           ProductCategoryIdChanged="OnProductCategoryChangedAsync"
+                                           ValidationFor="@(() => _model.ProductCategoryId)" />
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudAutocomplete T="MeasurementUnitViewModel"
+                                     Label="Unità di misura"
+                                     Value="_selectedMeasurementUnit"
+                                     ValueChanged="OnMeasurementUnitChanged"
+                                     SearchFunc="SearchMeasurementUnits"
+                                     ToStringFunc="@(u => u?.Name)"
+                                     ResetValueOnEmptyText="true" />
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudAutocomplete T="TaxRateViewModel"
+                                     Label="Aliquota IVA"
+                                     Value="_selectedTaxRate"
+                                     ValueChanged="OnTaxRateChanged"
+                                     SearchFunc="SearchTaxRates"
+                                     ToStringFunc="@(t => string.IsNullOrWhiteSpace(t?.Name) ? t?.Code : t?.Name)"
+                                     ResetValueOnEmptyText="true" />
+                </MudItem>
+            </MudGrid>
+        </EditForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="@(() => Dialog.Cancel())">Annulla</MudButton>
+        <MudButton ButtonType="ButtonType.Submit"
+                   form="productForm"
+                   Color="Color.Primary"
+                   Variant="Variant.Filled"
+                   Disabled="@_saving">
+            @if (_saving)
+            {
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+            }
+            Salva
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance Dialog { get; set; } = null!;
+    [Parameter] public DialogContent _content { get; set; } = new();
+
+    private ProductInputModel _model = new();
+    private EditContext _editContext = null!;
+    private IEnumerable<TaxRateViewModel> _taxRates = [];
+    private IEnumerable<MeasurementUnitViewModel> _measurementUnits = [];
+    private TaxRateViewModel? _selectedTaxRate;
+    private MeasurementUnitViewModel? _selectedMeasurementUnit;
+    private bool _saving;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _editContext = new EditContext(_model);
+
+        var taxRatesTask = Http.GetFromJsonAsync<IEnumerable<TaxRateViewModel>>("taxrates");
+        var measurementUnitsTask = Http.GetFromJsonAsync<IEnumerable<MeasurementUnitViewModel>>("measurementunits");
+
+        await Task.WhenAll(taxRatesTask, measurementUnitsTask);
+
+        _taxRates = taxRatesTask.Result ?? [];
+        _measurementUnits = measurementUnitsTask.Result ?? [];
+
+        if (_content.Id > 0)
+        {
+            var response = await Http.GetAsync($"products/{_content.Id}");
+            if (await Snackbar.ShowResponseErrorAsync(response))
+            {
+                var data = await response.Content.ReadFromJsonAsync<ProductViewModel>();
+                if (data is not null)
+                {
+                    _model.Code = data.Code;
+                    _model.Description = data.Description;
+                    _model.Type = data.Type;
+                    _model.ProductCategoryId = data.ProductCategoryId;
+                    _model.MeasurementUnitId = data.MeasurementUnitId;
+                    _model.TaxRateId = data.TaxRateId;
+
+                    if (_model.MeasurementUnitId.HasValue)
+                        _selectedMeasurementUnit = _measurementUnits.FirstOrDefault(u => u.Id == _model.MeasurementUnitId);
+
+                    if (_model.TaxRateId.HasValue)
+                        _selectedTaxRate = _taxRates.FirstOrDefault(t => t.Id == _model.TaxRateId);
+                }
+            }
+        }
+    }
+
+    private Task<IEnumerable<TaxRateViewModel>> SearchTaxRates(string? text, CancellationToken ct)
+    {
+        var results = string.IsNullOrWhiteSpace(text)
+            ? _taxRates
+            : _taxRates.Where(t => (t.Name?.Contains(text, StringComparison.OrdinalIgnoreCase) ?? false)
+                                || t.Code.Contains(text, StringComparison.OrdinalIgnoreCase));
+        return Task.FromResult(results);
+    }
+
+    private Task<IEnumerable<MeasurementUnitViewModel>> SearchMeasurementUnits(string? text, CancellationToken ct)
+    {
+        var results = string.IsNullOrWhiteSpace(text)
+            ? _measurementUnits
+            : _measurementUnits.Where(u => u.Name?.Contains(text, StringComparison.OrdinalIgnoreCase) ?? false);
+        return Task.FromResult(results);
+    }
+
+    private void OnTaxRateChanged(TaxRateViewModel? taxRate)
+    {
+        _selectedTaxRate = taxRate;
+        _model.TaxRateId = taxRate?.Id;
+    }
+
+    private void OnMeasurementUnitChanged(MeasurementUnitViewModel? unit)
+    {
+        _selectedMeasurementUnit = unit;
+        _model.MeasurementUnitId = unit?.Id;
+    }
+
+    private Task OnProductCategoryChangedAsync(int? productCategoryId)
+    {
+        _model.ProductCategoryId = productCategoryId;
+        return Task.CompletedTask;
+    }
+
+    private async Task SaveAsync()
+    {
+        _saving = true;
+
+        HttpResponseMessage response;
+
+        if (_content.Id > 0)
+        {
+            response = await Http.PutAsJsonAsync("products", new
+            {
+                _content.Id, _model.Code, _model.Description, _model.Type,
+                _model.ProductCategoryId, _model.MeasurementUnitId, _model.TaxRateId
+            });
+        }
+        else
+        {
+            response = await Http.PostAsJsonAsync("products", new
+            {
+                _model.Code, _model.Description, _model.Type,
+                _model.ProductCategoryId, _model.MeasurementUnitId, _model.TaxRateId
+            });
+        }
+
+        _saving = false;
+
+        if (await Snackbar.ShowResponseErrorAsync(response))
+        {
+            var savedProduct = await BuildSavedProductAsync(response);
+            _content.Id = savedProduct.Id;
+            Dialog.Close(DialogResult.Ok(savedProduct));
+        }
+    }
+
+    private async Task<ProductViewModel> BuildSavedProductAsync(HttpResponseMessage saveResponse)
+    {
+        var saveResult = await saveResponse.Content.ReadFromJsonAsync<ProductSaveResult>();
+        var productId = saveResult?.Id > 0 ? saveResult.Id : _content.Id;
+
+        if (productId > 0)
+        {
+            var getResponse = await Http.GetAsync($"products/{productId}");
+            if (getResponse.IsSuccessStatusCode)
+            {
+                var existingProduct = await getResponse.Content.ReadFromJsonAsync<ProductViewModel>();
+                if (existingProduct is not null)
+                {
+                    return existingProduct;
+                }
+            }
+        }
+
+        return MapProductViewModel(productId);
+    }
+
+    private ProductViewModel MapProductViewModel(int productId)
+    {
+        return new ProductViewModel
+        {
+            Id = productId,
+            Code = _model.Code,
+            Description = _model.Description,
+            Type = _model.Type,
+            ProductCategoryId = _model.ProductCategoryId,
+            MeasurementUnitId = _model.MeasurementUnitId,
+            TaxRateId = _model.TaxRateId
+        };
+    }
+
+    private sealed record ProductSaveResult(int Id);
+}

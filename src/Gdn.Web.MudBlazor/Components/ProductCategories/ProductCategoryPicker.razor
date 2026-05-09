@@ -1,0 +1,153 @@
+@inject HttpClient Http
+@inject IDialogService DialogService
+
+<MudAutocomplete T="ProductCategoryViewModel"
+                 Label="@Label"
+                 Value="_selectedCategory"
+                 ValueChanged="OnSelectedCategoryChangedAsync"
+                 SearchFunc="SearchCategoriesAsync"
+                 ToStringFunc="FormatCategory"
+                 ResetValueOnEmptyText="true"
+                 Disabled="@Disabled"
+                 Adornment="Adornment.End"
+                 AdornmentIcon="@Icons.Material.Filled.Add"
+                 AdornmentColor="Color.Primary"
+                 OnAdornmentClick="OnAdornmentClickAsync" />
+@if (ValidationFor is not null)
+{
+    <MudText Typo="Typo.caption" Color="Color.Error">
+        <ValidationMessage For="ValidationFor" />
+    </MudText>
+}
+
+@code {
+    [Parameter]
+    public string Label { get; set; } = "Categoria";
+
+    [Parameter]
+    public int? ProductCategoryId { get; set; }
+
+    [Parameter]
+    public EventCallback<int?> ProductCategoryIdChanged { get; set; }
+
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    [Parameter]
+    public int? ExcludedProductCategoryId { get; set; }
+
+    [Parameter]
+    public System.Linq.Expressions.Expression<Func<int?>>? ValidationFor { get; set; }
+
+    private List<ProductCategoryViewModel> _categories = [];
+    private ProductCategoryViewModel? _selectedCategory;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _categories = await Http.GetFromJsonAsync<List<ProductCategoryViewModel>>("productcategories") ?? [];
+        SyncSelectedCategory();
+    }
+
+    protected override void OnParametersSet()
+    {
+        SyncSelectedCategory();
+    }
+
+    private void SyncSelectedCategory()
+    {
+        if (_selectedCategory?.Id == ProductCategoryId)
+        {
+            return;
+        }
+
+        _selectedCategory = ProductCategoryId.HasValue
+            ? _categories.FirstOrDefault(category =>
+                category.Id == ProductCategoryId.Value &&
+                category.Id != ExcludedProductCategoryId)
+            : null;
+    }
+
+    private Task<IEnumerable<ProductCategoryViewModel>> SearchCategoriesAsync(string? text, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        IEnumerable<ProductCategoryViewModel> results = string.IsNullOrWhiteSpace(text)
+            ? _categories
+            : _categories.Where(category =>
+                category.Name?.Contains(text, StringComparison.OrdinalIgnoreCase) == true ||
+                category.Code.Contains(text, StringComparison.OrdinalIgnoreCase));
+
+        if (ExcludedProductCategoryId.HasValue)
+        {
+            results = results.Where(category => category.Id != ExcludedProductCategoryId.Value);
+        }
+
+        return Task.FromResult(results);
+    }
+
+    private async Task OnSelectedCategoryChangedAsync(ProductCategoryViewModel? category)
+    {
+        _selectedCategory = category;
+        await ProductCategoryIdChanged.InvokeAsync(category?.Id);
+    }
+
+    private Task OnAdornmentClickAsync(MouseEventArgs args)
+    {
+        return CreateCategoryAsync();
+    }
+
+    private async Task CreateCategoryAsync()
+    {
+        var parameters = new DialogParameters<ProductCategoryEditDialog>();
+        parameters.Add(dialog => dialog._content, new DialogContent());
+
+        var options = new DialogOptions
+        {
+            CloseOnEscapeKey = false,
+            CloseButton = false,
+            BackdropClick = false,
+            MaxWidth = MaxWidth.Medium,
+            FullWidth = true
+        };
+
+        var dialog = await DialogService.ShowAsync<ProductCategoryEditDialog>("Nuova categoria prodotto", parameters, options);
+        var result = await dialog.Result;
+        if (result is null || result.Canceled || result.Data is not ProductCategoryViewModel category)
+        {
+            return;
+        }
+
+        var existingCategory = _categories.FirstOrDefault(currentCategory => currentCategory.Id == category.Id);
+        if (existingCategory is null)
+        {
+            _categories.Add(category);
+        }
+        else
+        {
+            existingCategory.Code = category.Code;
+            existingCategory.Name = category.Name;
+            existingCategory.Description = category.Description;
+            existingCategory.Level = category.Level;
+            existingCategory.ParentCategoryId = category.ParentCategoryId;
+            existingCategory.ParentCategoryName = category.ParentCategoryName;
+        }
+
+        if (ExcludedProductCategoryId.HasValue && category.Id == ExcludedProductCategoryId.Value)
+        {
+            return;
+        }
+
+        _selectedCategory = category;
+        await ProductCategoryIdChanged.InvokeAsync(category.Id);
+    }
+
+    private static string? FormatCategory(ProductCategoryViewModel? category)
+    {
+        return category switch
+        {
+            null => null,
+            { Name.Length: > 0 } => category.Name,
+            _ => category.Code
+        };
+    }
+}

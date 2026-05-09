@@ -27,5 +27,6 @@ internal sealed class InterventionRowConfiguration : IEntityTypeConfiguration<In
     public void Configure(EntityTypeBuilder<InterventionRow> builder)
     {
         builder.Property(e => e.RowType).HasMaxLength(3);
+        builder.HasOne(e => e.Product).WithMany().HasForeignKey(e => e.ProductId).OnDelete(DeleteBehavior.SetNull);
     }
 }

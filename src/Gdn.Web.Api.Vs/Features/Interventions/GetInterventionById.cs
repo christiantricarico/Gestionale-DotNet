@@ -8,7 +8,7 @@ public class GetInterventionById
 {
     public record ResponseRow(long Id, string RowType, string? Description, decimal? Quantity, decimal? UnitPrice,
         int? MeasurementUnitId, string? MeasurementUnitCode, string? MeasurementUnitName,
-        int? TaxRateId, string? TaxRateName, decimal? TaxRateValue);
+        int? TaxRateId, string? TaxRateName, decimal? TaxRateValue, int? ProductId);
 
     public record Response(int Id, string Number, DateOnly Date, int CustomerId, bool IsInvoiced, int? InvoiceId, string? InvoiceNumber, IEnumerable<ResponseRow> Rows);
 
@@ -22,7 +22,7 @@ public class GetInterventionById
 
     private static async Task<IResult> HandlerAsync(int id, IInterventionRepository reportRepository)
     {
-        var data = await reportRepository.GetAsync(id, ["Rows.TaxRate", "Rows.MeasurementUnit", "Invoice"]);
+        var data = await reportRepository.GetAsync(id, ["Rows.TaxRate", "Rows.MeasurementUnit", "Rows.Product", "Invoice"]);
 
         return data is not null
             ? ResultHelper.Ok(MapResponse(data))
@@ -37,5 +37,5 @@ public class GetInterventionById
                row.MeasurementUnitId, row.MeasurementUnit?.Code, row.MeasurementUnit?.Name,
                row.TaxRateId,
                string.IsNullOrWhiteSpace(row.TaxRate?.Name) ? row.TaxRate?.Code : row.TaxRate?.Name,
-               row.TaxRate?.Rate);
+               row.TaxRate?.Rate, row.ProductId);
 }

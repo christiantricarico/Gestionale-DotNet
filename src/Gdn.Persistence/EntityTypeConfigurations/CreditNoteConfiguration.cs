@@ -17,5 +17,6 @@ internal class CreditNoteRowConfiguration : IEntityTypeConfiguration<CreditNoteR
     public void Configure(EntityTypeBuilder<CreditNoteRow> builder)
     {
         builder.Property(e => e.RowType).HasMaxLength(3);
+        builder.HasOne(e => e.Product).WithMany().HasForeignKey(e => e.ProductId).OnDelete(DeleteBehavior.SetNull);
     }
 }

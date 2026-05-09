@@ -9,7 +9,7 @@ public class GetCreditNoteById
 {
     public record GetCreditNoteByIdResponseRow(long Id, string RowType, string? Description, decimal? Quantity, decimal? UnitPrice,
         int? MeasurementUnitId, string? MeasurementUnitCode, string? MeasurementUnitName,
-        int? TaxRateId, string? TaxRateName, decimal? TaxRateValue);
+        int? TaxRateId, string? TaxRateName, decimal? TaxRateValue, int? ProductId);
 
     public record GetCreditNoteByIdResponseDue(int Id, DateOnly Date, decimal Amount, decimal PaidAmount, bool IsPaid);
 
@@ -29,7 +29,7 @@ public class GetCreditNoteById
 
     private static async Task<IResult> HandlerAsync(int id, ICreditNoteRepository creditNoteRepository)
     {
-        var data = await creditNoteRepository.GetAsync(id, ["Rows.TaxRate", "Rows.MeasurementUnit", "Dues"]);
+        var data = await creditNoteRepository.GetAsync(id, ["Rows.TaxRate", "Rows.MeasurementUnit", "Rows.Product", "Dues"]);
 
         return data is not null
             ? ResultHelper.Ok(MapResponse(data))
@@ -48,7 +48,7 @@ public class GetCreditNoteById
                row.MeasurementUnitId, row.MeasurementUnit?.Code, row.MeasurementUnit?.Name,
                row.TaxRateId,
                string.IsNullOrWhiteSpace(row.TaxRate?.Name) ? row.TaxRate?.Code : row.TaxRate.Name,
-               row.TaxRate?.Rate);
+               row.TaxRate?.Rate, row.ProductId);
 
     private static GetCreditNoteByIdResponseDue MapResponseDue(Due due)
         => new(due.Id, due.Date, due.Amount, due.PaidAmount, due.IsPaid);

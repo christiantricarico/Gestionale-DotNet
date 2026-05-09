@@ -2,6 +2,7 @@ using FluentValidation;
 using Gdn.Domain.Data;
 using Gdn.Domain.Data.Repositories;
 using Gdn.Domain.Models;
+using Gdn.Domain.Models.Enums;
 using Gdn.Web.Api.Vs.Endpoints;
 using Gdn.Web.Api.Vs.Features.Invoices;
 
@@ -9,9 +10,9 @@ namespace Gdn.Web.Api.Vs.Features.CreditNotes;
 
 public class UpdateCreditNote
 {
-    public record UpdateCreditNoteRowRequest(InputStatus InputStatus, long? Id, string RowType, string? Description,
+    public record UpdateCreditNoteRowRequest(InputStatus InputStatus, long? Id, string? Description,
         decimal? Quantity, decimal? UnitPrice,
-        int? MeasurementUnitId, int? TaxRateId);
+        int? MeasurementUnitId, int? TaxRateId, int? ProductId);
 
     public record UpdateCreditNoteDueRequest(InputStatus InputStatus, int? Id, DateOnly Date, decimal Amount);
 
@@ -20,7 +21,7 @@ public class UpdateCreditNote
         IEnumerable<UpdateCreditNoteRowRequest> Rows,
         IEnumerable<UpdateCreditNoteDueRequest> Dues);
 
-    public record ResponseRow(long Id, string RowType, string? Description, decimal? Quantity, decimal? UnitPrice, int? MeasurementUnitId, int? TaxRateId);
+    public record ResponseRow(long Id, string RowType, string? Description, decimal? Quantity, decimal? UnitPrice, int? MeasurementUnitId, int? TaxRateId, int? ProductId);
     public record ResponseDue(int Id, DateOnly Date, decimal Amount, decimal PaidAmount, bool IsPaid);
     public record Response(int Id, int Number, DateOnly Date, int CustomerId,
         decimal? StampDutyAmount, bool StampDutyChargedToCustomer,
@@ -223,11 +224,13 @@ public class UpdateCreditNote
 
     private static CreditNoteRow MapCreditNoteRow(CreditNoteRow row, UpdateCreditNoteRowRequest request)
     {
+        row.RowType = ResolveRowType(request.ProductId);
         row.Description = request.Description;
         row.Quantity = request.Quantity;
         row.UnitPrice = request.UnitPrice;
         row.MeasurementUnitId = request.MeasurementUnitId;
         row.TaxRateId = request.TaxRateId;
+        row.ProductId = request.ProductId;
 
         return row;
     }
@@ -240,7 +243,7 @@ public class UpdateCreditNote
                creditNote.Dues.Select(MapResponseDue));
 
     private static ResponseRow MapResponseRow(CreditNoteRow row)
-        => new(row.Id, row.RowType, row.Description, row.Quantity, row.UnitPrice, row.MeasurementUnitId, row.TaxRateId);
+        => new(row.Id, row.RowType, row.Description, row.Quantity, row.UnitPrice, row.MeasurementUnitId, row.TaxRateId, row.ProductId);
 
     private static ResponseDue MapResponseDue(Due due)
         => new(due.Id, due.Date, due.Amount, due.PaidAmount, due.IsPaid);
@@ -257,6 +260,9 @@ public class UpdateCreditNote
             ? PaymentStatus.PartiallyPaid
             : PaymentStatus.NotPaid;
     }
+
+    private static string ResolveRowType(int? productId)
+        => productId.HasValue ? DocumentRowType.PRODUCT : DocumentRowType.DESCRIPTIVE;
 
     private static decimal ToSignedCreditNoteAmount(decimal amount) => amount > 0m ? -amount : amount;
 }

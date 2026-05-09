@@ -13,6 +13,11 @@
             <DataAnnotationsValidator />
             <MudGrid Spacing="2" Class="mt-1">
                 <MudItem xs="12">
+                    <ProductPicker ProductId="_model.ProductId"
+                                   ProductIdChanged="OnProductIdChangedAsync"
+                                   ProductChanged="OnProductChangedAsync" />
+                </MudItem>
+                <MudItem xs="12">
                     <MudTextField @bind-Value="_model.Description"
                                   Label="Descrizione"
                                   Lines="2"
@@ -81,18 +86,54 @@
             MeasurementUnitId = Row.MeasurementUnitId,
             MeasurementUnitName = Row.MeasurementUnitName,
             Quantity = Row.Quantity,
-            UnitPrice = Row.UnitPrice
+            UnitPrice = Row.UnitPrice,
+            ProductId = Row.ProductId,
+            ProductCode = Row.ProductCode
         };
         _editContext = new EditContext(_model);
 
         _taxRates = await Http.GetFromJsonAsync<IEnumerable<TaxRateViewModel>>("taxrates") ?? [];
         _measurementUnits = await Http.GetFromJsonAsync<IEnumerable<MeasurementUnitViewModel>>("measurementunits") ?? [];
-
         if (_model.TaxRateId.HasValue)
             _selectedTaxRate = _taxRates.FirstOrDefault(t => t.Id == _model.TaxRateId);
 
         if (_model.MeasurementUnitId.HasValue)
             _selectedMeasurementUnit = _measurementUnits.FirstOrDefault(u => u.Id == _model.MeasurementUnitId);
+    }
+
+    private Task OnProductIdChangedAsync(int? productId)
+    {
+        _model.ProductId = productId;
+        return Task.CompletedTask;
+    }
+
+    private Task OnProductChangedAsync(ProductViewModel? product)
+    {
+        _model.ProductId = product?.Id;
+        _model.ProductCode = product?.Code;
+
+        if (product is not null)
+        {
+            if (!string.IsNullOrWhiteSpace(product.Description))
+                _model.Description = product.Description;
+
+            if (product.TaxRateId.HasValue)
+            {
+                _selectedTaxRate = _taxRates.FirstOrDefault(t => t.Id == product.TaxRateId);
+                _model.TaxRateId = _selectedTaxRate?.Id;
+                _model.TaxRateName = string.IsNullOrWhiteSpace(_selectedTaxRate?.Name) ? _selectedTaxRate?.Code : _selectedTaxRate?.Name;
+                _model.TaxRateValue = _selectedTaxRate?.Rate;
+            }
+
+            if (product.MeasurementUnitId.HasValue)
+            {
+                _selectedMeasurementUnit = _measurementUnits.FirstOrDefault(u => u.Id == product.MeasurementUnitId);
+                _model.MeasurementUnitId = _selectedMeasurementUnit?.Id;
+                _model.MeasurementUnitName = _selectedMeasurementUnit?.Name;
+            }
+        }
+
+        return Task.CompletedTask;
     }
 
     private Task<IEnumerable<TaxRateViewModel>> SearchTaxRates(string? text, CancellationToken ct)
@@ -142,6 +183,8 @@
         Row.MeasurementUnitName = _model.MeasurementUnitName;
         Row.Quantity = _model.Quantity;
         Row.UnitPrice = _model.UnitPrice;
+        Row.ProductId = _model.ProductId;
+        Row.ProductCode = _model.ProductCode;
 
         Dialog.Close(DialogResult.Ok(Row));
     }
