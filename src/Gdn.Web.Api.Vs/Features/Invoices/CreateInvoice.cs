@@ -10,11 +10,11 @@ namespace Gdn.Web.Api.Vs.Features.Invoices;
 
 public class CreateInvoice
 {
-    public record CreateInvoiceRowRequest(string? Description, decimal? Quantity, decimal? UnitPrice, int? MeasurementUnitId, int? TaxRateId);
+    public record CreateInvoiceRowRequest(string? Description, decimal? Quantity, decimal? UnitPrice, int? MeasurementUnitId, int? TaxRateId, int? ProductId, string? RowType);
     public record CreateInvoiceRequest(int Number, DateOnly Date, int CustomerId, decimal? StampDutyAmount, bool StampDutyChargedToCustomer, IEnumerable<CreateInvoiceRowRequest> Rows, IEnumerable<int>? InterventionIds);
 
     public record ResponseDue(int Id, DateOnly Date, decimal Amount, decimal PaidAmount, bool IsPaid);
-    public record ResponseRow(long Id, string RowType, string? Description, decimal? Quantity, decimal? UnitPrice, int? MeasurementUnitId, int? TaxRateId);
+    public record ResponseRow(long Id, string RowType, string? Description, decimal? Quantity, decimal? UnitPrice, int? MeasurementUnitId, int? TaxRateId, int? ProductId);
     public record Response(int Id, int Number, DateOnly Date, int CustomerId, decimal? StampDutyAmount, bool StampDutyChargedToCustomer, IEnumerable<ResponseRow> Rows, IEnumerable<ResponseDue> Dues, IEnumerable<int> InterventionIds);
 
     public sealed class Endpoint : IEndpoint
@@ -113,12 +113,13 @@ public class CreateInvoice
 
     private static InvoiceRow MapInvoiceRow(CreateInvoiceRowRequest request) => new()
     {
-        RowType = DocumentRowType.DESCRIPTIVE,
+        RowType = request.RowType ?? DocumentRowType.DESCRIPTIVE,
         Description = request.Description,
         Quantity = request.Quantity,
         UnitPrice = request.UnitPrice,
         MeasurementUnitId = request.MeasurementUnitId,
-        TaxRateId = request.TaxRateId
+        TaxRateId = request.TaxRateId,
+        ProductId = request.ProductId
     };
 
     private static InvoiceRow MapInvoiceRow(InterventionRow reportRow) => new()
@@ -128,7 +129,8 @@ public class CreateInvoice
         Quantity = reportRow.Quantity,
         UnitPrice = reportRow.UnitPrice,
         MeasurementUnitId = reportRow.MeasurementUnitId,
-        TaxRateId = reportRow.TaxRateId
+        TaxRateId = reportRow.TaxRateId,
+        ProductId = reportRow.ProductId
     };
 
     private static Response MapResponse(Invoice invoice, IEnumerable<Due> dues, IEnumerable<int> interventionReportIds)
@@ -139,7 +141,7 @@ public class CreateInvoice
                interventionReportIds);
 
     private static ResponseRow MapResponseRow(InvoiceRow row)
-        => new(row.Id, row.RowType, row.Description, row.Quantity, row.UnitPrice, row.MeasurementUnitId, row.TaxRateId);
+        => new(row.Id, row.RowType, row.Description, row.Quantity, row.UnitPrice, row.MeasurementUnitId, row.TaxRateId, row.ProductId);
 
     private static ResponseDue MapResponseDue(Due due)
         => new(due.Id, due.Date, due.Amount, due.PaidAmount, due.IsPaid);

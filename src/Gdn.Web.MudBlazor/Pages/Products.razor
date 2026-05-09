@@ -1,0 +1,170 @@
+@page "/products"
+
+@inject HttpClient Http
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+
+<PageTitle>Prodotti/Servizi</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
+    <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-4">
+        <MudText Typo="Typo.h5">Prodotti/Servizi</MudText>
+        <MudSpacer />
+        @if (!_isLoading)
+        {
+            <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.Add"
+                       OnClick="CreateButtonClick">Nuovo</MudButton>
+        }
+    </MudStack>
+
+    <MudGrid Spacing="2" Class="mb-4">
+        <MudItem xs="12" sm="6" md="4">
+            <MudTextField T="string"
+                          Label="Filtro"
+                          Value="@_filterText"
+                          ValueChanged="OnFilterTextChanged"
+                          Immediate="true"
+                          Clearable="true"
+                          Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Filled.Search" />
+        </MudItem>
+    </MudGrid>
+
+    @if (_isLoading)
+    {
+        <MudProgressLinear Indeterminate="true" />
+    }
+    else
+    {
+        @foreach (var item in _filteredItems)
+        {
+            <MudCard Class="mb-2">
+                <MudCardContent Class="pa-3">
+                    <MudGrid>
+                        <MudItem xs="6" sm="2">
+                            <MudText Typo="Typo.caption">Codice</MudText>
+                            <MudText>@item.Code</MudText>
+                        </MudItem>
+                        <MudItem xs="6" sm="1">
+                            <MudText Typo="Typo.caption">Tipo</MudText>
+                            <MudText>@(item.Type == "PRD" ? "Prodotto" : "Servizio")</MudText>
+                        </MudItem>
+                        <MudItem xs="12" sm="4">
+                            <MudText Typo="Typo.caption">Descrizione</MudText>
+                            <MudText>@item.Description</MudText>
+                        </MudItem>
+                        <MudItem xs="6" sm="2">
+                            <MudText Typo="Typo.caption">Categoria</MudText>
+                            <MudText>@item.ProductCategoryName</MudText>
+                        </MudItem>
+                        <MudItem xs="6" sm="1">
+                            <MudText Typo="Typo.caption">UM</MudText>
+                            <MudText>@item.MeasurementUnitName</MudText>
+                        </MudItem>
+                        <MudItem xs="6" sm="1">
+                            <MudText Typo="Typo.caption">IVA</MudText>
+                            <MudText>@item.TaxRateCode</MudText>
+                        </MudItem>
+                        <MudItem xs="12" sm="1" Class="d-flex justify-end align-center gap-1">
+                            <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                           Size="Size.Small"
+                                           OnClick="@(() => EditButtonClick(item))" />
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                           Size="Size.Small"
+                                           Color="Color.Error"
+                                           OnClick="@(() => DeleteButtonClick(item))" />
+                        </MudItem>
+                    </MudGrid>
+                </MudCardContent>
+            </MudCard>
+        }
+    }
+</MudContainer>
+
+@code {
+    private bool _isLoading = true;
+    private IEnumerable<ProductViewModel> _items = [];
+    private List<ProductViewModel> _filteredItems = [];
+    private string _filterText = string.Empty;
+
+    protected override async Task OnInitializedAsync() => await ReloadAsync();
+
+    private async Task ReloadAsync()
+    {
+        _isLoading = true;
+        StateHasChanged();
+        try
+        {
+            _items = await Http.GetFromJsonAsync<IEnumerable<ProductViewModel>>("products") ?? [];
+            ApplyFilter();
+        }
+        catch (HttpRequestException)
+        {
+            Snackbar.Add("Errore durante il caricamento dei dati.", Severity.Error);
+            _items = [];
+            ApplyFilter();
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private async Task CreateButtonClick()
+    {
+        var parameters = new DialogParameters<ProductEditDialog>();
+        parameters.Add(x => x._content, new DialogContent());
+        var options = new DialogOptions { CloseOnEscapeKey = false, CloseButton = false, BackdropClick = false, MaxWidth = MaxWidth.Medium, FullWidth = true };
+        var dialog = await DialogService.ShowAsync<ProductEditDialog>("Nuovo prodotto/servizio", parameters, options);
+        var result = await dialog.Result;
+        if (result is not null && !result.Canceled)
+            await ReloadAsync();
+    }
+
+    private async Task EditButtonClick(ProductViewModel item)
+    {
+        var parameters = new DialogParameters<ProductEditDialog>();
+        parameters.Add(x => x._content, new DialogContent { Id = item.Id });
+        var options = new DialogOptions { CloseOnEscapeKey = false, CloseButton = false, BackdropClick = false, MaxWidth = MaxWidth.Medium, FullWidth = true };
+        var dialog = await DialogService.ShowAsync<ProductEditDialog>("Modifica prodotto/servizio", parameters, options);
+        var result = await dialog.Result;
+        if (result is not null && !result.Canceled)
+            await ReloadAsync();
+    }
+
+    private async Task DeleteButtonClick(ProductViewModel item)
+    {
+        bool? confirmed = await DialogService.ShowMessageBoxAsync(
+            "Eliminazione",
+            "Sei sicuro di voler eliminare questo elemento?",
+            yesText: "Sì", cancelText: "No");
+        if (confirmed is not true)
+            return;
+
+        var response = await Http.DeleteAsync($"products/{item.Id}");
+        if (!await Snackbar.ShowResponseErrorAsync(response))
+            return;
+
+        await ReloadAsync();
+    }
+
+    private void OnFilterTextChanged(string? value)
+    {
+        _filterText = value ?? string.Empty;
+        ApplyFilter();
+    }
+
+    private void ApplyFilter()
+    {
+        _filteredItems = string.IsNullOrWhiteSpace(_filterText)
+            ? [.. _items]
+            : [.. _items.Where(item =>
+                ContainsText(item.Code) ||
+                ContainsText(item.Description) ||
+                ContainsText(item.ProductCategoryName))];
+    }
+
+    private bool ContainsText(string? value) =>
+        value?.Contains(_filterText, StringComparison.OrdinalIgnoreCase) is true;
+}

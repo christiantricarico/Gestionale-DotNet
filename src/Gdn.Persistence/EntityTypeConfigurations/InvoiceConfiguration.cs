@@ -17,5 +17,6 @@ internal class InvoiceRowConfiguration : IEntityTypeConfiguration<InvoiceRow>
     public void Configure(EntityTypeBuilder<InvoiceRow> builder)
     {
         builder.Property(e => e.RowType).HasMaxLength(3);
+        builder.HasOne(e => e.Product).WithMany().HasForeignKey(e => e.ProductId).OnDelete(DeleteBehavior.SetNull);
     }
 }

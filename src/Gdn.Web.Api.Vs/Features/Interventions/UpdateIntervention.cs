@@ -10,11 +10,11 @@ public class UpdateIntervention
 {
     public record UpdateInterventionRowRequest(InputStatus InputStatus, long? Id, string RowType, string? Description,
         decimal? Quantity, decimal? UnitPrice,
-        int? MeasurementUnitId, int? TaxRateId);
+        int? MeasurementUnitId, int? TaxRateId, int? ProductId);
 
     public record UpdateInterventionRequest(int Id, int Number, DateOnly Date, int CustomerId, IEnumerable<UpdateInterventionRowRequest> Rows);
 
-    public record ResponseRow(long Id, string RowType, string? Description, decimal? Quantity, decimal? UnitPrice, int? MeasurementUnitId, int? TaxRateId);
+    public record ResponseRow(long Id, string RowType, string? Description, decimal? Quantity, decimal? UnitPrice, int? MeasurementUnitId, int? TaxRateId, int? ProductId);
     public record Response(int Id, int Number, DateOnly Date, int CustomerId, bool IsInvoiced, int? InvoiceId, IEnumerable<ResponseRow> Rows);
 
     public sealed class Endpoint : IEndpoint
@@ -97,11 +97,13 @@ public class UpdateIntervention
 
     private static InterventionRow MapRow(InterventionRow row, UpdateInterventionRowRequest request)
     {
+        row.RowType = request.RowType;
         row.Description = request.Description;
         row.Quantity = request.Quantity;
         row.UnitPrice = request.UnitPrice;
         row.MeasurementUnitId = request.MeasurementUnitId;
         row.TaxRateId = request.TaxRateId;
+        row.ProductId = request.ProductId;
 
         return row;
     }
@@ -110,5 +112,5 @@ public class UpdateIntervention
         => new(report.Id, int.Parse(report.Number), report.Date, report.CustomerId, report.IsInvoiced, report.InvoiceId, report.Rows.Select(MapResponseRow));
 
     private static ResponseRow MapResponseRow(InterventionRow row)
-        => new(row.Id, row.RowType, row.Description, row.Quantity, row.UnitPrice, row.MeasurementUnitId, row.TaxRateId);
+        => new(row.Id, row.RowType, row.Description, row.Quantity, row.UnitPrice, row.MeasurementUnitId, row.TaxRateId, row.ProductId);
 }

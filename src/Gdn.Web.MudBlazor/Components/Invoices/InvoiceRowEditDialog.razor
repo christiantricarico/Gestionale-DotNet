@@ -13,6 +13,15 @@
             <DataAnnotationsValidator />
             <MudGrid Spacing="2" Class="mt-1">
                 <MudItem xs="12">
+                    <MudAutocomplete T="ProductViewModel"
+                                     Label="Prodotto/Servizio"
+                                     Value="_selectedProduct"
+                                     ValueChanged="OnProductChanged"
+                                     SearchFunc="SearchProducts"
+                                     ToStringFunc="@(p => p?.Code)"
+                                     ResetValueOnEmptyText="true" />
+                </MudItem>
+                <MudItem xs="12">
                     <MudTextField @bind-Value="_model.Description"
                                   Label="Descrizione"
                                   Lines="2"
@@ -65,8 +74,10 @@
 
     private IEnumerable<TaxRateViewModel> _taxRates = [];
     private IEnumerable<MeasurementUnitViewModel> _measurementUnits = [];
+    private IEnumerable<ProductViewModel> _products = [];
     private TaxRateViewModel? _selectedTaxRate;
     private MeasurementUnitViewModel? _selectedMeasurementUnit;
+    private ProductViewModel? _selectedProduct;
 
     protected override async Task OnInitializedAsync()
     {
@@ -81,18 +92,61 @@
             MeasurementUnitId = Row.MeasurementUnitId,
             MeasurementUnitName = Row.MeasurementUnitName,
             Quantity = Row.Quantity,
-            UnitPrice = Row.UnitPrice
+            UnitPrice = Row.UnitPrice,
+            ProductId = Row.ProductId,
+            ProductCode = Row.ProductCode
         };
         _editContext = new EditContext(_model);
 
         _taxRates = await Http.GetFromJsonAsync<IEnumerable<TaxRateViewModel>>("taxrates") ?? [];
         _measurementUnits = await Http.GetFromJsonAsync<IEnumerable<MeasurementUnitViewModel>>("measurementunits") ?? [];
+        _products = await Http.GetFromJsonAsync<IEnumerable<ProductViewModel>>("products") ?? [];
 
         if (_model.TaxRateId.HasValue)
             _selectedTaxRate = _taxRates.FirstOrDefault(t => t.Id == _model.TaxRateId);
 
         if (_model.MeasurementUnitId.HasValue)
             _selectedMeasurementUnit = _measurementUnits.FirstOrDefault(u => u.Id == _model.MeasurementUnitId);
+
+        if (_model.ProductId.HasValue)
+            _selectedProduct = _products.FirstOrDefault(p => p.Id == _model.ProductId);
+    }
+
+    private Task<IEnumerable<ProductViewModel>> SearchProducts(string? text, CancellationToken ct)
+    {
+        var results = string.IsNullOrWhiteSpace(text)
+            ? _products
+            : _products.Where(p => p.Code.Contains(text, StringComparison.OrdinalIgnoreCase)
+                                || (p.Description?.Contains(text, StringComparison.OrdinalIgnoreCase) ?? false));
+        return Task.FromResult(results);
+    }
+
+    private void OnProductChanged(ProductViewModel? product)
+    {
+        _selectedProduct = product;
+        _model.ProductId = product?.Id;
+        _model.ProductCode = product?.Code;
+
+        if (product is not null)
+        {
+            if (!string.IsNullOrWhiteSpace(product.Description))
+                _model.Description = product.Description;
+
+            if (product.TaxRateId.HasValue)
+            {
+                _selectedTaxRate = _taxRates.FirstOrDefault(t => t.Id == product.TaxRateId);
+                _model.TaxRateId = _selectedTaxRate?.Id;
+                _model.TaxRateName = string.IsNullOrWhiteSpace(_selectedTaxRate?.Name) ? _selectedTaxRate?.Code : _selectedTaxRate?.Name;
+                _model.TaxRateValue = _selectedTaxRate?.Rate;
+            }
+
+            if (product.MeasurementUnitId.HasValue)
+            {
+                _selectedMeasurementUnit = _measurementUnits.FirstOrDefault(u => u.Id == product.MeasurementUnitId);
+                _model.MeasurementUnitId = _selectedMeasurementUnit?.Id;
+                _model.MeasurementUnitName = _selectedMeasurementUnit?.Name;
+            }
+        }
     }
 
     private Task<IEnumerable<TaxRateViewModel>> SearchTaxRates(string? text, CancellationToken ct)
@@ -140,6 +194,8 @@
         Row.MeasurementUnitName = _model.MeasurementUnitName;
         Row.Quantity = _model.Quantity;
         Row.UnitPrice = _model.UnitPrice;
+        Row.ProductId = _model.ProductId;
+        Row.ProductCode = _model.ProductCode;
 
         Dialog.Close(DialogResult.Ok(Row));
     }

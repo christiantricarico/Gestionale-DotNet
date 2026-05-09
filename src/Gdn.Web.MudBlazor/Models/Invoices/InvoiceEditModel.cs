@@ -67,6 +67,11 @@ public class InvoiceRowEditModel
 
     public decimal? TaxRateValue { get; set; }
 
+    public int? ProductId { get; set; }
+
+    [Display(Name = "Prodotto/Servizio")]
+    public string? ProductCode { get; set; }
+
     [Display(Name = "Totale")]
     public decimal TotalAmount => Quantity * UnitPrice;
 }
