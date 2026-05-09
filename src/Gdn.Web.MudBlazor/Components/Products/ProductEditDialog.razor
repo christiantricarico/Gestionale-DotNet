@@ -185,7 +185,46 @@
 
         if (await Snackbar.ShowResponseErrorAsync(response))
         {
-            Dialog.Close(DialogResult.Ok(true));
+            var savedProduct = await BuildSavedProductAsync(response);
+            _content.Id = savedProduct.Id;
+            Dialog.Close(DialogResult.Ok(savedProduct));
         }
     }
+
+    private async Task<ProductViewModel> BuildSavedProductAsync(HttpResponseMessage saveResponse)
+    {
+        var saveResult = await saveResponse.Content.ReadFromJsonAsync<ProductSaveResult>();
+        var productId = saveResult?.Id > 0 ? saveResult.Id : _content.Id;
+
+        if (productId > 0)
+        {
+            var getResponse = await Http.GetAsync($"products/{productId}");
+            if (getResponse.IsSuccessStatusCode)
+            {
+                var existingProduct = await getResponse.Content.ReadFromJsonAsync<ProductViewModel>();
+                if (existingProduct is not null)
+                {
+                    return existingProduct;
+                }
+            }
+        }
+
+        return MapProductViewModel(productId);
+    }
+
+    private ProductViewModel MapProductViewModel(int productId)
+    {
+        return new ProductViewModel
+        {
+            Id = productId,
+            Code = _model.Code,
+            Description = _model.Description,
+            Type = _model.Type,
+            ProductCategoryId = _model.ProductCategoryId,
+            MeasurementUnitId = _model.MeasurementUnitId,
+            TaxRateId = _model.TaxRateId
+        };
+    }
+
+    private sealed record ProductSaveResult(int Id);
 }
