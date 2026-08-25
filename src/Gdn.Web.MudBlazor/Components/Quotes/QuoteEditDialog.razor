@@ -38,20 +38,23 @@
                                         ValidationFor="@(() => _model.CustomerId)"
                                         Disabled="@_model.IsAccepted" />
                     </MudItem>
-                    <MudItem xs="12" Class="d-flex align-center gap-2">
-                        <MudChip T="string" Color="@(_model.IsAccepted ? Color.Success : Color.Warning)" Size="Size.Small">
-                            @(_model.IsAccepted ? $"ACCETTATO il {_model.AcceptedAt:dd/MM/yyyy}" : "NON ACCETTATO")
-                        </MudChip>
-                        @if (!_model.IsAccepted && _model.Id.HasValue)
-                        {
-                            <MudButton Variant="Variant.Outlined"
-                                       Color="Color.Success"
-                                       StartIcon="@Icons.Material.Filled.CheckCircle"
-                                       OnClick="AcceptAsync">
-                                Accetta
-                            </MudButton>
-                        }
-                    </MudItem>
+                    @if (_model.Id.HasValue)
+                    {
+                        <MudItem xs="12" Class="d-flex align-center gap-2">
+                            <MudChip T="string" Color="@(_model.IsAccepted ? Color.Success : Color.Warning)" Size="Size.Small">
+                                @(_model.IsAccepted ? $"ACCETTATO il {_model.AcceptedAt:dd/MM/yyyy}" : "NON ACCETTATO")
+                            </MudChip>
+                            @if (!_model.IsAccepted)
+                            {
+                                <MudButton Variant="Variant.Outlined"
+                                           Color="Color.Success"
+                                           StartIcon="@Icons.Material.Filled.CheckCircle"
+                                           OnClick="AcceptAsync">
+                                    Accetta
+                                </MudButton>
+                            }
+                        </MudItem>
+                    }
                     <MudItem xs="12">
                         <MudButton Variant="Variant.Outlined"
                                    StartIcon="@Icons.Material.Filled.Add"
