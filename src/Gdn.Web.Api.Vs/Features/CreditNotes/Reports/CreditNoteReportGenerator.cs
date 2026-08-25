@@ -1,5 +1,4 @@
 using Gdn.Domain.Data.Repositories;
-using Gdn.Web.Api.Vs.Features.Invoices.Reports;
 using Microsoft.Extensions.Options;
 using QuestPDF.Fluent;
 
@@ -9,13 +8,13 @@ public class CreditNoteReportGenerator(IOptions<AppSettings> appSettings, ICredi
 {
     public async Task<byte[]> GeneratePdfBytesAsync(int creditNoteId)
     {
-        InvoiceReportModel model = await GetReportDataAsync(creditNoteId);
-        var document = new InvoiceDocument(model);
+        CreditNoteReportModel model = await GetReportDataAsync(creditNoteId);
+        var document = new CreditNoteDocument(model);
         var pdfBytes = document.GeneratePdf();
         return pdfBytes;
     }
 
-    private async Task<InvoiceReportModel> GetReportDataAsync(int creditNoteId)
+    private async Task<CreditNoteReportModel> GetReportDataAsync(int creditNoteId)
     {
         var creditNote = await creditNoteRepository.GetAsync(creditNoteId, ["Customer.Addresses", "Rows.TaxRate", "Rows.MeasurementUnit", "Dues"])
             ?? throw new InvalidOperationException("Credit note not found");
@@ -24,13 +23,11 @@ public class CreditNoteReportGenerator(IOptions<AppSettings> appSettings, ICredi
         var customer = creditNote.Customer;
         var customerAddress = customer.Addresses.FirstOrDefault();
 
-        var reportModel = new InvoiceReportModel
+        var reportModel = new CreditNoteReportModel
         {
             Number = creditNote.Number,
             Date = creditNote.Date,
             CustomerName = creditNote.Customer?.Name,
-            DocumentTitle = "Nota di credito",
-            DateLabel = "Data nota di credito:",
             StampDutyAmount = creditNote.StampDutyAmount,
             StampDutyChargedToCustomer = creditNote.StampDutyChargedToCustomer,
             SellerAddress = new AddressModel
@@ -53,7 +50,7 @@ public class CreditNoteReportGenerator(IOptions<AppSettings> appSettings, ICredi
                 Email = customer?.Email,
                 Phone = customer?.Phone
             },
-            Rows = creditNote.Rows.Select(row => new InvoiceRowReportModel
+            Rows = creditNote.Rows.Select(row => new CreditNoteRowReportModel
             {
                 Description = row.Description,
                 Quantity = row.Quantity,

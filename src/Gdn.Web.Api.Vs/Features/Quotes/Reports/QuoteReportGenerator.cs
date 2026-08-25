@@ -2,32 +2,39 @@ using Gdn.Domain.Data.Repositories;
 using Microsoft.Extensions.Options;
 using QuestPDF.Fluent;
 
-namespace Gdn.Web.Api.Vs.Features.Interventions.Reports;
+namespace Gdn.Web.Api.Vs.Features.Quotes.Reports;
 
-public class InterventionReportGenerator(IOptions<AppSettings> appSettings, IInterventionRepository reportRepository)
+public class QuoteReportGenerator(IOptions<AppSettings> appSettings, IQuoteRepository quoteRepository)
 {
-    public async Task<byte[]> GeneratePdfBytesAsync(int reportId)
+    public async Task<byte[]?> GeneratePdfBytesAsync(int quoteId)
     {
-        InterventionReportModel model = await GetReportDataAsync(reportId);
-        var document = new InterventionDocument(model);
+        var model = await GetReportDataAsync(quoteId);
+        if (model is null)
+            return null;
+
+        var document = new QuoteDocument(model);
         var pdfBytes = document.GeneratePdf();
         return pdfBytes;
     }
 
-    private async Task<InterventionReportModel> GetReportDataAsync(int reportId)
+    private async Task<QuoteReportModel?> GetReportDataAsync(int quoteId)
     {
-        var report = await reportRepository.GetAsync(reportId, ["Customer.Addresses", "Rows.TaxRate", "Rows.MeasurementUnit"])
-            ?? throw new InvalidOperationException("Intervention report not found");
+        var quote = await quoteRepository.GetAsync(quoteId, ["Customer.Addresses", "Rows.TaxRate", "Rows.MeasurementUnit"]);
+        if (quote is null)
+            return null;
 
         var company = appSettings.Value.CompanyData;
-        var customer = report.Customer;
+        var customer = quote.Customer;
         var customerAddress = customer.Addresses.FirstOrDefault();
 
-        var reportModel = new InterventionReportModel
+        var reportModel = new QuoteReportModel
         {
-            Number = report.Number,
-            Date = report.Date,
-            CustomerName = report.Customer?.Name,
+            Number = quote.Number,
+            Date = quote.Date,
+            CustomerName = quote.Customer?.Name,
+            AcceptanceStatusLabel = quote.IsAccepted
+                ? $"ACCETTATO il {quote.AcceptedAt:dd/MM/yyyy}"
+                : "NON ACCETTATO",
             SellerAddress = new AddressModel
             {
                 CompanyName = company.Name,
@@ -48,7 +55,7 @@ public class InterventionReportGenerator(IOptions<AppSettings> appSettings, IInt
                 Email = customer?.Email,
                 Phone = customer?.Phone
             },
-            Rows = report.Rows.Select(row => new InterventionRowReportModel
+            Rows = quote.Rows.Select(row => new QuoteRowReportModel
             {
                 Description = row.Description,
                 Quantity = row.Quantity,

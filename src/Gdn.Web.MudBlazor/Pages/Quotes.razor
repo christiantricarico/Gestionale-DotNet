@@ -1,0 +1,222 @@
+@page "/quotes"
+
+@using System.Text.Json
+@inject HttpClient Http
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+@inject IJSRuntime JS
+
+<PageTitle>Preventivi</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
+    <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-4">
+        <MudText Typo="Typo.h5">Preventivi</MudText>
+        <MudSpacer />
+        @if (!_isLoading)
+        {
+            <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.Add"
+                       OnClick="CreateButtonClick">Nuovo</MudButton>
+        }
+    </MudStack>
+
+    <MudGrid Spacing="2" Class="mb-4">
+        <MudItem xs="12" sm="6" md="4">
+            <MudSelect T="int?"
+                       Label="Cliente"
+                       @bind-Value="_selectedCustomerId"
+                       Clearable="true">
+                @foreach (var c in _customers)
+                {
+                    <MudSelectItem T="int?" Value="@((int?)c.Id)">@c.Name</MudSelectItem>
+                }
+            </MudSelect>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="3">
+            <MudDatePicker Label="Da data"
+                           @bind-Date="_filterFromDate"
+                           Clearable="true" />
+        </MudItem>
+        <MudItem xs="12" sm="6" md="3">
+            <MudDatePicker Label="A data"
+                           @bind-Date="_filterToDate"
+                           Clearable="true" />
+        </MudItem>
+        <MudItem xs="12" sm="6" md="2" Class="d-flex align-end">
+            <MudButton Variant="Variant.Outlined"
+                       FullWidth="true"
+                       OnClick="ApplyFilters">
+                Filtra
+            </MudButton>
+        </MudItem>
+    </MudGrid>
+
+    @if (_isLoading)
+    {
+        <MudProgressLinear Indeterminate="true" />
+    }
+    else
+    {
+        @foreach (var quote in _filteredItems)
+        {
+            <MudCard Class="mb-2">
+                <MudCardContent Class="pa-3">
+                    <MudGrid>
+                        <MudItem xs="6" sm="2">
+                            <MudText Typo="Typo.caption">Numero</MudText>
+                            <MudText>@quote.Number</MudText>
+                        </MudItem>
+                        <MudItem xs="6" sm="2">
+                            <MudText Typo="Typo.caption">Data</MudText>
+                            <MudText>@quote.Date.ToString("d")</MudText>
+                        </MudItem>
+                        <MudItem xs="12" sm="3">
+                            <MudText Typo="Typo.caption">Cliente</MudText>
+                            <MudText>@quote.CustomerName</MudText>
+                        </MudItem>
+                        <MudItem xs="6" sm="2">
+                            <MudText Typo="Typo.caption">Totale</MudText>
+                            <MudText>@quote.TotalAmount.ToString("C")</MudText>
+                        </MudItem>
+                        <MudItem xs="6" sm="1" Class="d-flex align-center">
+                            <MudTooltip Text="@(quote.IsAccepted ? $"Accettato il {quote.AcceptedAt:dd/MM/yyyy}" : "Non accettato")">
+                                <MudIcon Icon="@(quote.IsAccepted ? Icons.Material.Filled.CheckCircle : Icons.Material.Filled.Cancel)"
+                                         Color="@(quote.IsAccepted ? Color.Success : Color.Warning)" />
+                            </MudTooltip>
+                        </MudItem>
+                        <MudItem xs="12" sm="2" Class="d-flex justify-end align-center gap-1">
+                            <MudIconButton Icon="@Icons.Material.Filled.Print"
+                                           Size="Size.Small"
+                                           title="Stampa PDF"
+                                           OnClick="@(() => PrintButtonClick(quote))" />
+                            <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                           Size="Size.Small"
+                                           OnClick="@(() => EditButtonClick(quote))" />
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                           Size="Size.Small"
+                                           Color="Color.Error"
+                                           Disabled="@quote.IsAccepted"
+                                           OnClick="@(() => DeleteButtonClick(quote))" />
+                        </MudItem>
+                    </MudGrid>
+                </MudCardContent>
+            </MudCard>
+        }
+    }
+</MudContainer>
+
+@code {
+    private bool _isLoading = true;
+    private IEnumerable<CustomerViewModel> _customers = [];
+    private List<QuoteViewModel> _allItems = [];
+    private List<QuoteViewModel> _filteredItems = [];
+
+    private int? _selectedCustomerId;
+    private DateTime? _filterFromDate;
+    private DateTime? _filterToDate;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCustomersAsync();
+        await ReloadAsync();
+    }
+
+    private async Task LoadCustomersAsync()
+    {
+        try
+        {
+            _customers = await Http.GetFromJsonAsync<IEnumerable<CustomerViewModel>>("customers").ConfigureAwait(false) ?? [];
+        }
+        catch (HttpRequestException)
+        {
+            Snackbar.Add("Errore durante il caricamento dei clienti.", Severity.Error);
+            _customers = [];
+        }
+        catch (JsonException)
+        {
+            Snackbar.Add("Dati clienti non validi ricevuti dal server.", Severity.Error);
+            _customers = [];
+        }
+    }
+
+    private async Task ReloadAsync()
+    {
+        _isLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            _allItems = (await Http.GetFromJsonAsync<IEnumerable<QuoteViewModel>>("quotes").ConfigureAwait(false) ?? []).ToList();
+            ApplyFilters();
+        }
+        catch (HttpRequestException)
+        {
+            Snackbar.Add("Errore durante il caricamento dei dati.", Severity.Error);
+            _allItems = [];
+            _filteredItems = [];
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private void ApplyFilters()
+    {
+        _filteredItems = _allItems
+            .Where(r =>
+                (!_selectedCustomerId.HasValue || r.CustomerId == _selectedCustomerId) &&
+                (!_filterFromDate.HasValue || r.Date >= DateOnly.FromDateTime(_filterFromDate.Value)) &&
+                (!_filterToDate.HasValue || r.Date <= DateOnly.FromDateTime(_filterToDate.Value)))
+            .ToList();
+    }
+
+    private async Task CreateButtonClick()
+    {
+        var parameters = new DialogParameters<QuoteEditDialog>();
+        parameters.Add(x => x.Content, new DialogContent());
+        var options = new DialogOptions { CloseOnEscapeKey = false, CloseButton = false, BackdropClick = false, MaxWidth = MaxWidth.Large, FullWidth = true };
+        var dialog = await DialogService.ShowAsync<QuoteEditDialog>("Nuovo preventivo", parameters, options);
+        var result = await dialog.Result;
+        if (result is not null && !result.Canceled)
+            await ReloadAsync();
+    }
+
+    private async Task EditButtonClick(QuoteViewModel quote)
+    {
+        var parameters = new DialogParameters<QuoteEditDialog>();
+        parameters.Add(x => x.Content, new DialogContent { Id = quote.Id });
+        var options = new DialogOptions { CloseOnEscapeKey = false, CloseButton = false, BackdropClick = false, MaxWidth = MaxWidth.Large, FullWidth = true };
+        var dialog = await DialogService.ShowAsync<QuoteEditDialog>("Modifica preventivo", parameters, options);
+        var result = await dialog.Result;
+        if (result is not null && !result.Canceled)
+            await ReloadAsync();
+    }
+
+    private async Task PrintButtonClick(QuoteViewModel quote)
+    {
+        var response = await Http.GetAsync($"quotes/pdf/{quote.Id}");
+        if (!await Snackbar.ShowResponseErrorAsync(response))
+            return;
+
+        var fileStream = await response.Content.ReadAsStreamAsync();
+        using var streamRef = new DotNetStreamReference(fileStream);
+        await JS.InvokeVoidAsync("openPdfFromStream", streamRef);
+    }
+
+    private async Task DeleteButtonClick(QuoteViewModel quote)
+    {
+        bool? confirmed = await DialogService.ShowMessageBoxAsync(
+            "Eliminazione",
+            "Sei sicuro di voler eliminare questo preventivo?",
+            yesText: "Sì", cancelText: "No");
+        if (confirmed is not true)
+            return;
+
+        var response = await Http.DeleteAsync($"quotes/{quote.Id}");
+        if (!await Snackbar.ShowResponseErrorAsync(response))
+            return;
+
+        await ReloadAsync();
+    }
+}
