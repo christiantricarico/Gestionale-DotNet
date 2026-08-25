@@ -1,0 +1,30 @@
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Class="mr-2" Style="vertical-align:middle" />
+            Accetta preventivo
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudDatePicker Label="Data accettazione"
+                       @bind-Date="_acceptedAt"
+                       Required="true"
+                       RequiredError="Data accettazione richiesta." />
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Annulla</MudButton>
+        <MudButton Color="Color.Success" Variant="Variant.Filled" OnClick="Confirm" Disabled="@(_acceptedAt is null)">
+            Accetta
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance Dialog { get; set; } = default!;
+
+    private DateTime? _acceptedAt = DateTime.Today;
+
+    private void Confirm() => Dialog.Close(DialogResult.Ok(DateOnly.FromDateTime(_acceptedAt!.Value)));
+
+    private void Cancel() => Dialog.Cancel();
+}

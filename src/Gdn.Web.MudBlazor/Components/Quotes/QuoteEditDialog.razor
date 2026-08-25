@@ -194,7 +194,15 @@
         if (_model?.Id is null)
             return;
 
-        var response = await Http.PostAsync($"quotes/{_model.Id}/accept", null);
+        var options = new DialogOptions { CloseOnEscapeKey = false, MaxWidth = MaxWidth.ExtraSmall, FullWidth = true };
+        var dialog = await DialogService.ShowAsync<AcceptQuoteDialog>("Accetta preventivo", options);
+        var result = await dialog.Result;
+        if (result is null || result.Canceled)
+            return;
+
+        var acceptedAt = (DateOnly)result.Data!;
+
+        var response = await Http.PostAsJsonAsync($"quotes/{_model.Id}/accept", new { AcceptedAt = acceptedAt });
         if (!await Snackbar.ShowResponseErrorAsync(response))
             return;
 

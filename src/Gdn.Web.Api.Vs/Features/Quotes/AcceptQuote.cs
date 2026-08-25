@@ -6,6 +6,8 @@ namespace Gdn.Web.Api.Vs.Features.Quotes;
 
 public class AcceptQuote
 {
+    public record Request(DateOnly? AcceptedAt);
+
     public record Response(int Id, bool IsAccepted, DateTime? AcceptedAt);
 
     public sealed class Endpoint : IEndpoint
@@ -16,7 +18,7 @@ public class AcceptQuote
         }
     }
 
-    private static async Task<IResult> HandlerAsync(int id, IUnitOfWork unitOfWork)
+    private static async Task<IResult> HandlerAsync(int id, Request? request, IUnitOfWork unitOfWork)
     {
         var quoteRepository = unitOfWork.GetRepository<IQuoteRepository>();
         var quote = await quoteRepository.GetAsync(id);
@@ -27,10 +29,13 @@ public class AcceptQuote
             return ResultHelper.Conflict(QuoteErrors.AlreadyAccepted(id));
 
         quote.IsAccepted = true;
-        quote.AcceptedAt = DateTime.UtcNow;
+        quote.AcceptedAt = request?.AcceptedAt.HasValue == true
+            ? request.AcceptedAt!.Value.ToDateTime(TimeOnly.MinValue)
+            : DateTime.UtcNow;
 
         await unitOfWork.SaveChangesAsync();
 
         return ResultHelper.Ok(new Response(quote.Id, quote.IsAccepted, quote.AcceptedAt));
     }
 }
+
