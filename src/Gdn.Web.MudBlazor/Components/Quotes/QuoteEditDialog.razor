@@ -53,6 +53,15 @@
                                     Accetta
                                 </MudButton>
                             }
+                            else
+                            {
+                                <MudButton Variant="Variant.Outlined"
+                                           Color="Color.Warning"
+                                           StartIcon="@Icons.Material.Filled.Cancel"
+                                           OnClick="UnacceptAsync">
+                                    Annulla accettazione
+                                </MudButton>
+                            }
                         </MudItem>
                     }
                     <MudItem xs="12">
@@ -186,6 +195,25 @@
             return;
 
         var response = await Http.PostAsync($"quotes/{_model.Id}/accept", null);
+        if (!await Snackbar.ShowResponseErrorAsync(response))
+            return;
+
+        Dialog.Close(DialogResult.Ok(true));
+    }
+
+    private async Task UnacceptAsync()
+    {
+        if (_model?.Id is null)
+            return;
+
+        bool? confirmed = await DialogService.ShowMessageBoxAsync(
+            "Annulla accettazione",
+            "Sei sicuro di voler annullare l'accettazione di questo preventivo?",
+            yesText: "Sì", cancelText: "No");
+        if (confirmed is not true)
+            return;
+
+        var response = await Http.PostAsync($"quotes/{_model.Id}/unaccept", null);
         if (!await Snackbar.ShowResponseErrorAsync(response))
             return;
 
