@@ -7,18 +7,22 @@ namespace Gdn.Web.Api.Vs.Features.Quotes.Reports;
 
 public class QuoteReportGenerator(IOptions<AppSettings> appSettings, IQuoteRepository quoteRepository)
 {
-    public async Task<byte[]> GeneratePdfBytesAsync(int quoteId)
+    public async Task<byte[]?> GeneratePdfBytesAsync(int quoteId)
     {
-        InvoiceReportModel model = await GetReportDataAsync(quoteId);
+        var model = await GetReportDataAsync(quoteId);
+        if (model is null)
+            return null;
+
         var document = new InvoiceDocument(model);
         var pdfBytes = document.GeneratePdf();
         return pdfBytes;
     }
 
-    private async Task<InvoiceReportModel> GetReportDataAsync(int quoteId)
+    private async Task<InvoiceReportModel?> GetReportDataAsync(int quoteId)
     {
-        var quote = await quoteRepository.GetAsync(quoteId, ["Customer.Addresses", "Rows.TaxRate", "Rows.MeasurementUnit"])
-            ?? throw new InvalidOperationException("Quote not found");
+        var quote = await quoteRepository.GetAsync(quoteId, ["Customer.Addresses", "Rows.TaxRate", "Rows.MeasurementUnit"]);
+        if (quote is null)
+            return null;
 
         var company = appSettings.Value.CompanyData;
         var customer = quote.Customer;

@@ -16,6 +16,9 @@ public class GenerateQuotePdf
     private static async Task<IResult> HandlerAsync(int id, QuoteReportGenerator reportGenerator)
     {
         var pdfBytes = await reportGenerator.GeneratePdfBytesAsync(id);
+        if (pdfBytes is null)
+            return ResultHelper.NotFound(QuoteErrors.NotFound(id));
+
         var pdfStream = new MemoryStream(pdfBytes);
         return TypedResults.Stream(pdfStream, contentType: "application/octet-stream", fileDownloadName: "quote.pdf");
     }
