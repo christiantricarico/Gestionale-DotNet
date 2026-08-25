@@ -78,10 +78,11 @@
                             <MudText Typo="Typo.caption">Totale</MudText>
                             <MudText>@quote.TotalAmount.ToString("C")</MudText>
                         </MudItem>
-                        <MudItem xs="6" sm="1">
-                            <MudChip T="string" Color="@(quote.IsAccepted ? Color.Success : Color.Warning)" Size="Size.Small">
-                                @(quote.IsAccepted ? $"ACCETTATO il {quote.AcceptedAt:dd/MM/yyyy}" : "NON ACCETTATO")
-                            </MudChip>
+                        <MudItem xs="6" sm="1" Class="d-flex align-center">
+                            <MudTooltip Text="@(quote.IsAccepted ? $"Accettato il {quote.AcceptedAt:dd/MM/yyyy}" : "Non accettato")">
+                                <MudIcon Icon="@(quote.IsAccepted ? Icons.Material.Filled.CheckCircle : Icons.Material.Filled.Cancel)"
+                                         Color="@(quote.IsAccepted ? Color.Success : Color.Warning)" />
+                            </MudTooltip>
                         </MudItem>
                         <MudItem xs="12" sm="2" Class="d-flex justify-end align-center gap-1">
                             <MudIconButton Icon="@Icons.Material.Filled.Print"
