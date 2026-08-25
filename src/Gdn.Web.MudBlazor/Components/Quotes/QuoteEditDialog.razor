@@ -1,0 +1,230 @@
+@inject HttpClient Http
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.RequestQuote" Class="mr-2" Style="vertical-align:middle" />
+            @(Content.Id > 0 ? "Modifica preventivo" : "Nuovo preventivo")
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        @if (_model is null)
+        {
+            <MudProgressLinear Indeterminate="true" />
+        }
+        else
+        {
+            <EditForm EditContext="_editContext" FormName="edit-quote-form">
+                <DataAnnotationsValidator />
+                <MudGrid Spacing="2" Class="mt-1">
+                    <MudItem xs="12" sm="3">
+                        <MudNumericField T="int?"
+                                         @bind-Value="_model.Number"
+                                         Label="Numero"
+                                         Min="1"
+                                         For="@(() => _model.Number)" />
+                    </MudItem>
+                    <MudItem xs="12" sm="3">
+                        <MudDatePicker Label="Data"
+                                       @bind-Date="_model.DateWithTime"
+                                       Required="true"
+                                       RequiredError="Data richiesta." />
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <CustomerPicker CustomerId="_model.CustomerId"
+                                        CustomerIdChanged="OnCustomerChanged"
+                                        ValidationFor="@(() => _model.CustomerId)"
+                                        Disabled="@_model.IsAccepted" />
+                    </MudItem>
+                    <MudItem xs="12" Class="d-flex align-center gap-2">
+                        <MudChip T="string" Color="@(_model.IsAccepted ? Color.Success : Color.Warning)" Size="Size.Small">
+                            @(_model.IsAccepted ? $"ACCETTATO il {_model.AcceptedAt:dd/MM/yyyy}" : "NON ACCETTATO")
+                        </MudChip>
+                        @if (!_model.IsAccepted && _model.Id.HasValue)
+                        {
+                            <MudButton Variant="Variant.Outlined"
+                                       Color="Color.Success"
+                                       StartIcon="@Icons.Material.Filled.CheckCircle"
+                                       OnClick="AcceptAsync">
+                                Accetta
+                            </MudButton>
+                        }
+                    </MudItem>
+                    <MudItem xs="12">
+                        <MudButton Variant="Variant.Outlined"
+                                   StartIcon="@Icons.Material.Filled.Add"
+                                   OnClick="AddRowClick"
+                                   Disabled="@_model.IsAccepted">
+                            Aggiungi riga
+                        </MudButton>
+                    </MudItem>
+                </MudGrid>
+
+                <MudStack Class="mt-3" Spacing="2">
+                    @foreach (var row in _model.Rows.Where(r => r.InputStatus != 3))
+                    {
+                        <MudCard>
+                            <MudCardContent Class="pa-3">
+                                <MudGrid>
+                                    <MudItem xs="12" lg="4">
+                                        <MudText Typo="Typo.caption">Descrizione</MudText>
+                                        <MudText>@row.Description</MudText>
+                                    </MudItem>
+                                    <MudItem xs="6" lg="2">
+                                        <MudText Typo="Typo.caption">Aliq.IVA</MudText>
+                                        <MudText>@row.TaxRateName</MudText>
+                                    </MudItem>
+                                    <MudItem xs="6" lg="1">
+                                        <MudText Typo="Typo.caption">UM</MudText>
+                                        <MudText>@row.MeasurementUnitName</MudText>
+                                    </MudItem>
+                                    <MudItem xs="4" lg="1">
+                                        <MudText Typo="Typo.caption">Qtà</MudText>
+                                        <MudText>@row.Quantity.ToString("N2")</MudText>
+                                    </MudItem>
+                                    <MudItem xs="4" lg="2">
+                                        <MudText Typo="Typo.caption">Prezzo</MudText>
+                                        <MudText>@row.UnitPrice.ToString("C")</MudText>
+                                    </MudItem>
+                                    <MudItem xs="4" lg="1">
+                                        <MudText Typo="Typo.caption">Totale</MudText>
+                                        <MudText>@row.TotalAmount.ToString("C")</MudText>
+                                    </MudItem>
+                                    <MudItem xs="12" lg="1" Class="d-flex justify-end align-center gap-1">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                                       Size="Size.Small"
+                                                       Disabled="@_model.IsAccepted"
+                                                       OnClick="@(() => EditRowClick(row))" />
+                                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                                       Size="Size.Small"
+                                                       Color="Color.Error"
+                                                       Disabled="@_model.IsAccepted"
+                                                       OnClick="@(() => DeleteRowClick(row))" />
+                                    </MudItem>
+                                </MudGrid>
+                            </MudCardContent>
+                        </MudCard>
+                    }
+                </MudStack>
+            </EditForm>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Annulla</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="SaveAsync" Disabled="_saving || (_model?.IsAccepted ?? false)">Salva</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance Dialog { get; set; } = default!;
+    [Parameter] public DialogContent Content { get; set; } = new();
+
+    private QuoteEditModel? _model;
+    private EditContext _editContext = default!;
+    private bool _saving;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Content.Id == 0)
+        {
+            var lastNumber = await Http.GetFromJsonAsync<int>("quotes/last-number");
+            _model = new QuoteEditModel { Number = lastNumber + 1 };
+        }
+        else
+        {
+            _model = await Http.GetFromJsonAsync<QuoteEditModel>($"quotes/{Content.Id}") ?? new();
+            _model.DateWithTime = _model.Date.ToDateTime(TimeOnly.MinValue);
+        }
+
+        _editContext = new EditContext(_model);
+    }
+
+    private Task OnCustomerChanged(int? customerId)
+    {
+        _model!.CustomerId = customerId;
+        return Task.CompletedTask;
+    }
+
+    private async Task SaveAsync()
+    {
+        if (_model is null)
+            return;
+
+        _model.Date = DateOnly.FromDateTime(_model.DateWithTime ?? DateTime.MinValue);
+
+        if (!_editContext.Validate())
+            return;
+
+        _saving = true;
+        try
+        {
+            HttpResponseMessage response;
+            if (!_model.Id.HasValue)
+                response = await Http.PostAsJsonAsync("quotes", _model);
+            else
+                response = await Http.PutAsJsonAsync("quotes", _model);
+
+            if (!await Snackbar.ShowResponseErrorAsync(response))
+                return;
+
+            Dialog.Close();
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+
+    private async Task AcceptAsync()
+    {
+        if (_model?.Id is null)
+            return;
+
+        var response = await Http.PostAsync($"quotes/{_model.Id}/accept", null);
+        if (!await Snackbar.ShowResponseErrorAsync(response))
+            return;
+
+        Dialog.Close(DialogResult.Ok(true));
+    }
+
+    private async Task AddRowClick()
+    {
+        var newRow = new QuoteRowEditModel();
+        var parameters = new DialogParameters<QuoteRowEditDialog>();
+        parameters.Add(x => x.Row, newRow);
+        var options = new DialogOptions { CloseOnEscapeKey = false, CloseButton = false, BackdropClick = false, MaxWidth = MaxWidth.Medium, FullWidth = true };
+        var dialog = await DialogService.ShowAsync<QuoteRowEditDialog>("Nuova riga preventivo", parameters, options);
+        var result = await dialog.Result;
+        if (result is not null && !result.Canceled)
+        {
+            newRow.InputStatus = 1;
+            _model!.Rows.Add(newRow);
+        }
+    }
+
+    private async Task EditRowClick(QuoteRowEditModel row)
+    {
+        var parameters = new DialogParameters<QuoteRowEditDialog>();
+        parameters.Add(x => x.Row, row);
+        var options = new DialogOptions { CloseOnEscapeKey = false, CloseButton = false, BackdropClick = false, MaxWidth = MaxWidth.Medium, FullWidth = true };
+        var dialog = await DialogService.ShowAsync<QuoteRowEditDialog>("Modifica riga preventivo", parameters, options);
+        var result = await dialog.Result;
+        if (result is not null && !result.Canceled && row.InputStatus == 0)
+            row.InputStatus = 2;
+    }
+
+    private async Task DeleteRowClick(QuoteRowEditModel row)
+    {
+        bool? confirmed = await DialogService.ShowMessageBoxAsync(
+            "Eliminazione",
+            "Sei sicuro di voler eliminare questa riga?",
+            yesText: "Sì", cancelText: "No");
+        if (confirmed is not true)
+            return;
+        row.InputStatus = 3;
+    }
+
+    private void Cancel() => Dialog.Cancel();
+}

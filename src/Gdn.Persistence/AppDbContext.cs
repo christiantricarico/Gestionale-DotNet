@@ -22,6 +22,8 @@ public class AppDbContext : DbContext
     public DbSet<PaymentMethod> PaymentMethods { get; set; }
     public DbSet<Product> Products { get; set; }
     public DbSet<ProductCategory> ProductCategories { get; set; }
+    public DbSet<Quote> Quotes { get; set; }
+    public DbSet<QuoteRow> QuoteRows { get; set; }
     public DbSet<TaxRate> TaxRates { get; set; }
     public DbSet<TaxRateNature> TaxRateNatures { get; set; }
 

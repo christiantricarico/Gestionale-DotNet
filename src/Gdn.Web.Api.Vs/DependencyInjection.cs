@@ -4,6 +4,7 @@ using Gdn.Web.Api.Vs.Features.Interventions.Reports;
 using Gdn.Web.Api.Vs.Features.Invoices.Reports;
 using Gdn.Web.Api.Vs.Features.Invoices.Xml;
 using Gdn.Web.Api.Vs.Features.Payments.Reports;
+using Gdn.Web.Api.Vs.Features.Quotes.Reports;
 
 namespace Gdn.Web.Api.Vs;
 
@@ -15,6 +16,7 @@ public static class DependencyInjection
         services.AddScoped<CreditNoteReportGenerator>();
         services.AddScoped<InterventionReportGenerator>();
         services.AddScoped<ReceiptReportGenerator>();
+        services.AddScoped<QuoteReportGenerator>();
         return services;
     }
 

@@ -66,6 +66,15 @@ internal sealed class InvoiceDocument : IDocument
                         text.Span($"{Model.Dues.Count} rate (vedi dettaglio)");
                     });
                 }
+
+                if (!string.IsNullOrWhiteSpace(Model.AcceptanceStatusLabel))
+                {
+                    column.Item().Text(text =>
+                    {
+                        text.Span("Stato: ").SemiBold();
+                        text.Span(Model.AcceptanceStatusLabel);
+                    });
+                }
             });
         });
     }

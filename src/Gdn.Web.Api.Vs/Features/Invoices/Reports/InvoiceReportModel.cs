@@ -18,6 +18,9 @@ internal sealed class InvoiceReportModel
 
     /// <summary>The date field label used in the PDF header (e.g., "Data fattura:" or "Data nota di credito:").</summary>
     public string DateLabel { get; set; } = "Data fattura:";
+
+    /// <summary>The acceptance status label used in the PDF header for quotes (e.g., "NON ACCETTATO" or "ACCETTATO il gg/mm/aaaa"). Left <see langword="null"/> for document types without an acceptance status.</summary>
+    public string? AcceptanceStatusLabel { get; set; }
 }
 
 internal sealed class InvoiceRowReportModel
