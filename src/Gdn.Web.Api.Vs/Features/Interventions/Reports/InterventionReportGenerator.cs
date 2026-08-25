@@ -1,5 +1,4 @@
 using Gdn.Domain.Data.Repositories;
-using Gdn.Web.Api.Vs.Features.Invoices.Reports;
 using Microsoft.Extensions.Options;
 using QuestPDF.Fluent;
 
@@ -9,13 +8,13 @@ public class InterventionReportGenerator(IOptions<AppSettings> appSettings, IInt
 {
     public async Task<byte[]> GeneratePdfBytesAsync(int reportId)
     {
-        InvoiceReportModel model = await GetReportDataAsync(reportId);
-        var document = new InvoiceDocument(model);
+        InterventionReportModel model = await GetReportDataAsync(reportId);
+        var document = new InterventionDocument(model);
         var pdfBytes = document.GeneratePdf();
         return pdfBytes;
     }
 
-    private async Task<InvoiceReportModel> GetReportDataAsync(int reportId)
+    private async Task<InterventionReportModel> GetReportDataAsync(int reportId)
     {
         var report = await reportRepository.GetAsync(reportId, ["Customer.Addresses", "Rows.TaxRate", "Rows.MeasurementUnit"])
             ?? throw new InvalidOperationException("Intervention report not found");
@@ -24,13 +23,11 @@ public class InterventionReportGenerator(IOptions<AppSettings> appSettings, IInt
         var customer = report.Customer;
         var customerAddress = customer.Addresses.FirstOrDefault();
 
-        var reportModel = new InvoiceReportModel
+        var reportModel = new InterventionReportModel
         {
             Number = report.Number,
             Date = report.Date,
             CustomerName = report.Customer?.Name,
-            DocumentTitle = "Rapporto di intervento",
-            DateLabel = "Data rapporto:",
             SellerAddress = new AddressModel
             {
                 CompanyName = company.Name,
@@ -51,7 +48,7 @@ public class InterventionReportGenerator(IOptions<AppSettings> appSettings, IInt
                 Email = customer?.Email,
                 Phone = customer?.Phone
             },
-            Rows = report.Rows.Select(row => new InvoiceRowReportModel
+            Rows = report.Rows.Select(row => new InterventionRowReportModel
             {
                 Description = row.Description,
                 Quantity = row.Quantity,

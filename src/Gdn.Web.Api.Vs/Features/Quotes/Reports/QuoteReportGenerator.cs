@@ -1,5 +1,4 @@
 using Gdn.Domain.Data.Repositories;
-using Gdn.Web.Api.Vs.Features.Invoices.Reports;
 using Microsoft.Extensions.Options;
 using QuestPDF.Fluent;
 
@@ -13,12 +12,12 @@ public class QuoteReportGenerator(IOptions<AppSettings> appSettings, IQuoteRepos
         if (model is null)
             return null;
 
-        var document = new InvoiceDocument(model);
+        var document = new QuoteDocument(model);
         var pdfBytes = document.GeneratePdf();
         return pdfBytes;
     }
 
-    private async Task<InvoiceReportModel?> GetReportDataAsync(int quoteId)
+    private async Task<QuoteReportModel?> GetReportDataAsync(int quoteId)
     {
         var quote = await quoteRepository.GetAsync(quoteId, ["Customer.Addresses", "Rows.TaxRate", "Rows.MeasurementUnit"]);
         if (quote is null)
@@ -28,13 +27,11 @@ public class QuoteReportGenerator(IOptions<AppSettings> appSettings, IQuoteRepos
         var customer = quote.Customer;
         var customerAddress = customer.Addresses.FirstOrDefault();
 
-        var reportModel = new InvoiceReportModel
+        var reportModel = new QuoteReportModel
         {
             Number = quote.Number,
             Date = quote.Date,
             CustomerName = quote.Customer?.Name,
-            DocumentTitle = "Preventivo",
-            DateLabel = "Data preventivo:",
             AcceptanceStatusLabel = quote.IsAccepted
                 ? $"ACCETTATO il {quote.AcceptedAt:dd/MM/yyyy}"
                 : "NON ACCETTATO",
@@ -58,7 +55,7 @@ public class QuoteReportGenerator(IOptions<AppSettings> appSettings, IQuoteRepos
                 Email = customer?.Email,
                 Phone = customer?.Phone
             },
-            Rows = quote.Rows.Select(row => new InvoiceRowReportModel
+            Rows = quote.Rows.Select(row => new QuoteRowReportModel
             {
                 Description = row.Description,
                 Quantity = row.Quantity,

@@ -1,18 +1,11 @@
-﻿using QuestPDF.Fluent;
+using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
 
-namespace Gdn.Web.Api.Vs.Features.Invoices.Reports;
+namespace Gdn.Web.Api.Vs.Features.Quotes.Reports;
 
-internal sealed class InvoiceDocument : IDocument
+internal sealed class QuoteDocument(QuoteReportModel model) : IDocument
 {
-    public InvoiceReportModel Model { get; }
-
-    public InvoiceDocument(InvoiceReportModel model)
-    {
-        Model = model;
-    }
-
     public DocumentMetadata GetMetadata() => DocumentMetadata.Default;
     public DocumentSettings GetSettings() => DocumentSettings.Default;
 
@@ -41,29 +34,21 @@ internal sealed class InvoiceDocument : IDocument
             row.RelativeItem().Column(column =>
             {
                 column.Item()
-                    .Text($"Fattura #{Model.Number}")
+                    .Text($"Preventivo #{model.Number}")
                     .FontSize(20).SemiBold().FontColor(Colors.Blue.Medium);
 
                 column.Item().Text(text =>
                 {
-                    text.Span("Data fattura: ").SemiBold();
-                    text.Span($"{Model.Date:d}");
+                    text.Span("Data preventivo: ").SemiBold();
+                    text.Span($"{model.Date:d}");
                 });
 
-                if (Model.Dues.Count == 1)
+                if (!string.IsNullOrWhiteSpace(model.AcceptanceStatusLabel))
                 {
                     column.Item().Text(text =>
                     {
-                        text.Span("Data scadenza: ").SemiBold();
-                        text.Span($"{Model.Dues[0].Date:d}");
-                    });
-                }
-                else if (Model.Dues.Count > 1)
-                {
-                    column.Item().Text(text =>
-                    {
-                        text.Span("Scadenze: ").SemiBold();
-                        text.Span($"{Model.Dues.Count} rate (vedi dettaglio)");
+                        text.Span("Stato: ").SemiBold();
+                        text.Span(model.AcceptanceStatusLabel);
                     });
                 }
             });
@@ -78,16 +63,13 @@ internal sealed class InvoiceDocument : IDocument
 
             column.Item().Row(row =>
             {
-                row.RelativeItem().Component(new AddressComponent("Fornitore", Model.SellerAddress));
+                row.RelativeItem().Component(new AddressComponent("Fornitore", model.SellerAddress));
                 row.ConstantItem(50);
-                row.RelativeItem().Component(new AddressComponent("Cliente", Model.CustomerAddress));
+                row.RelativeItem().Component(new AddressComponent("Cliente", model.CustomerAddress));
             });
 
             column.Item().Element(ComposeTable);
             column.Item().Element(ComposeSummary);
-
-            if (Model.Dues.Count > 0)
-                column.Item().Element(ComposeDues);
         });
     }
 
@@ -120,9 +102,9 @@ internal sealed class InvoiceDocument : IDocument
                 }
             });
 
-            foreach (var item in Model.Rows)
+            foreach (var item in model.Rows)
             {
-                table.Cell().Element(CellStyle).Text($"{Model.Rows.IndexOf(item) + 1}");
+                table.Cell().Element(CellStyle).Text($"{model.Rows.IndexOf(item) + 1}");
                 table.Cell().Element(CellStyle).Text(item.Description);
                 table.Cell().Element(CellStyle).AlignRight().Text($"{item.UnitPrice:c}");
                 table.Cell().Element(CellStyle).AlignRight().Text($"{item.Quantity:n3}");
@@ -134,43 +116,6 @@ internal sealed class InvoiceDocument : IDocument
                     return container.BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingVertical(5);
                 }
             }
-        });
-    }
-
-    private void ComposeDues(IContainer container)
-    {
-        container.Column(column =>
-        {
-            column.Spacing(5);
-
-            column.Item().Text("Scadenze").FontSize(14).SemiBold().FontColor(Colors.Blue.Medium);
-
-            column.Item().Table(table =>
-            {
-                table.ColumnsDefinition(columns =>
-                {
-                    columns.RelativeColumn(2);
-                    columns.RelativeColumn();
-                });
-
-                table.Header(header =>
-                {
-                    header.Cell().Element(HeaderCellStyle).Text("Data");
-                    header.Cell().Element(HeaderCellStyle).AlignRight().Text("Importo");
-
-                    static IContainer HeaderCellStyle(IContainer c) =>
-                        c.DefaultTextStyle(x => x.SemiBold()).PaddingVertical(5).BorderBottom(1).BorderColor(Colors.Black);
-                });
-
-                foreach (var due in Model.Dues)
-                {
-                    table.Cell().Element(RowCellStyle).Text($"{due.Date:d}");
-                    table.Cell().Element(RowCellStyle).AlignRight().Text($"{due.Amount:c}");
-
-                    static IContainer RowCellStyle(IContainer c) =>
-                        c.BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingVertical(5);
-                }
-            });
         });
     }
 
@@ -200,32 +145,10 @@ internal sealed class InvoiceDocument : IDocument
                 row.RelativeItem().AlignRight().Text($"{CalculateTotalAmount():c}").SemiBold();
             });
 
-            if (Model.StampDutyAmount.HasValue)
-            {
-                var stampDutyLabel = Model.StampDutyChargedToCustomer
-                    ? "Imposta di bollo (a carico cliente)"
-                    : "Imposta di bollo (a carico emittente)";
-
-                column.Item().Row(row =>
-                {
-                    row.RelativeItem().Text(stampDutyLabel);
-                    row.RelativeItem().AlignRight().Text($"{Model.StampDutyAmount:c}").SemiBold();
-                });
-
-                if (Model.StampDutyChargedToCustomer)
-                {
-                    column.Item().Row(row =>
-                    {
-                        row.RelativeItem().Text("Totale da pagare");
-                        row.RelativeItem().AlignRight().Text($"{CalculateTotalAmount() + Model.StampDutyAmount:c}").SemiBold();
-                    });
-                }
-            }
-
             decimal CalculateNetAmount()
             {
                 decimal netAmount = 0;
-                foreach (var row in Model.Rows)
+                foreach (var row in model.Rows)
                 {
                     var rowNetAmount = Math.Round((row.UnitPrice * row.Quantity) ?? 0, 2, MidpointRounding.AwayFromZero);
                     netAmount += rowNetAmount;
@@ -238,7 +161,7 @@ internal sealed class InvoiceDocument : IDocument
             {
                 decimal taxAmount = 0;
 
-                var rowsGroupedByTaxRate = Model.Rows
+                var rowsGroupedByTaxRate = model.Rows
                     .Where(r => r.TaxRate.HasValue)
                     .GroupBy(x => x.TaxRate);
 
@@ -262,30 +185,21 @@ internal sealed class InvoiceDocument : IDocument
     }
 }
 
-internal sealed class AddressComponent : IComponent
+internal sealed class AddressComponent(string title, AddressModel address) : IComponent
 {
-    private string Title { get; }
-    private AddressModel Address { get; }
-
-    public AddressComponent(string title, AddressModel address)
-    {
-        Title = title;
-        Address = address;
-    }
-
     public void Compose(IContainer container)
     {
         container.Column(column =>
         {
             column.Spacing(2);
 
-            column.Item().BorderBottom(1).PaddingBottom(5).Text(Title).SemiBold();
+            column.Item().BorderBottom(1).PaddingBottom(5).Text(title).SemiBold();
 
-            column.Item().Text(Address.CompanyName);
-            column.Item().Text(Address.Street);
-            column.Item().Text($"{Address.PostalCode} {Address.City}, {Address.Province}");
-            column.Item().Text(Address.Email);
-            column.Item().Text(Address.Phone);
+            column.Item().Text(address.CompanyName);
+            column.Item().Text(address.Street);
+            column.Item().Text($"{address.PostalCode} {address.City}, {address.Province}");
+            column.Item().Text(address.Email);
+            column.Item().Text(address.Phone);
         });
     }
 }

@@ -1,32 +1,22 @@
-﻿namespace Gdn.Web.Api.Vs.Features.Invoices.Reports;
+namespace Gdn.Web.Api.Vs.Features.Interventions.Reports;
 
-internal sealed class InvoiceReportModel
+internal sealed class InterventionReportModel
 {
     public string Number { get; set; } = default!;
     public DateOnly Date { get; set; }
     public string? CustomerName { get; set; }
-    public string? Notes { get; set; }
     public AddressModel SellerAddress { get; set; } = default!;
     public AddressModel CustomerAddress { get; set; } = default!;
-    public List<InvoiceRowReportModel> Rows { get; set; } = [];
-    public decimal? StampDutyAmount { get; set; }
-    public bool StampDutyChargedToCustomer { get; set; }
-    public List<DueReportModel> Dues { get; set; } = [];
+    public List<InterventionRowReportModel> Rows { get; set; } = [];
 }
 
-internal sealed class InvoiceRowReportModel
+internal sealed class InterventionRowReportModel
 {
     public string? Description { get; set; }
     public string? MeasurementUnitCode { get; set; }
     public decimal? Quantity { get; set; }
     public decimal? UnitPrice { get; set; }
     public decimal? TaxRate { get; set; }
-}
-
-internal sealed class DueReportModel
-{
-    public DateOnly Date { get; set; }
-    public decimal Amount { get; set; }
 }
 
 internal sealed class AddressModel
