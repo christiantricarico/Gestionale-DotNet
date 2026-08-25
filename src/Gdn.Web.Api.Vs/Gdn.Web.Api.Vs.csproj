@@ -12,7 +12,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="QuestPDF" Version="2026.7.3" />
+    <PackageReference Include="QuestPDF" Version="2026.8.0" />
     <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="10.2.3" />
     <PackageReference Include="TinyHelpers.AspNetCore" Version="4.2.17" />
   </ItemGroup>
