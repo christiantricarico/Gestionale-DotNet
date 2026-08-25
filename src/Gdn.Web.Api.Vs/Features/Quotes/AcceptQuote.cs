@@ -30,7 +30,7 @@ public class AcceptQuote
 
         quote.IsAccepted = true;
         quote.AcceptedAt = request?.AcceptedAt.HasValue == true
-            ? request.AcceptedAt!.Value.ToDateTime(TimeOnly.MinValue)
+            ? DateTime.SpecifyKind(request.AcceptedAt!.Value.ToDateTime(TimeOnly.MinValue), DateTimeKind.Utc)
             : DateTime.UtcNow;
 
         await unitOfWork.SaveChangesAsync();
