@@ -2,19 +2,28 @@
 <MudDialogProvider />
 <MudSnackbarProvider />
 
-<Router AppAssembly="typeof(App).Assembly">
-    <Found Context="routeData">
-        <RouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)" />
-        <FocusOnNavigate RouteData="routeData" Selector="h1" />
-    </Found>
-    <NotFound>
-        <PageTitle>Non trovato</PageTitle>
-        <LayoutView Layout="typeof(Layout.MainLayout)">
-            <MudContainer MaxWidth="MaxWidth.Small" Class="mt-8">
-                <MudAlert Severity="Severity.Warning">
-                    La pagina richiesta non esiste.
-                </MudAlert>
-            </MudContainer>
-        </LayoutView>
-    </NotFound>
-</Router>
+<CascadingAuthenticationState>
+    <Router AppAssembly="typeof(App).Assembly">
+        <Found Context="routeData">
+            <AuthorizeRouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)">
+                <NotAuthorized>
+                    <RedirectToLogin />
+                </NotAuthorized>
+                <Authorizing>
+                    <MudProgressLinear Indeterminate="true" />
+                </Authorizing>
+            </AuthorizeRouteView>
+            <FocusOnNavigate RouteData="routeData" Selector="h1" />
+        </Found>
+        <NotFound>
+            <PageTitle>Non trovato</PageTitle>
+            <LayoutView Layout="typeof(Layout.MainLayout)">
+                <MudContainer MaxWidth="MaxWidth.Small" Class="mt-8">
+                    <MudAlert Severity="Severity.Warning">
+                        La pagina richiesta non esiste.
+                    </MudAlert>
+                </MudContainer>
+            </LayoutView>
+        </NotFound>
+    </Router>
+</CascadingAuthenticationState>

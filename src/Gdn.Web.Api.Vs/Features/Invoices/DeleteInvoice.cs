@@ -1,4 +1,4 @@
-using Gdn.Domain.Data;
+﻿using Gdn.Domain.Data;
 using Gdn.Domain.Data.Repositories;
 using Gdn.Web.Api.Vs.Endpoints;
 
@@ -10,7 +10,7 @@ public class DeleteInvoice
     {
         public void MapEndpoint(IEndpointRouteBuilder app)
         {
-            app.MapDelete("api/invoices/{id:int}", HandlerAsync).WithTags(Tags.Invoices);
+            app.MapDelete("api/invoices/{id:int}", HandlerAsync).WithTags(Tags.Invoices).RequireAuthorization(Policies.AdminOnly);
         }
     }
 

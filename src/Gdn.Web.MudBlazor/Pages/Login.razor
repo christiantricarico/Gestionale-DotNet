@@ -1,0 +1,109 @@
+@page "/login"
+@layout LoginLayout
+@attribute [AllowAnonymous]
+
+@inject GdnAuthenticationStateProvider AuthProvider
+@inject NavigationManager Navigation
+
+<PageTitle>Accesso</PageTitle>
+
+<MudCard Elevation="4" Class="pa-4" Style="width: 100%; max-width: 420px;">
+    @* The submit button lives inside the form on purpose: it makes the Enter key submit, and avoids
+       depending on the HTML form attribute to associate a button sitting outside of it. *@
+    <EditForm EditContext="_editContext" OnValidSubmit="SubmitAsync">
+        <DataAnnotationsValidator />
+
+        <MudCardContent>
+            <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-4">
+                <MudIcon Icon="@Icons.Material.Filled.Lock" Color="Color.Primary" Size="Size.Large" />
+                <MudText Typo="Typo.h5">GDN</MudText>
+            </MudStack>
+
+            <MudText Typo="Typo.body2" Class="mb-4 mud-text-secondary">
+                Inserisci le tue credenziali per accedere.
+            </MudText>
+
+            <MudTextField @bind-Value="_model.Email"
+                          For="@(() => _model.Email)"
+                          Label="Email"
+                          InputType="InputType.Email"
+                          Immediate="true"
+                          OnKeyDown="OnKeyDownAsync"
+                          Disabled="@_isSubmitting"
+                          FullWidth="true"
+                          Class="mb-3" />
+
+            <MudTextField @bind-Value="_model.Password"
+                          For="@(() => _model.Password)"
+                          Label="Password"
+                          InputType="@(_showPassword ? InputType.Text : InputType.Password)"
+                          Immediate="true"
+                          Adornment="Adornment.End"
+                          AdornmentIcon="@(_showPassword ? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
+                          OnAdornmentClick="TogglePasswordVisibility"
+                          OnKeyDown="OnKeyDownAsync"
+                          Disabled="@_isSubmitting"
+                          FullWidth="true" />
+
+            @if (_errorMessage is not null)
+            {
+                <MudAlert Severity="Severity.Error" Class="mt-4" Dense="true">@_errorMessage</MudAlert>
+            }
+        </MudCardContent>
+
+        <MudCardActions>
+            <MudButton ButtonType="ButtonType.Submit"
+                       Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       FullWidth="true"
+                       Disabled="@_isSubmitting">
+                @if (_isSubmitting)
+                {
+                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                }
+                Accedi
+            </MudButton>
+        </MudCardActions>
+    </EditForm>
+</MudCard>
+
+@code {
+    [SupplyParameterFromQuery(Name = "returnUrl")]
+    private string? ReturnUrl { get; set; }
+
+    private readonly LoginModel _model = new();
+    private EditContext _editContext = default!;
+    private bool _isSubmitting;
+    private bool _showPassword;
+    private string? _errorMessage;
+
+    protected override void OnInitialized() => _editContext = new EditContext(_model);
+
+    private void TogglePasswordVisibility() => _showPassword = !_showPassword;
+
+    private async Task OnKeyDownAsync(KeyboardEventArgs args)
+    {
+        if (args.Key is "Enter" or "NumpadEnter" && !_isSubmitting && _editContext.Validate())
+            await SubmitAsync();
+    }
+
+    private async Task SubmitAsync()
+    {
+        _errorMessage = null;
+        _isSubmitting = true;
+
+        try
+        {
+            _errorMessage = await AuthProvider.LoginAsync(_model.Email, _model.Password);
+
+            if (_errorMessage is not null)
+                return;
+
+            Navigation.NavigateTo(string.IsNullOrWhiteSpace(ReturnUrl) ? "" : ReturnUrl, replace: true);
+        }
+        finally
+        {
+            _isSubmitting = false;
+        }
+    }
+}

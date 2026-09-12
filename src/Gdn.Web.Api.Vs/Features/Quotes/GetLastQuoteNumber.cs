@@ -1,4 +1,4 @@
-using Gdn.Domain.Data.Repositories;
+﻿using Gdn.Domain.Data.Repositories;
 using Gdn.Web.Api.Vs.Endpoints;
 
 namespace Gdn.Web.Api.Vs.Features.Quotes;
@@ -9,7 +9,7 @@ public class GetLastQuoteNumber
     {
         public void MapEndpoint(IEndpointRouteBuilder app)
         {
-            app.MapGet("api/quotes/last-number", HandlerAsync).WithTags(Tags.Quotes);
+            app.MapGet("api/quotes/last-number", HandlerAsync).WithTags(Tags.Quotes).RequireAuthorization(Policies.AdminOnly);
         }
     }
 

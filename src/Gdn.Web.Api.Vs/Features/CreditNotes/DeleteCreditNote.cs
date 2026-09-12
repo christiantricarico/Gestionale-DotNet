@@ -1,4 +1,4 @@
-using Gdn.Domain.Data;
+﻿using Gdn.Domain.Data;
 using Gdn.Domain.Data.Repositories;
 using Gdn.Web.Api.Vs.Endpoints;
 
@@ -10,7 +10,7 @@ public class DeleteCreditNote
     {
         public void MapEndpoint(IEndpointRouteBuilder app)
         {
-            app.MapDelete("api/creditnotes/{id:int}", HandlerAsync).WithTags(Tags.CreditNotes);
+            app.MapDelete("api/creditnotes/{id:int}", HandlerAsync).WithTags(Tags.CreditNotes).RequireAuthorization(Policies.AdminOnly);
         }
     }
 

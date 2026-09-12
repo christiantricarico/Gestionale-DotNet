@@ -1,4 +1,4 @@
-using Gdn.Web.Api.Vs.Endpoints;
+﻿using Gdn.Web.Api.Vs.Endpoints;
 using Gdn.Web.Api.Vs.Features.CreditNotes.Xml;
 using System.Net.Mime;
 
@@ -10,7 +10,7 @@ public class GenerateCreditNoteXml
     {
         public void MapEndpoint(IEndpointRouteBuilder app)
         {
-            app.MapGet("api/creditnotes/xml/{id:int}", HandlerAsync).WithTags(Tags.CreditNotes);
+            app.MapGet("api/creditnotes/xml/{id:int}", HandlerAsync).WithTags(Tags.CreditNotes).RequireAuthorization(Policies.AdminOnly);
         }
     }
 

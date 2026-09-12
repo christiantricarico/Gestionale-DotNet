@@ -1,4 +1,4 @@
-using Gdn.Web.Api.Vs.Endpoints;
+﻿using Gdn.Web.Api.Vs.Endpoints;
 using Gdn.Web.Api.Vs.Features.Invoices.Xml;
 using System.Net.Mime;
 
@@ -10,7 +10,7 @@ public class GenerateInvoiceXml
     {
         public void MapEndpoint(IEndpointRouteBuilder app)
         {
-            app.MapGet("api/invoices/xml/{id:int}", HandlerAsync).WithTags(Tags.Invoices);
+            app.MapGet("api/invoices/xml/{id:int}", HandlerAsync).WithTags(Tags.Invoices).RequireAuthorization(Policies.AdminOnly);
         }
     }
 

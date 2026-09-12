@@ -1,4 +1,4 @@
-using Gdn.Domain.Data.Repositories;
+﻿using Gdn.Domain.Data.Repositories;
 using Gdn.Web.Api.Vs.Endpoints;
 using Gdn.Web.Api.Vs.Features.Payments.Reports;
 
@@ -14,7 +14,7 @@ public class GetReceiptPdf
     {
         public void MapEndpoint(IEndpointRouteBuilder app)
         {
-            app.MapGet("api/payments/{id:int}/receipt-pdf", HandlerAsync).WithTags(Tags.Payments);
+            app.MapGet("api/payments/{id:int}/receipt-pdf", HandlerAsync).WithTags(Tags.Payments).RequireAuthorization(Policies.AdminOnly);
         }
     }
 

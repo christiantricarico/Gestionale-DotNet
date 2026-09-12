@@ -1,9 +1,13 @@
 @page "/"
+@attribute [Authorize]
 
 @inject HttpClient Http
 @inject ISnackbar Snackbar
 
 <PageTitle>Panoramica</PageTitle>
+
+@* Shared by both roles. A coworker sees only the intervention reports card, and the counts they are
+   not allowed to see are never sent by the server in the first place. *@
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
     @if (_isLoading)
@@ -13,57 +17,79 @@
     else
     {
         <MudGrid Class="mt-4">
-            <MudItem xs="12" sm="4">
-                <MudCard>
-                    <MudCardContent>
-                        <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-2">
-                            <MudIcon Icon="@Icons.Material.Filled.People" Color="Color.Primary" Size="Size.Large" />
-                            <MudText Typo="Typo.h6">Clienti</MudText>
-                        </MudStack>
-                        <MudText Typo="Typo.h3" Color="Color.Primary">@_stats?.CustomerCount</MudText>
-                        <MudText Typo="Typo.body2" Color="Color.Secondary">clienti in anagrafica</MudText>
-                    </MudCardContent>
-                    <MudCardActions>
-                        <MudButton Href="/customers" Variant="Variant.Text" Color="Color.Primary"
-                                   EndIcon="@Icons.Material.Filled.ArrowForward">
-                            Vai ai clienti
-                        </MudButton>
-                    </MudCardActions>
-                </MudCard>
-            </MudItem>
+            <AuthorizeView Roles="@UserRoles.Admin">
+                <MudItem xs="12" sm="6" md="3">
+                    <MudCard>
+                        <MudCardContent>
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-2">
+                                <MudIcon Icon="@Icons.Material.Filled.People" Color="Color.Primary" Size="Size.Large" />
+                                <MudText Typo="Typo.h6">Clienti</MudText>
+                            </MudStack>
+                            <MudText Typo="Typo.h3" Color="Color.Primary">@_stats?.CustomerCount</MudText>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">clienti in anagrafica</MudText>
+                        </MudCardContent>
+                        <MudCardActions>
+                            <MudButton Href="/customers" Variant="Variant.Text" Color="Color.Primary"
+                                       EndIcon="@Icons.Material.Filled.ArrowForward">
+                                Vai ai clienti
+                            </MudButton>
+                        </MudCardActions>
+                    </MudCard>
+                </MudItem>
 
-            <MudItem xs="12" sm="4">
+                <MudItem xs="12" sm="6" md="3">
+                    <MudCard>
+                        <MudCardContent>
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-2">
+                                <MudIcon Icon="@Icons.Material.Filled.Receipt" Color="Color.Primary" Size="Size.Large" />
+                                <MudText Typo="Typo.h6">Fatture</MudText>
+                            </MudStack>
+                            <MudText Typo="Typo.h3" Color="Color.Primary">@_stats?.CurrentYearInvoiceCount</MudText>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">fatture emesse nel @DateTime.Now.Year</MudText>
+                        </MudCardContent>
+                        <MudCardActions>
+                            <MudButton Href="/invoices" Variant="Variant.Text" Color="Color.Primary"
+                                       EndIcon="@Icons.Material.Filled.ArrowForward">
+                                Vai alle fatture
+                            </MudButton>
+                        </MudCardActions>
+                    </MudCard>
+                </MudItem>
+
+                <MudItem xs="12" sm="6" md="3">
+                    <MudCard>
+                        <MudCardContent>
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-2">
+                                <MudIcon Icon="@Icons.Material.Filled.ReceiptLong" Color="Color.Primary" Size="Size.Large" />
+                                <MudText Typo="Typo.h6">Note di credito</MudText>
+                            </MudStack>
+                            <MudText Typo="Typo.h3" Color="Color.Primary">@_stats?.CurrentYearCreditNoteCount</MudText>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">note di credito emesse nel @DateTime.Now.Year</MudText>
+                        </MudCardContent>
+                        <MudCardActions>
+                            <MudButton Href="/creditnotes" Variant="Variant.Text" Color="Color.Primary"
+                                       EndIcon="@Icons.Material.Filled.ArrowForward">
+                                Vai alle note di credito
+                            </MudButton>
+                        </MudCardActions>
+                    </MudCard>
+                </MudItem>
+            </AuthorizeView>
+
+            <MudItem xs="12" sm="6" md="3">
                 <MudCard>
                     <MudCardContent>
                         <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-2">
-                            <MudIcon Icon="@Icons.Material.Filled.Receipt" Color="Color.Primary" Size="Size.Large" />
-                            <MudText Typo="Typo.h6">Fatture</MudText>
+                            <MudIcon Icon="@Icons.Material.Filled.Assignment" Color="Color.Primary" Size="Size.Large" />
+                            <MudText Typo="Typo.h6">Rapporti di intervento</MudText>
                         </MudStack>
-                        <MudText Typo="Typo.h3" Color="Color.Primary">@_stats?.CurrentYearInvoiceCount</MudText>
-                        <MudText Typo="Typo.body2" Color="Color.Secondary">fatture emesse nel @DateTime.Now.Year</MudText>
+                        <MudText Typo="Typo.h3" Color="Color.Primary">@_stats?.CurrentYearInterventionCount</MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">rapporti emessi nel @DateTime.Now.Year</MudText>
                     </MudCardContent>
                     <MudCardActions>
-                        <MudButton Href="/invoices" Variant="Variant.Text" Color="Color.Primary"
+                        <MudButton Href="/interventions" Variant="Variant.Text" Color="Color.Primary"
                                    EndIcon="@Icons.Material.Filled.ArrowForward">
-                            Vai alle fatture
-                        </MudButton>
-                    </MudCardActions>
-                </MudCard>
-            </MudItem>
-            <MudItem xs="12" sm="4">
-                <MudCard>
-                    <MudCardContent>
-                        <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-2">
-                            <MudIcon Icon="@Icons.Material.Filled.Receipt" Color="Color.Primary" Size="Size.Large" />
-                            <MudText Typo="Typo.h6">Note di credito</MudText>
-                        </MudStack>
-                        <MudText Typo="Typo.h3" Color="Color.Primary">@_stats?.CurrentYearCreditNoteCount</MudText>
-                        <MudText Typo="Typo.body2" Color="Color.Secondary">note di credito emesse nel @DateTime.Now.Year</MudText>
-                    </MudCardContent>
-                    <MudCardActions>
-                        <MudButton Href="/creditnotes" Variant="Variant.Text" Color="Color.Primary"
-                                   EndIcon="@Icons.Material.Filled.ArrowForward">
-                            Vai alle note di credito
+                            Vai ai rapporti
                         </MudButton>
                     </MudCardActions>
                 </MudCard>

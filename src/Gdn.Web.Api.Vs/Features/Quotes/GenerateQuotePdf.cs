@@ -1,4 +1,4 @@
-using Gdn.Web.Api.Vs.Endpoints;
+﻿using Gdn.Web.Api.Vs.Endpoints;
 using Gdn.Web.Api.Vs.Features.Quotes.Reports;
 
 namespace Gdn.Web.Api.Vs.Features.Quotes;
@@ -9,7 +9,7 @@ public class GenerateQuotePdf
     {
         public void MapEndpoint(IEndpointRouteBuilder app)
         {
-            app.MapGet("api/quotes/pdf/{id:int}", HandlerAsync).WithTags(Tags.Quotes);
+            app.MapGet("api/quotes/pdf/{id:int}", HandlerAsync).WithTags(Tags.Quotes).RequireAuthorization(Policies.AdminOnly);
         }
     }
 

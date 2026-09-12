@@ -1,0 +1,137 @@
+@inject HttpClient Http
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+        @if (_isLoading)
+        {
+            <MudProgressLinear Indeterminate="true" />
+        }
+        else
+        {
+            <EditForm EditContext="_editContext" id="edit-user-form" OnValidSubmit="@SaveAsync">
+                <DataAnnotationsValidator />
+
+                <MudGrid Spacing="2">
+                    <MudItem xs="12" sm="6">
+                        <MudTextField @bind-Value="_model.Email"
+                                      For="@(() => _model.Email)"
+                                      Label="Email"
+                                      InputType="InputType.Email"
+                                      FullWidth="true" />
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudTextField @bind-Value="_model.FullName"
+                                      For="@(() => _model.FullName)"
+                                      Label="Nome"
+                                      FullWidth="true" />
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudSelect T="string" @bind-Value="_model.Role" Label="Ruolo" FullWidth="true">
+                            <MudSelectItem T="string" Value="@UserRoles.Admin">Amministratore</MudSelectItem>
+                            <MudSelectItem T="string" Value="@UserRoles.Coworker">Collaboratore</MudSelectItem>
+                        </MudSelect>
+                    </MudItem>
+                    <MudItem xs="12" sm="6" Class="d-flex align-center">
+                        <MudSwitch T="bool" @bind-Value="_model.IsActive" Color="Color.Primary">Attivo</MudSwitch>
+                    </MudItem>
+
+                    @if (_content.Id == 0)
+                    {
+                        <MudItem xs="12">
+                            <MudTextField @bind-Value="_model.Password"
+                                          Label="Password iniziale"
+                                          InputType="InputType.Password"
+                                          HelperText="Almeno 8 caratteri. Comunicala al collaboratore: potrà cambiarla solo un amministratore."
+                                          FullWidth="true" />
+                        </MudItem>
+                    }
+                </MudGrid>
+            </EditForm>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel" Disabled="@_saving">Annulla</MudButton>
+        <MudButton ButtonType="ButtonType.Submit"
+                   form="edit-user-form"
+                   Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   Disabled="@(_saving || _isLoading)">Salva</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance Dialog { get; set; } = default!;
+
+    [Parameter]
+    public DialogContent _content { get; set; } = new();
+
+    private UserEditModel _model = new();
+    private EditContext _editContext = default!;
+    private bool _isLoading = true;
+    private bool _saving;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (_content.Id != 0)
+        {
+            try
+            {
+                var user = await Http.GetFromJsonAsync<UserEditModel>($"users/{_content.Id}");
+                if (user is not null)
+                    _model = user;
+            }
+            catch (HttpRequestException)
+            {
+                Snackbar.Add("Errore durante il caricamento dei dati.", Severity.Error);
+            }
+        }
+
+        _editContext = new EditContext(_model);
+        _isLoading = false;
+    }
+
+    private async Task SaveAsync()
+    {
+        if (_content.Id == 0 && (_model.Password is null || _model.Password.Length < 8))
+        {
+            Snackbar.Add("La password iniziale deve avere almeno 8 caratteri.", Severity.Error);
+            return;
+        }
+
+        _saving = true;
+
+        try
+        {
+            var response = _content.Id == 0
+                ? await Http.PostAsJsonAsync("users", new
+                {
+                    _model.Email,
+                    Password = _model.Password,
+                    _model.FullName,
+                    _model.Role,
+                    _model.IsActive
+                })
+                : await Http.PutAsJsonAsync("users", new
+                {
+                    Id = _content.Id,
+                    _model.Email,
+                    _model.FullName,
+                    _model.Role,
+                    _model.IsActive
+                });
+
+            if (!await Snackbar.ShowResponseErrorAsync(response))
+                return;
+
+            Dialog.Close();
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+
+    private void Cancel() => Dialog.Cancel();
+}

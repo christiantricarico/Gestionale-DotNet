@@ -1,4 +1,4 @@
-using Gdn.Web.Api.Vs.Endpoints;
+﻿using Gdn.Web.Api.Vs.Endpoints;
 
 namespace Gdn.Web.Api.Vs.Features.CreditNotes;
 
@@ -8,7 +8,7 @@ public class GenerateCreditNotePdf
     {
         public void MapEndpoint(IEndpointRouteBuilder app)
         {
-            app.MapGet("api/creditnotes/pdf/{id:int}", HandlerAsync).WithTags(Tags.CreditNotes);
+            app.MapGet("api/creditnotes/pdf/{id:int}", HandlerAsync).WithTags(Tags.CreditNotes).RequireAuthorization(Policies.AdminOnly);
         }
     }
 

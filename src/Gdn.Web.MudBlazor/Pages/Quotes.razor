@@ -1,4 +1,5 @@
-@page "/quotes"
+﻿@page "/quotes"
+@attribute [Authorize(Roles = UserRoles.Admin)]
 
 @using System.Text.Json
 @inject HttpClient Http

@@ -1,4 +1,4 @@
-using Gdn.Web.Api.Vs.Endpoints;
+﻿using Gdn.Web.Api.Vs.Endpoints;
 using Gdn.Web.Api.Vs.Features.Invoices.Reports;
 
 namespace Gdn.Web.Api.Vs.Features.Invoices;
@@ -9,7 +9,7 @@ public class GenerateInvoicePdf
     {
         public void MapEndpoint(IEndpointRouteBuilder app)
         {
-            app.MapGet("api/invoices/pdf/{id:int}", HandlerAsync).WithTags(Tags.Invoices);
+            app.MapGet("api/invoices/pdf/{id:int}", HandlerAsync).WithTags(Tags.Invoices).RequireAuthorization(Policies.AdminOnly);
         }
     }
 

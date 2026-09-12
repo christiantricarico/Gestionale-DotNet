@@ -11,5 +11,7 @@ public static class ResultHelper
     public static IResult BadRequest(Error error) => TypedResults.Problem(detail: error.Description, statusCode: StatusCodes.Status400BadRequest);
     public static IResult NotFound() => TypedResults.NotFound();
     public static IResult NotFound(Error error) => TypedResults.Problem(detail: error.Description, statusCode: StatusCodes.Status404NotFound);
+    public static IResult Unauthorized(Error error) => TypedResults.Problem(detail: error.Description, statusCode: StatusCodes.Status401Unauthorized);
+    public static IResult Forbidden(Error error) => TypedResults.Problem(detail: error.Description, statusCode: StatusCodes.Status403Forbidden);
     public static IResult Conflict(Error error) => TypedResults.Problem(detail: error.Description, statusCode: StatusCodes.Status409Conflict);
 }

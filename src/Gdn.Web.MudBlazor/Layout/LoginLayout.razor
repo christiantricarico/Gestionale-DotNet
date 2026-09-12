@@ -1,0 +1,28 @@
+@inherits LayoutComponentBase
+@inject IJSRuntime JS
+
+@* The sign in page has no navigation drawer and no app bar: there is nothing to navigate to yet.
+   MudLayout is deliberately not used here, because its main content adds its own padding on top of
+   a full height container, which pushes the page past the viewport and shows a scrollbar. *@
+
+<MudThemeProvider @ref="_themeProvider" @bind-IsDarkMode="_isDarkMode" />
+
+<div class="d-flex align-center justify-center"
+     style="min-height: 100dvh; padding: 16px; box-sizing: border-box;">
+    @Body
+</div>
+
+@code {
+    private MudThemeProvider _themeProvider = null!;
+    private bool _isDarkMode;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var storedTheme = await JS.InvokeAsync<string?>("localStorage.getItem", "mudTheme");
+            _isDarkMode = storedTheme == "dark" || (storedTheme is null && await _themeProvider.GetSystemDarkModeAsync());
+            StateHasChanged();
+        }
+    }
+}

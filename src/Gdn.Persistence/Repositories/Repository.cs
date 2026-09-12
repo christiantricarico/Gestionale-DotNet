@@ -9,7 +9,7 @@ internal abstract class Repository<TEntity, TId> : IRepository<TEntity, TId>
     where TEntity : BaseEntity<TId>
     where TId : struct
 {
-    private readonly AppDbContext _dbContext;
+    protected readonly AppDbContext _dbContext;
 
     public Repository(AppDbContext dbContext)
     {
