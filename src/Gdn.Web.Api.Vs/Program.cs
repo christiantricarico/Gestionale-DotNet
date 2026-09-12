@@ -2,6 +2,7 @@ using FluentValidation;
 using Gdn.Persistence;
 using Gdn.Web.Api.Vs;
 using Gdn.Web.Api.Vs.Endpoints;
+using Gdn.Web.Api.Vs.Features.Auth;
 using Microsoft.EntityFrameworkCore;
 using QuestPDF.Infrastructure;
 using TinyHelpers.AspNetCore.Extensions;
@@ -33,6 +34,9 @@ builder.Services
     .AddFatturaElettronica();
 
 var appSettings = builder.Services.ConfigureAndGet<AppSettings>(builder.Configuration, nameof(AppSettings)) ?? new();
+var jwtSettings = builder.Services.ConfigureAndGet<JwtSettings>(builder.Configuration, nameof(JwtSettings)) ?? new();
+
+builder.Services.AddAuthenticationServices(jwtSettings);
 
 builder.Services.AddCors(options =>
 {
@@ -70,6 +74,7 @@ if (app.Environment.IsDevelopment())
 }
 
 await UpdateDatabaseAsync(app.Services);
+await SeedAuthenticationAsync(app.Services);
 
 // Configure the HTTP request pipeline explicitly
 app.UseExceptionHandler(); // Converts unhandled exceptions into Problem Details responses in production environment
@@ -78,6 +83,9 @@ app.UseHttpsRedirection();
 app.UseCors();
 app.UseRequestLocalization();
 app.UseRouting();
+app.UseRateLimiter();
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapDefaultEndpoints();
 app.MapEndpoints();
@@ -91,4 +99,11 @@ static async Task UpdateDatabaseAsync(IServiceProvider serviceProvider)
     await using var scope = serviceProvider.CreateAsyncScope();
     var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     await dbContext.Database.MigrateAsync();
+}
+
+static async Task SeedAuthenticationAsync(IServiceProvider serviceProvider)
+{
+    await using var scope = serviceProvider.CreateAsyncScope();
+    var seeder = scope.ServiceProvider.GetRequiredService<AuthenticationSeeder>();
+    await seeder.SeedAsync();
 }

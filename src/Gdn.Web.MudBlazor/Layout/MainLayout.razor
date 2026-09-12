@@ -1,5 +1,7 @@
 @inherits LayoutComponentBase
 @inject IJSRuntime JS
+@inject GdnAuthenticationStateProvider AuthProvider
+@inject NavigationManager Navigation
 
 <MudThemeProvider @ref="_themeProvider" @bind-IsDarkMode="_isDarkMode" />
 
@@ -13,6 +15,18 @@
                        Color="Color.Inherit"
                        OnClick="@ToggleDarkMode"
                        title="@(_isDarkMode ? "Tema chiaro" : "Tema scuro")" />
+
+        <AuthorizeView>
+            <Authorized>
+                <MudMenu Icon="@Icons.Material.Filled.AccountCircle" Color="Color.Inherit" title="Account">
+                    @* Plain text rather than a MudText: the menu item already renders a paragraph,
+                       and nesting another one produces invalid markup. *@
+                    <MudMenuItem Disabled="true">@context.User.Identity?.Name</MudMenuItem>
+                    <MudDivider />
+                    <MudMenuItem Icon="@Icons.Material.Filled.Logout" OnClick="LogoutAsync">Esci</MudMenuItem>
+                </MudMenu>
+            </Authorized>
+        </AuthorizeView>
     </MudAppBar>
 
     <MudDrawer @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2">
@@ -51,4 +65,10 @@
     }
 
     private void ToggleDrawer() => _drawerOpen = !_drawerOpen;
+
+    private async Task LogoutAsync()
+    {
+        await AuthProvider.LogoutAsync();
+        Navigation.NavigateTo("login", replace: true);
+    }
 }

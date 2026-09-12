@@ -1,0 +1,128 @@
+@page "/settings"
+@attribute [Authorize(Roles = UserRoles.Admin)]
+
+@inject HttpClient Http
+@inject ISnackbar Snackbar
+
+<PageTitle>Impostazioni</PageTitle>
+
+@* Sections rather than tabs: with a single group tabs add a frame and a click without adding any
+   information, and on a phone they cost vertical space. A further section becomes another block. *@
+
+<MudContainer MaxWidth="MaxWidth.Medium" Class="mt-4">
+    <MudText Typo="Typo.h5" Class="mb-6">Impostazioni di sistema</MudText>
+
+    @if (_isLoading)
+    {
+        <MudProgressLinear Indeterminate="true" />
+    }
+    else
+    {
+        <EditForm EditContext="_editContext" id="authentication-settings-form" OnValidSubmit="@SaveAsync">
+            <DataAnnotationsValidator />
+
+            <MudPaper Elevation="1" Class="pa-6">
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                    <MudIcon Icon="@Icons.Material.Filled.Lock" Color="Color.Primary" />
+                    <MudText Typo="Typo.h6">Autenticazione</MudText>
+                </MudStack>
+                <MudText Typo="Typo.body2" Class="mud-text-secondary mt-1 mb-6">
+                    Durata delle sessioni e blocco degli account dopo tentativi falliti.
+                </MudText>
+
+                <SettingRow Label="Timeout di inattività"
+                            Description="Chiusa l'app, superato questo tempo viene richiesto di nuovo l'accesso.">
+                    <MudNumericField @bind-Value="_model.SessionIdleTimeoutMinutes"
+                                     For="@(() => _model.SessionIdleTimeoutMinutes)"
+                                     Adornment="Adornment.End"
+                                     AdornmentText="minuti"
+                                     Min="1" Max="43200" FullWidth="true" />
+                </SettingRow>
+
+                <MudDivider Class="my-4" />
+
+                <SettingRow Label="Durata del token di accesso"
+                            Description="Tenerlo breve limita quanto a lungo resta valido un utente appena disattivato.">
+                    <MudNumericField @bind-Value="_model.AccessTokenMinutes"
+                                     For="@(() => _model.AccessTokenMinutes)"
+                                     Adornment="Adornment.End"
+                                     AdornmentText="minuti"
+                                     Min="1" Max="120" FullWidth="true" />
+                </SettingRow>
+
+                <MudDivider Class="my-4" />
+
+                <SettingRow Label="Tentativi falliti prima del blocco"
+                            Description="Superata questa soglia l'account viene bloccato temporaneamente.">
+                    <MudNumericField @bind-Value="_model.MaxFailedAccessAttempts"
+                                     For="@(() => _model.MaxFailedAccessAttempts)"
+                                     Adornment="Adornment.End"
+                                     AdornmentText="tentativi"
+                                     Min="1" Max="50" FullWidth="true" />
+                </SettingRow>
+
+                <MudDivider Class="my-4" />
+
+                <SettingRow Label="Durata del blocco"
+                            Description="Un amministratore può sbloccare prima cambiando la password dell'utente.">
+                    <MudNumericField @bind-Value="_model.LockoutMinutes"
+                                     For="@(() => _model.LockoutMinutes)"
+                                     Adornment="Adornment.End"
+                                     AdornmentText="minuti"
+                                     Min="1" Max="1440" FullWidth="true" />
+                </SettingRow>
+            </MudPaper>
+
+            @* Outside the panel on purpose: inside, it sat against the panel border. *@
+            <MudStack Row="true" Justify="Justify.FlexEnd" Class="mt-4">
+                <MudButton ButtonType="ButtonType.Submit"
+                           Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           Disabled="@_saving">Salva</MudButton>
+            </MudStack>
+        </EditForm>
+    }
+</MudContainer>
+
+@code {
+    private AuthenticationSettingsModel _model = new();
+    private EditContext _editContext = default!;
+    private bool _isLoading = true;
+    private bool _saving;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _model = await Http.GetFromJsonAsync<AuthenticationSettingsModel>("settings/authentication") ?? new();
+        }
+        catch (HttpRequestException)
+        {
+            Snackbar.Add("Errore durante il caricamento dei dati.", Severity.Error);
+        }
+        finally
+        {
+            _editContext = new EditContext(_model);
+            _isLoading = false;
+        }
+    }
+
+    private async Task SaveAsync()
+    {
+        _saving = true;
+
+        try
+        {
+            var response = await Http.PutAsJsonAsync("settings/authentication", _model);
+
+            if (!await Snackbar.ShowResponseErrorAsync(response))
+                return;
+
+            Snackbar.Add("Impostazioni salvate.", Severity.Success);
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+}

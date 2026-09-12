@@ -1,4 +1,4 @@
-using Gdn.Domain.Data.Repositories;
+﻿using Gdn.Domain.Data.Repositories;
 using Gdn.Web.Api.Vs.Endpoints;
 
 namespace Gdn.Web.Api.Vs.Features.CreditNotes;
@@ -9,7 +9,7 @@ public class GetLastCreditNoteNumber
     {
         public void MapEndpoint(IEndpointRouteBuilder app)
         {
-            app.MapGet("api/creditnotes/last-number", HandlerAsync).WithTags(Tags.CreditNotes);
+            app.MapGet("api/creditnotes/last-number", HandlerAsync).WithTags(Tags.CreditNotes).RequireAuthorization(Policies.AdminOnly);
         }
     }
 

@@ -1,0 +1,39 @@
+@inject NavigationManager Navigation
+
+@* Two different situations reach this component, and they deserve different answers: a visitor who
+   is not signed in is sent to the sign in page, while a signed in user who simply lacks the role is
+   told so and kept where they are. *@
+
+<AuthorizeView>
+    <Authorized>
+        <MudContainer MaxWidth="MaxWidth.Small" Class="mt-8">
+            <MudAlert Severity="Severity.Warning" Icon="@Icons.Material.Filled.Lock">
+                Non hai i permessi per accedere a questa pagina.
+            </MudAlert>
+        </MudContainer>
+    </Authorized>
+    <NotAuthorized>
+        <MudProgressLinear Indeterminate="true" />
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    [CascadingParameter]
+    private Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var state = await AuthenticationStateTask;
+
+        if (state.User.Identity?.IsAuthenticated is true)
+            return;
+
+        var returnUrl = Navigation.ToBaseRelativePath(Navigation.Uri);
+
+        Navigation.NavigateTo(
+            string.IsNullOrWhiteSpace(returnUrl) || returnUrl.StartsWith("login", StringComparison.OrdinalIgnoreCase)
+                ? "login"
+                : $"login?returnUrl={Uri.EscapeDataString(returnUrl)}",
+            replace: true);
+    }
+}

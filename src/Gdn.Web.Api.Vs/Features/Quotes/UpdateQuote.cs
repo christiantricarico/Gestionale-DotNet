@@ -1,4 +1,4 @@
-using FluentValidation;
+﻿using FluentValidation;
 using Gdn.Domain.Data;
 using Gdn.Domain.Data.Repositories;
 using Gdn.Domain.Models;
@@ -22,7 +22,7 @@ public class UpdateQuote
     {
         public void MapEndpoint(IEndpointRouteBuilder app)
         {
-            app.MapPut("api/quotes", HandlerAsync).WithTags(Tags.Quotes);
+            app.MapPut("api/quotes", HandlerAsync).WithTags(Tags.Quotes).RequireAuthorization(Policies.AdminOnly);
         }
     }
 

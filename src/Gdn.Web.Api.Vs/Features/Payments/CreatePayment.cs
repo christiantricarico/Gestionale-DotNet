@@ -1,4 +1,4 @@
-using FluentValidation;
+﻿using FluentValidation;
 using Gdn.Domain.Data;
 using Gdn.Domain.Data.Repositories;
 using Gdn.Domain.Models;
@@ -18,7 +18,7 @@ public class CreatePayment
     {
         public void MapEndpoint(IEndpointRouteBuilder app)
         {
-            app.MapPost("api/payments", HandlerAsync).WithTags(Tags.Payments);
+            app.MapPost("api/payments", HandlerAsync).WithTags(Tags.Payments).RequireAuthorization(Policies.AdminOnly);
         }
     }
 

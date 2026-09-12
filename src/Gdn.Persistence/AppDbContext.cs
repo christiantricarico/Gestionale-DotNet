@@ -1,4 +1,4 @@
-using Gdn.Domain.Models;
+﻿using Gdn.Domain.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace Gdn.Persistence;
@@ -24,8 +24,11 @@ public class AppDbContext : DbContext
     public DbSet<ProductCategory> ProductCategories { get; set; }
     public DbSet<Quote> Quotes { get; set; }
     public DbSet<QuoteRow> QuoteRows { get; set; }
+    public DbSet<RefreshToken> RefreshTokens { get; set; }
+    public DbSet<Setting> Settings { get; set; }
     public DbSet<TaxRate> TaxRates { get; set; }
     public DbSet<TaxRateNature> TaxRateNatures { get; set; }
+    public DbSet<User> Users { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

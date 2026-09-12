@@ -1,4 +1,4 @@
-global using MudBlazor;
+﻿global using MudBlazor;
 global using Gdn.Web.MudBlazor.Extensions;
 global using Gdn.Web.MudBlazor.Models;
 global using Gdn.Web.MudBlazor.Models.Customers;
@@ -21,3 +21,7 @@ global using Gdn.Web.MudBlazor.Components.Receipts;
 global using Gdn.Web.MudBlazor.Components.TaxRates;
 global using Gdn.Web.MudBlazor.Components.Products;
 global using Gdn.Web.MudBlazor.Components.ProductCategories;
+global using Gdn.Web.MudBlazor.Models.Auth;
+global using Gdn.Web.MudBlazor.Models.Users;
+global using Gdn.Web.MudBlazor.Models.Settings;
+global using Gdn.Web.MudBlazor.Services.Auth;

@@ -1,4 +1,4 @@
-using Gdn.Domain.Data.Repositories;
+﻿using Gdn.Domain.Data.Repositories;
 using Gdn.Domain.Models;
 using Gdn.Web.Api.Vs.Endpoints;
 
@@ -12,7 +12,7 @@ public class GetQuotes
     {
         public void MapEndpoint(IEndpointRouteBuilder app)
         {
-            app.MapGet("api/quotes", HandlerAsync).WithTags(Tags.Quotes);
+            app.MapGet("api/quotes", HandlerAsync).WithTags(Tags.Quotes).RequireAuthorization(Policies.AdminOnly);
         }
     }
 

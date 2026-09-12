@@ -1,4 +1,4 @@
-using Gdn.Domain.Data;
+﻿using Gdn.Domain.Data;
 using Gdn.Domain.Data.Repositories;
 using Gdn.Web.Api.Vs.Endpoints;
 
@@ -10,7 +10,7 @@ public class DeleteQuote
     {
         public void MapEndpoint(IEndpointRouteBuilder app)
         {
-            app.MapDelete("api/quotes/{id:int}", HandlerAsync).WithTags(Tags.Quotes);
+            app.MapDelete("api/quotes/{id:int}", HandlerAsync).WithTags(Tags.Quotes).RequireAuthorization(Policies.AdminOnly);
         }
     }
 

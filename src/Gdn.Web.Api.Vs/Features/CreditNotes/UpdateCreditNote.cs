@@ -1,4 +1,4 @@
-using FluentValidation;
+﻿using FluentValidation;
 using Gdn.Domain.Data;
 using Gdn.Domain.Data.Repositories;
 using Gdn.Domain.Models;
@@ -33,7 +33,7 @@ public class UpdateCreditNote
     {
         public void MapEndpoint(IEndpointRouteBuilder app)
         {
-            app.MapPut("api/creditnotes", HandlerAsync).WithTags(Tags.CreditNotes);
+            app.MapPut("api/creditnotes", HandlerAsync).WithTags(Tags.CreditNotes).RequireAuthorization(Policies.AdminOnly);
         }
     }
 

@@ -1,4 +1,4 @@
-using Gdn.Domain.Data.Repositories;
+﻿using Gdn.Domain.Data.Repositories;
 using Gdn.Domain.Models;
 using Gdn.Web.Api.Vs.Endpoints;
 
@@ -23,7 +23,7 @@ public class GetInvoiceById
     {
         public void MapEndpoint(IEndpointRouteBuilder app)
         {
-            app.MapGet("api/invoices/{id:int}", HandlerAsync).WithTags(Tags.Invoices);
+            app.MapGet("api/invoices/{id:int}", HandlerAsync).WithTags(Tags.Invoices).RequireAuthorization(Policies.AdminOnly);
         }
     }
 

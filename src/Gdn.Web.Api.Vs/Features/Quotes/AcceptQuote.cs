@@ -1,4 +1,4 @@
-using Gdn.Domain.Data;
+﻿using Gdn.Domain.Data;
 using Gdn.Domain.Data.Repositories;
 using Gdn.Web.Api.Vs.Endpoints;
 
@@ -14,7 +14,7 @@ public class AcceptQuote
     {
         public void MapEndpoint(IEndpointRouteBuilder app)
         {
-            app.MapPost("api/quotes/{id:int}/accept", HandlerAsync).WithTags(Tags.Quotes);
+            app.MapPost("api/quotes/{id:int}/accept", HandlerAsync).WithTags(Tags.Quotes).RequireAuthorization(Policies.AdminOnly);
         }
     }
 

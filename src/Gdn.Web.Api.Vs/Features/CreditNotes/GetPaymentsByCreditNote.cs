@@ -1,4 +1,4 @@
-using Gdn.Domain.Data.Repositories;
+﻿using Gdn.Domain.Data.Repositories;
 using Gdn.Web.Api.Vs.Endpoints;
 
 namespace Gdn.Web.Api.Vs.Features.CreditNotes;
@@ -12,7 +12,7 @@ public class GetPaymentsByCreditNote
     {
         public void MapEndpoint(IEndpointRouteBuilder app)
         {
-            app.MapGet("api/creditnotes/{creditNoteId:int}/payments", HandlerAsync).WithTags(Tags.CreditNotes);
+            app.MapGet("api/creditnotes/{creditNoteId:int}/payments", HandlerAsync).WithTags(Tags.CreditNotes).RequireAuthorization(Policies.AdminOnly);
         }
     }
 

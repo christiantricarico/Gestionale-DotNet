@@ -1,4 +1,4 @@
-using FluentValidation;
+﻿using FluentValidation;
 using Gdn.Domain.Data;
 using Gdn.Domain.Data.Repositories;
 using Gdn.Domain.Models;
@@ -35,7 +35,7 @@ public class UpdateInvoice
     {
         public void MapEndpoint(IEndpointRouteBuilder app)
         {
-            app.MapPut("api/invoices", HandlerAsync).WithTags(Tags.Invoices);
+            app.MapPut("api/invoices", HandlerAsync).WithTags(Tags.Invoices).RequireAuthorization(Policies.AdminOnly);
         }
     }
 

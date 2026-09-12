@@ -1,0 +1,26 @@
+@* One setting: name and explanation on the left, control on the right. On small screens the two
+   halves stack, which reads better than squeezing a control next to its description. *@
+
+<MudGrid Spacing="2" Class="align-center">
+    <MudItem xs="12" sm="7">
+        <MudText Typo="Typo.body1">@Label</MudText>
+        @if (!string.IsNullOrWhiteSpace(Description))
+        {
+            <MudText Typo="Typo.caption" Class="mud-text-secondary">@Description</MudText>
+        }
+    </MudItem>
+    <MudItem xs="12" sm="5">
+        @ChildContent
+    </MudItem>
+</MudGrid>
+
+@code {
+    [Parameter]
+    public string Label { get; set; } = string.Empty;
+
+    [Parameter]
+    public string? Description { get; set; }
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+}

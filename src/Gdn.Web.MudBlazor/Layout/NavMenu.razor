@@ -1,22 +1,33 @@
+@* Hiding entries by role is only about keeping the menu relevant. The enforcement lives on the
+   server: this code is downloadable, so it can never be the real gate. *@
+
 <MudNavMenu>
     <MudNavLink Href="/" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">
         Panoramica
     </MudNavLink>
-    <MudNavLink Href="/invoices" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Receipt">
-        Fatture
-    </MudNavLink>
-    <MudNavLink Href="/creditnotes" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.ReceiptLong">
-        Note di credito
-    </MudNavLink>
+
+    <AuthorizeView Roles="@UserRoles.Admin">
+        <MudNavLink Href="/invoices" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Receipt">
+            Fatture
+        </MudNavLink>
+        <MudNavLink Href="/creditnotes" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.ReceiptLong">
+            Note di credito
+        </MudNavLink>
+    </AuthorizeView>
+
     <MudNavLink Href="/interventions" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Assignment">
         Rapporti di intervento
     </MudNavLink>
-    <MudNavLink Href="/quotes" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.RequestQuote">
-        Preventivi
-    </MudNavLink>
-    <MudNavLink Href="/receipts" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Payments">
-        Pagamenti
-    </MudNavLink>
+
+    <AuthorizeView Roles="@UserRoles.Admin">
+        <MudNavLink Href="/quotes" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.RequestQuote">
+            Preventivi
+        </MudNavLink>
+        <MudNavLink Href="/receipts" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Payments">
+            Pagamenti
+        </MudNavLink>
+    </AuthorizeView>
+
     <MudNavGroup Title="Anagrafiche" Icon="@Icons.Material.Filled.TableChart" Expanded="true">
         <MudNavLink Href="/customers" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.People">
             Clienti
@@ -37,4 +48,15 @@
             Categorie prodotti
         </MudNavLink>
     </MudNavGroup>
+
+    <AuthorizeView Roles="@UserRoles.Admin">
+        <MudNavGroup Title="Amministrazione" Icon="@Icons.Material.Filled.AdminPanelSettings" Expanded="false">
+            <MudNavLink Href="/users" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.ManageAccounts">
+                Utenti
+            </MudNavLink>
+            <MudNavLink Href="/settings" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Settings">
+                Impostazioni
+            </MudNavLink>
+        </MudNavGroup>
+    </AuthorizeView>
 </MudNavMenu>
