@@ -13,5 +13,8 @@ public class Customer : RegistryEntity<int>
     public string? Sdi { get; set; }
     public string? Notes { get; set; }
 
+    public int? DefaultTaxRateId { get; set; }
+    public TaxRate? DefaultTaxRate { get; set; }
+
     public ICollection<Address> Addresses { get; set; } = new List<Address>();
 }

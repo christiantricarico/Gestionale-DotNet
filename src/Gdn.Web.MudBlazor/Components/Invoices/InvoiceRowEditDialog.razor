@@ -64,6 +64,7 @@
 @code {
     [CascadingParameter] private IMudDialogInstance Dialog { get; set; } = default!;
     [Parameter] public InvoiceRowEditModel Row { get; set; } = default!;
+    [Parameter] public int? CustomerId { get; set; }
 
     private InvoiceRowEditModel _model = default!;
     private EditContext _editContext = default!;
@@ -72,6 +73,8 @@
     private IEnumerable<MeasurementUnitViewModel> _measurementUnits = [];
     private TaxRateViewModel? _selectedTaxRate;
     private MeasurementUnitViewModel? _selectedMeasurementUnit;
+    private int? _customerDefaultTaxRateId;
+    private int? _documentDefaultTaxRateId;
 
     protected override async Task OnInitializedAsync()
     {
@@ -92,10 +95,28 @@
         };
         _editContext = new EditContext(_model);
 
-        _taxRates = await Http.GetFromJsonAsync<IEnumerable<TaxRateViewModel>>("taxrates") ?? [];
-        _measurementUnits = await Http.GetFromJsonAsync<IEnumerable<MeasurementUnitViewModel>>("measurementunits") ?? [];
+        var taxRatesTask = Http.GetFromJsonAsync<IEnumerable<TaxRateViewModel>>("taxrates");
+        var measurementUnitsTask = Http.GetFromJsonAsync<IEnumerable<MeasurementUnitViewModel>>("measurementunits");
+        var documentSettingsTask = Http.GetFromJsonAsync<DocumentSettingsModel>("settings/documents");
+        var customerTask = CustomerId.HasValue
+            ? Http.GetFromJsonAsync<CustomerViewModel>($"customers/{CustomerId}")
+            : Task.FromResult<CustomerViewModel?>(null);
+
+        await Task.WhenAll(taxRatesTask, measurementUnitsTask, documentSettingsTask, customerTask);
+
+        _taxRates = taxRatesTask.Result ?? [];
+        _measurementUnits = measurementUnitsTask.Result ?? [];
+        _documentDefaultTaxRateId = documentSettingsTask.Result?.DefaultTaxRateId;
+        _customerDefaultTaxRateId = customerTask.Result?.DefaultTaxRateId;
+
         if (_model.TaxRateId.HasValue)
             _selectedTaxRate = _taxRates.FirstOrDefault(t => t.Id == _model.TaxRateId);
+        else
+        {
+            var defaultTaxRateId = _customerDefaultTaxRateId ?? _documentDefaultTaxRateId;
+            if (defaultTaxRateId.HasValue)
+                OnTaxRateChanged(_taxRates.FirstOrDefault(t => t.Id == defaultTaxRateId));
+        }
 
         if (_model.MeasurementUnitId.HasValue)
             _selectedMeasurementUnit = _measurementUnits.FirstOrDefault(u => u.Id == _model.MeasurementUnitId);
@@ -117,13 +138,9 @@
             if (!string.IsNullOrWhiteSpace(product.Description))
                 _model.Description = product.Description;
 
-            if (product.TaxRateId.HasValue)
-            {
-                _selectedTaxRate = _taxRates.FirstOrDefault(t => t.Id == product.TaxRateId);
-                _model.TaxRateId = _selectedTaxRate?.Id;
-                _model.TaxRateName = string.IsNullOrWhiteSpace(_selectedTaxRate?.Name) ? _selectedTaxRate?.Code : _selectedTaxRate?.Name;
-                _model.TaxRateValue = _selectedTaxRate?.Rate;
-            }
+            var defaultTaxRateId = _customerDefaultTaxRateId ?? product.TaxRateId ?? _documentDefaultTaxRateId;
+            if (defaultTaxRateId.HasValue)
+                OnTaxRateChanged(_taxRates.FirstOrDefault(t => t.Id == defaultTaxRateId));
 
             if (product.MeasurementUnitId.HasValue)
             {

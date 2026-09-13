@@ -128,9 +128,21 @@
 
     private async Task DeleteButtonClick(TaxRateViewModel item)
     {
+        var usage = await Http.GetFromJsonAsync<TaxRateUsageViewModel>($"taxrates/{item.Id}/usage");
+
+        if (usage is not null && usage.DocumentRowCount > 0)
+        {
+            await DialogService.ShowMessageBoxAsync(
+                "Eliminazione non possibile",
+                $"Questa aliquota è utilizzata su {usage.DocumentRowCount} riga/righe di documento (Fattura, Nota di credito, " +
+                "Preventivo o Rapporto di intervento) e non può essere eliminata.",
+                yesText: "OK");
+            return;
+        }
+
         bool? confirmed = await DialogService.ShowMessageBoxAsync(
             "Eliminazione",
-            "Sei sicuro di voler eliminare questo elemento?",
+            BuildDeleteConfirmationMessage(usage),
             yesText: "Sì", cancelText: "No");
         if (confirmed is not true)
             return;
@@ -141,6 +153,25 @@
 
         await ReloadAsync();
     }
+
+    private static string BuildDeleteConfirmationMessage(TaxRateUsageViewModel? usage)
+    {
+        if (usage is null || (usage.ProductCount == 0 && usage.CustomerCount == 0 && !usage.IsDocumentDefault))
+            return "Sei sicuro di voler eliminare questo elemento?";
+
+        var uses = new List<string>();
+        if (usage.IsDocumentDefault)
+            uses.Add("aliquota IVA predefinita di sistema");
+        if (usage.ProductCount > 0)
+            uses.Add($"aliquota predefinita su {usage.ProductCount} prodotto/i o servizio/i");
+        if (usage.CustomerCount > 0)
+            uses.Add($"aliquota predefinita su {usage.CustomerCount} cliente/i");
+
+        return $"Questa aliquota è utilizzata come {string.Join(", ", uses)}. " +
+               "Procedendo, questi riferimenti verranno rimossi. Continuare?";
+    }
+
+    private sealed record TaxRateUsageViewModel(int ProductCount, int CustomerCount, bool IsDocumentDefault, int DocumentRowCount);
 
     private void OnFilterTextChanged(string? value)
     {

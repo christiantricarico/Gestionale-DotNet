@@ -31,6 +31,9 @@ public class CreateInvoice
         {
             RuleFor(e => e.Number).NotEmpty();
             RuleFor(e => e.StampDutyAmount).Equal(2.00m).When(e => e.StampDutyAmount.HasValue);
+            RuleForEach(e => e.Rows)
+                .Must(r => r.UnitPrice is null or 0m || r.TaxRateId.HasValue)
+                .WithMessage("Indicare un'aliquota IVA per le righe con un prezzo diverso da zero.");
         }
     }
 
