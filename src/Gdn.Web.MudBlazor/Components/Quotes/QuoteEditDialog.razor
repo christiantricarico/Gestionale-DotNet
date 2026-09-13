@@ -233,6 +233,7 @@
         var newRow = new QuoteRowEditModel();
         var parameters = new DialogParameters<QuoteRowEditDialog>();
         parameters.Add(x => x.Row, newRow);
+        parameters.Add(x => x.CustomerId, _model!.CustomerId);
         var options = new DialogOptions { CloseOnEscapeKey = false, CloseButton = false, BackdropClick = false, MaxWidth = MaxWidth.Medium, FullWidth = true };
         var dialog = await DialogService.ShowAsync<QuoteRowEditDialog>("Nuova riga preventivo", parameters, options);
         var result = await dialog.Result;
@@ -247,6 +248,7 @@
     {
         var parameters = new DialogParameters<QuoteRowEditDialog>();
         parameters.Add(x => x.Row, row);
+        parameters.Add(x => x.CustomerId, _model!.CustomerId);
         var options = new DialogOptions { CloseOnEscapeKey = false, CloseButton = false, BackdropClick = false, MaxWidth = MaxWidth.Medium, FullWidth = true };
         var dialog = await DialogService.ShowAsync<QuoteRowEditDialog>("Modifica riga preventivo", parameters, options);
         var result = await dialog.Result;

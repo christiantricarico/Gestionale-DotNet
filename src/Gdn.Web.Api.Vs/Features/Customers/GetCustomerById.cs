@@ -7,7 +7,7 @@ namespace Gdn.Web.Api.Vs.Features.Customers;
 public class GetCustomerById
 {
     public record GetCustomerByIdResponse(int Id, string Code, string? Name, string? Description, string? FiscalCode, string? VatNumber,
-        string? Phone, string? Email, string? Website, string? Pec, string? Sdi, string? Notes,
+        string? Phone, string? Email, string? Website, string? Pec, string? Sdi, string? Notes, int? DefaultTaxRateId,
         string? Street, string? PostalCode, string? City, string? Province, string? Country);
 
     public sealed class Endpoint : IEndpoint
@@ -32,7 +32,7 @@ public class GetCustomerById
         var address = entity.Addresses.FirstOrDefault();
 
         return new(entity.Id, entity.Code, entity.Name, entity.Description, entity.FiscalCode, entity.VatNumber,
-            entity.Phone, entity.Email, entity.Website, entity.Pec, entity.Sdi, entity.Notes,
+            entity.Phone, entity.Email, entity.Website, entity.Pec, entity.Sdi, entity.Notes, entity.DefaultTaxRateId,
             address?.Street, address?.PostalCode, address?.City, address?.Province, address?.Country);
     }
 }

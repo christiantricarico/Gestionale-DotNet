@@ -81,6 +81,39 @@
                            Disabled="@_saving">Salva</MudButton>
             </MudStack>
         </EditForm>
+
+        <EditForm Model="@_documentModel" id="document-settings-form" OnValidSubmit="@SaveDocumentSettingsAsync" Class="mt-6">
+            <MudPaper Elevation="1" Class="pa-6">
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                    <MudIcon Icon="@Icons.Material.Filled.Description" Color="Color.Primary" />
+                    <MudText Typo="Typo.h6">Documenti</MudText>
+                </MudStack>
+                <MudText Typo="Typo.body2" Class="mud-text-secondary mt-1 mb-6">
+                    Aliquota IVA applicata di default alle righe di Fattura, Nota di credito, Preventivo e Rapporto di intervento
+                    quando non è specificata sul prodotto/servizio o sul cliente.
+                </MudText>
+
+                <SettingRow Label="Aliquota IVA predefinita"
+                            Description="Usata quando la riga non ha un prodotto/servizio o un cliente con una propria aliquota predefinita.">
+                    <MudAutocomplete T="TaxRateViewModel"
+                                     Label="Aliquota IVA"
+                                     Value="_selectedDocumentTaxRate"
+                                     ValueChanged="OnDocumentTaxRateChanged"
+                                     SearchFunc="SearchTaxRates"
+                                     ToStringFunc="@(t => string.IsNullOrWhiteSpace(t?.Name) ? t?.Code : t?.Name)"
+                                     ResetValueOnEmptyText="true"
+                                     Clearable="true"
+                                     FullWidth="true" />
+                </SettingRow>
+            </MudPaper>
+
+            <MudStack Row="true" Justify="Justify.FlexEnd" Class="mt-4">
+                <MudButton ButtonType="ButtonType.Submit"
+                           Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           Disabled="@_savingDocumentSettings">Salva</MudButton>
+            </MudStack>
+        </EditForm>
     }
 </MudContainer>
 
@@ -90,11 +123,27 @@
     private bool _isLoading = true;
     private bool _saving;
 
+    private DocumentSettingsModel _documentModel = new();
+    private IEnumerable<TaxRateViewModel> _taxRates = [];
+    private TaxRateViewModel? _selectedDocumentTaxRate;
+    private bool _savingDocumentSettings;
+
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            _model = await Http.GetFromJsonAsync<AuthenticationSettingsModel>("settings/authentication") ?? new();
+            var authenticationTask = Http.GetFromJsonAsync<AuthenticationSettingsModel>("settings/authentication");
+            var documentTask = Http.GetFromJsonAsync<DocumentSettingsModel>("settings/documents");
+            var taxRatesTask = Http.GetFromJsonAsync<IEnumerable<TaxRateViewModel>>("taxrates");
+
+            await Task.WhenAll(authenticationTask, documentTask, taxRatesTask);
+
+            _model = authenticationTask.Result ?? new();
+            _documentModel = documentTask.Result ?? new();
+            _taxRates = taxRatesTask.Result ?? [];
+
+            if (_documentModel.DefaultTaxRateId.HasValue)
+                _selectedDocumentTaxRate = _taxRates.FirstOrDefault(t => t.Id == _documentModel.DefaultTaxRateId);
         }
         catch (HttpRequestException)
         {
@@ -123,6 +172,40 @@
         finally
         {
             _saving = false;
+        }
+    }
+
+    private Task<IEnumerable<TaxRateViewModel>> SearchTaxRates(string? text, CancellationToken ct)
+    {
+        var results = string.IsNullOrWhiteSpace(text)
+            ? _taxRates
+            : _taxRates.Where(t => (t.Name?.Contains(text, StringComparison.OrdinalIgnoreCase) ?? false)
+                                || t.Code.Contains(text, StringComparison.OrdinalIgnoreCase));
+        return Task.FromResult(results);
+    }
+
+    private void OnDocumentTaxRateChanged(TaxRateViewModel? taxRate)
+    {
+        _selectedDocumentTaxRate = taxRate;
+        _documentModel.DefaultTaxRateId = taxRate?.Id;
+    }
+
+    private async Task SaveDocumentSettingsAsync()
+    {
+        _savingDocumentSettings = true;
+
+        try
+        {
+            var response = await Http.PutAsJsonAsync("settings/documents", _documentModel);
+
+            if (!await Snackbar.ShowResponseErrorAsync(response))
+                return;
+
+            Snackbar.Add("Impostazioni salvate.", Severity.Success);
+        }
+        finally
+        {
+            _savingDocumentSettings = false;
         }
     }
 }

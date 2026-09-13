@@ -45,7 +45,17 @@
                                           For="@(() => _model.VatNumber)"
                                           MaxLength="20" />
                         </MudItem>
-                        <MudItem xs="12" sm="4">
+                        <MudItem xs="12" sm="6">
+                            <MudAutocomplete T="TaxRateViewModel"
+                                             Label="Aliquota IVA predefinita"
+                                             Value="_selectedTaxRate"
+                                             ValueChanged="OnTaxRateChanged"
+                                             SearchFunc="SearchTaxRates"
+                                             ToStringFunc="@(t => string.IsNullOrWhiteSpace(t?.Name) ? t?.Code : t?.Name)"
+                                             ResetValueOnEmptyText="true"
+                                             Clearable="true" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6">
                             <MudTextField @bind-Value="_model.Phone"
                                           Label="Telefono"
                                           For="@(() => _model.Phone)"
@@ -69,7 +79,7 @@
                                           For="@(() => _model.Sdi)"
                                           MaxLength="10" />
                         </MudItem>
-                        <MudItem xs="12" sm="8">
+                        <MudItem xs="12">
                             <MudTextField @bind-Value="_model.Notes"
                                           Label="Note"
                                           For="@(() => _model.Notes)"
@@ -136,10 +146,33 @@
     private CustomerEditModel _model = new();
     private bool _generalPanelExpanded = true;
 
+    private IEnumerable<TaxRateViewModel> _taxRates = [];
+    private TaxRateViewModel? _selectedTaxRate;
+
     protected override async Task OnInitializedAsync()
     {
+        _taxRates = await Http.GetFromJsonAsync<IEnumerable<TaxRateViewModel>>("taxrates") ?? [];
+
         if (_content.Id > 0)
             _model = await Http.GetFromJsonAsync<CustomerEditModel>($"customers/{_content.Id}") ?? new();
+
+        if (_model.DefaultTaxRateId.HasValue)
+            _selectedTaxRate = _taxRates.FirstOrDefault(t => t.Id == _model.DefaultTaxRateId);
+    }
+
+    private Task<IEnumerable<TaxRateViewModel>> SearchTaxRates(string? text, CancellationToken ct)
+    {
+        var results = string.IsNullOrWhiteSpace(text)
+            ? _taxRates
+            : _taxRates.Where(t => (t.Name?.Contains(text, StringComparison.OrdinalIgnoreCase) ?? false)
+                                || t.Code.Contains(text, StringComparison.OrdinalIgnoreCase));
+        return Task.FromResult(results);
+    }
+
+    private void OnTaxRateChanged(TaxRateViewModel? taxRate)
+    {
+        _selectedTaxRate = taxRate;
+        _model.DefaultTaxRateId = taxRate?.Id;
     }
 
     private async Task SaveAsync()
@@ -166,6 +199,7 @@
         Name = model.Name,
         Description = model.Description,
         FiscalCode = model.FiscalCode,
-        VatNumber = model.VatNumber
+        VatNumber = model.VatNumber,
+        DefaultTaxRateId = model.DefaultTaxRateId
     };
 }

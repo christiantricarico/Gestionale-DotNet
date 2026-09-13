@@ -31,6 +31,9 @@ public class UpdateQuote
         public Validator()
         {
             RuleFor(e => e.Number).NotEmpty();
+            RuleForEach(e => e.Rows)
+                .Must(r => r.UnitPrice is null or 0m || r.TaxRateId.HasValue)
+                .WithMessage("Indicare un'aliquota IVA per le righe con un prezzo diverso da zero.");
         }
     }
 

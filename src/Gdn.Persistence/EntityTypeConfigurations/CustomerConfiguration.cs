@@ -17,5 +17,7 @@ internal class CustomerConfiguration : IEntityTypeConfiguration<Customer>
         builder.Property(e => e.Website).HasMaxLength(255);
         builder.Property(e => e.Pec).HasMaxLength(255);
         builder.Property(e => e.Sdi).HasMaxLength(10);
+
+        builder.HasOne(e => e.DefaultTaxRate).WithMany().HasForeignKey(e => e.DefaultTaxRateId).OnDelete(DeleteBehavior.SetNull);
     }
 }

@@ -38,6 +38,8 @@ public class CustomerEditModel
 
     public string? Notes { get; set; }
 
+    public int? DefaultTaxRateId { get; set; }
+
     [StringLength(255)]
     public string? Street { get; set; }
 

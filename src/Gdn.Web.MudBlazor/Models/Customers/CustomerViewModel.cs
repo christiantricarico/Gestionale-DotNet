@@ -20,4 +20,6 @@ public class CustomerViewModel
 
     [Display(Name = "Partita iva")]
     public string? VatNumber { get; set; }
+
+    public int? DefaultTaxRateId { get; set; }
 }

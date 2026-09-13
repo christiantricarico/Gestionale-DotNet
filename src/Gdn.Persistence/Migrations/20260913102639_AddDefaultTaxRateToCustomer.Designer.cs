@@ -4,6 +4,7 @@ using Gdn.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Gdn.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260913102639_AddDefaultTaxRateToCustomer")]
+    partial class AddDefaultTaxRateToCustomer
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -66,7 +69,7 @@ namespace Gdn.Persistence.Migrations
 
                     b.HasIndex("CustomerId");
 
-                    b.ToTable("Addresses", (string)null);
+                    b.ToTable("Addresses");
                 });
 
             modelBuilder.Entity("Gdn.Domain.Models.CreditNote", b =>
@@ -108,7 +111,7 @@ namespace Gdn.Persistence.Migrations
 
                     b.HasIndex("CustomerId");
 
-                    b.ToTable("CreditNotes", (string)null);
+                    b.ToTable("CreditNotes");
                 });
 
             modelBuilder.Entity("Gdn.Domain.Models.CreditNoteRow", b =>
@@ -166,7 +169,7 @@ namespace Gdn.Persistence.Migrations
 
                     b.HasIndex("TaxRateId");
 
-                    b.ToTable("CreditNoteRows", (string)null);
+                    b.ToTable("CreditNoteRows");
                 });
 
             modelBuilder.Entity("Gdn.Domain.Models.Customer", b =>
@@ -236,7 +239,7 @@ namespace Gdn.Persistence.Migrations
 
                     b.HasIndex("DefaultTaxRateId");
 
-                    b.ToTable("Customers", (string)null);
+                    b.ToTable("Customers");
                 });
 
             modelBuilder.Entity("Gdn.Domain.Models.Due", b =>
@@ -286,7 +289,7 @@ namespace Gdn.Persistence.Migrations
 
                     b.HasIndex("InvoiceId");
 
-                    b.ToTable("Dues", (string)null);
+                    b.ToTable("Dues");
                 });
 
             modelBuilder.Entity("Gdn.Domain.Models.Intervention", b =>
@@ -333,7 +336,7 @@ namespace Gdn.Persistence.Migrations
 
                     b.HasIndex("IsInvoiced");
 
-                    b.ToTable("Interventions", (string)null);
+                    b.ToTable("Interventions");
                 });
 
             modelBuilder.Entity("Gdn.Domain.Models.InterventionRow", b =>
@@ -391,7 +394,7 @@ namespace Gdn.Persistence.Migrations
 
                     b.HasIndex("TaxRateId");
 
-                    b.ToTable("InterventionRows", (string)null);
+                    b.ToTable("InterventionRows");
                 });
 
             modelBuilder.Entity("Gdn.Domain.Models.Invoice", b =>
@@ -433,7 +436,7 @@ namespace Gdn.Persistence.Migrations
 
                     b.HasIndex("CustomerId");
 
-                    b.ToTable("Invoices", (string)null);
+                    b.ToTable("Invoices");
                 });
 
             modelBuilder.Entity("Gdn.Domain.Models.InvoiceRow", b =>
@@ -491,7 +494,7 @@ namespace Gdn.Persistence.Migrations
 
                     b.HasIndex("TaxRateId");
 
-                    b.ToTable("InvoiceRows", (string)null);
+                    b.ToTable("InvoiceRows");
                 });
 
             modelBuilder.Entity("Gdn.Domain.Models.MeasurementUnit", b =>
@@ -525,7 +528,7 @@ namespace Gdn.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("MeasurementUnits", (string)null);
+                    b.ToTable("MeasurementUnits");
                 });
 
             modelBuilder.Entity("Gdn.Domain.Models.Payment", b =>
@@ -564,7 +567,7 @@ namespace Gdn.Persistence.Migrations
 
                     b.HasIndex("PaymentMethodId");
 
-                    b.ToTable("Payments", (string)null);
+                    b.ToTable("Payments");
                 });
 
             modelBuilder.Entity("Gdn.Domain.Models.PaymentDue", b =>
@@ -591,7 +594,7 @@ namespace Gdn.Persistence.Migrations
 
                     b.HasIndex("DueId", "PaymentId");
 
-                    b.ToTable("PaymentDues", (string)null);
+                    b.ToTable("PaymentDues");
 
                     b.HasAnnotation("SqlServer:UseSqlOutputClause", false);
                 });
@@ -632,7 +635,7 @@ namespace Gdn.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("PaymentMethods", (string)null);
+                    b.ToTable("PaymentMethods");
                 });
 
             modelBuilder.Entity("Gdn.Domain.Models.Product", b =>
@@ -685,7 +688,7 @@ namespace Gdn.Persistence.Migrations
 
                     b.HasIndex("TaxRateId");
 
-                    b.ToTable("Products", (string)null);
+                    b.ToTable("Products");
                 });
 
             modelBuilder.Entity("Gdn.Domain.Models.ProductCategory", b =>
@@ -727,7 +730,7 @@ namespace Gdn.Persistence.Migrations
 
                     b.HasIndex("ParentCategoryId");
 
-                    b.ToTable("ProductCategories", (string)null);
+                    b.ToTable("ProductCategories");
                 });
 
             modelBuilder.Entity("Gdn.Domain.Models.Quote", b =>
@@ -772,7 +775,7 @@ namespace Gdn.Persistence.Migrations
 
                     b.HasIndex("IsAccepted");
 
-                    b.ToTable("Quotes", (string)null);
+                    b.ToTable("Quotes");
                 });
 
             modelBuilder.Entity("Gdn.Domain.Models.QuoteRow", b =>
@@ -830,7 +833,7 @@ namespace Gdn.Persistence.Migrations
 
                     b.HasIndex("TaxRateId");
 
-                    b.ToTable("QuoteRows", (string)null);
+                    b.ToTable("QuoteRows");
                 });
 
             modelBuilder.Entity("Gdn.Domain.Models.RefreshToken", b =>
@@ -865,7 +868,7 @@ namespace Gdn.Persistence.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("RefreshTokens", (string)null);
+                    b.ToTable("RefreshTokens");
                 });
 
             modelBuilder.Entity("Gdn.Domain.Models.Setting", b =>
@@ -899,7 +902,7 @@ namespace Gdn.Persistence.Migrations
                     b.HasIndex("Key")
                         .IsUnique();
 
-                    b.ToTable("Settings", (string)null);
+                    b.ToTable("Settings");
                 });
 
             modelBuilder.Entity("Gdn.Domain.Models.TaxRate", b =>
@@ -942,7 +945,7 @@ namespace Gdn.Persistence.Migrations
 
                     b.HasIndex("TaxRateNatureId");
 
-                    b.ToTable("TaxRates", (string)null);
+                    b.ToTable("TaxRates");
                 });
 
             modelBuilder.Entity("Gdn.Domain.Models.TaxRateNature", b =>
@@ -968,7 +971,7 @@ namespace Gdn.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("TaxRateNatures", (string)null);
+                    b.ToTable("TaxRateNatures");
 
                     b.HasData(
                         new
@@ -1194,7 +1197,7 @@ namespace Gdn.Persistence.Migrations
                     b.HasIndex("Email")
                         .IsUnique();
 
-                    b.ToTable("Users", (string)null);
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("Gdn.Domain.Models.Address", b =>

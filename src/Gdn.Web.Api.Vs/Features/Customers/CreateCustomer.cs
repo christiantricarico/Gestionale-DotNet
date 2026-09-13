@@ -9,9 +9,9 @@ namespace Gdn.Web.Api.Vs.Features.Customers;
 public class CreateCustomer
 {
     public record CreateCustomerRequest(string Code, string? Name, string? Description, string? FiscalCode, string? VatNumber,
-        string? Phone, string? Email, string? Website, string? Pec, string? Sdi, string? Notes,
+        string? Phone, string? Email, string? Website, string? Pec, string? Sdi, string? Notes, int? DefaultTaxRateId,
         string? Street, string? PostalCode, string? City, string? Province, string? Country);
-    public record CreateCustomerResponse(int Id, string Code, string? Name, string? Description, string? FiscalCode, string? VatNumber);
+    public record CreateCustomerResponse(int Id, string Code, string? Name, string? Description, string? FiscalCode, string? VatNumber, int? DefaultTaxRateId);
 
     public sealed class Endpoint : IEndpoint
     {
@@ -59,7 +59,7 @@ public class CreateCustomer
         await unitOfWork.SaveChangesAsync();
 
         return ResultHelper.Created(new CreateCustomerResponse(customer.Id, customer.Code, customer.Name, customer.Description,
-            customer.FiscalCode, customer.VatNumber));
+            customer.FiscalCode, customer.VatNumber, customer.DefaultTaxRateId));
     }
 
     private static Customer MapCustomer(CreateCustomerRequest request) => new()
@@ -74,7 +74,8 @@ public class CreateCustomer
         Website = request.Website,
         Pec = request.Pec,
         Sdi = request.Sdi,
-        Notes = request.Notes
+        Notes = request.Notes,
+        DefaultTaxRateId = request.DefaultTaxRateId
     };
 
     private static Address MapAddress(CreateCustomerRequest request) => new()

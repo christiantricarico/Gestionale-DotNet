@@ -38,7 +38,7 @@ public class InterventionOptionViewModel
     public decimal ExemptVatTotal { get; set; }
 }
 
-public class InvoiceRowEditModel
+public class InvoiceRowEditModel : IValidatableObject
 {
     public int InputStatus { get; set; }
     public long? Id { get; set; }
@@ -74,6 +74,12 @@ public class InvoiceRowEditModel
 
     [Display(Name = "Totale")]
     public decimal TotalAmount => Quantity * UnitPrice;
+
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (UnitPrice != 0m && !TaxRateId.HasValue)
+            yield return new ValidationResult("Indicare un'aliquota IVA per una riga con un prezzo diverso da zero.", [nameof(TaxRateId)]);
+    }
 }
 
 public class InvoiceDueEditModel

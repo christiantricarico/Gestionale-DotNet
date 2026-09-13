@@ -9,9 +9,9 @@ namespace Gdn.Web.Api.Vs.Features.Customers;
 public class UpdateCustomer
 {
     public record UpdateCustomerRequest(int Id, string Code, string? Name, string? Description, string? FiscalCode, string? VatNumber,
-        string? Phone, string? Email, string? Website, string? Pec, string? Sdi, string? Notes,
+        string? Phone, string? Email, string? Website, string? Pec, string? Sdi, string? Notes, int? DefaultTaxRateId,
         string? Street, string? PostalCode, string? City, string? Province, string? Country);
-    public record UpdateCustomerResponse(int Id, string Code, string? Name, string? Description, string? FiscalCode, string? VatNumber);
+    public record UpdateCustomerResponse(int Id, string Code, string? Name, string? Description, string? FiscalCode, string? VatNumber, int? DefaultTaxRateId);
 
     public sealed class Endpoint : IEndpoint
     {
@@ -75,6 +75,7 @@ public class UpdateCustomer
         customer.Pec = request.Pec;
         customer.Sdi = request.Sdi;
         customer.Notes = request.Notes;
+        customer.DefaultTaxRateId = request.DefaultTaxRateId;
 
         MapAddress(customer, request);
     }
@@ -96,5 +97,5 @@ public class UpdateCustomer
     }
 
     private static UpdateCustomerResponse MapResponse(Customer entity) =>
-        new(entity.Id, entity.Code, entity.Name, entity.Description, entity.FiscalCode, entity.VatNumber);
+        new(entity.Id, entity.Code, entity.Name, entity.Description, entity.FiscalCode, entity.VatNumber, entity.DefaultTaxRateId);
 }
